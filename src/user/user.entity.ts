@@ -1,5 +1,5 @@
 import { OrganizationEntity } from '../organization/organization.entity';
-import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class UserEntity {
@@ -7,17 +7,18 @@ export class UserEntity {
   id: string;
 
   @Column()
-  nombre: string;
+  name: string;
+
+  @Column()
+  username: string;
 
   @Column()
   email: string;
 
-  @Column()
-  fechaNacimiento: Date;
-
-  @ManyToMany(
+  @ManyToOne(
     () => OrganizationEntity,
     (organization: OrganizationEntity) => organization.users,
+    { onDelete: 'CASCADE' },
   )
-  organizations: OrganizationEntity[];
+  organization: OrganizationEntity;
 }

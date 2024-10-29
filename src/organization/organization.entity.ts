@@ -1,11 +1,5 @@
 import { UserEntity } from '../user/user.entity';
-import {
-  Column,
-  Entity,
-  JoinTable,
-  ManyToMany,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class OrganizationEntity {
@@ -13,18 +7,11 @@ export class OrganizationEntity {
   id: string;
 
   @Column()
-  nombre: string;
+  name: string;
 
   @Column()
-  fechaFundacion: Date;
+  description: string;
 
-  @Column()
-  imagen: string;
-
-  @Column()
-  descripcion: string;
-
-  @ManyToMany(() => UserEntity, (user: UserEntity) => user.organizations)
-  @JoinTable()
+  @OneToMany(() => UserEntity, (user: UserEntity) => user.organization)
   users: UserEntity[];
 }

@@ -1,19 +1,16 @@
-import { IsDate, IsNotEmpty, IsString, Validate } from 'class-validator';
-import { Type } from 'class-transformer';
-import { IsPastDateConstraint } from '../shared/validators/is-past-date.validators';
+import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
 
 export class UserDto {
   @IsString()
   @IsNotEmpty()
-  nombre: string;
+  name: string;
 
   @IsString()
   @IsNotEmpty()
+  @IsEmail()
   email: string;
 
-  @IsDate()
+  @IsString()
   @IsNotEmpty()
-  @Type(() => Date)
-  @Validate(IsPastDateConstraint)
-  fechaNacimiento: Date;
+  username: string;
 }

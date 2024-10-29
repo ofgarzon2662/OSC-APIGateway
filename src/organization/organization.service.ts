@@ -14,12 +14,12 @@ export class OrganizationService {
     private readonly organizationRepository: Repository<OrganizationEntity>,
   ) {}
 
-  // Obtener todos los organizationes
+  // Get All Organizations
   async findAll(): Promise<OrganizationEntity[]> {
     return await this.organizationRepository.find({ relations: ['users'] });
   }
 
-  // Obtener un organization por id
+  // Get One Organization
 
   async findOne(id: string): Promise<OrganizationEntity> {
     const organization: OrganizationEntity =
@@ -29,26 +29,26 @@ export class OrganizationService {
       });
     if (!organization)
       throw new BusinessLogicException(
-        'El organization con el id provisto no existe',
+        'The organization with the provided id does not exist',
         BusinessError.NOT_FOUND,
       );
 
     return organization;
   }
 
-  // crear un organization
+  // Create one organization
 
   async create(organization: OrganizationEntity): Promise<OrganizationEntity> {
-    if (organization.descripcion.length > 100) {
+    if (organization.description.length > 250) {
       throw new BusinessLogicException(
-        'La descripción no puede tener más de 100 caracteres',
+        'The description cannot be longer than 250 characters',
         BusinessError.BAD_REQUEST,
       );
     }
     return await this.organizationRepository.save(organization);
   }
 
-  // Actualizar un organization
+  // Update
 
   async update(
     id: string,
@@ -58,13 +58,13 @@ export class OrganizationService {
       await this.organizationRepository.findOne({ where: { id } });
     if (!organizationToUpdate)
       throw new BusinessLogicException(
-        'El organization con el id provisto no existe',
+        'The organization with the provided id does not exist',
         BusinessError.NOT_FOUND,
       );
 
-    if (organization.descripcion.length > 100) {
+    if (organization.description.length > 250) {
       throw new BusinessLogicException(
-        'La descripción no puede tener más de 100 caracteres',
+        'The description cannot be longer than 250 characters',
         BusinessError.BAD_REQUEST,
       );
     }
@@ -72,14 +72,14 @@ export class OrganizationService {
     return await this.organizationRepository.save(organization);
   }
 
-  // Eliminar un organization
+  // Delete
 
   async delete(id: string) {
     const organization: OrganizationEntity =
       await this.organizationRepository.findOne({ where: { id } });
     if (!organization)
       throw new BusinessLogicException(
-        'El organization con el id provisto no existe',
+        'The organization with the provided id does not exist',
         BusinessError.NOT_FOUND,
       );
 

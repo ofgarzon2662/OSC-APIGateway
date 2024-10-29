@@ -14,40 +14,40 @@ export class UserService {
     private readonly userRepository: Repository<UserEntity>,
   ) {}
 
-  // Obtener todos los users
+  // Get All Users
   async findAll(): Promise<UserEntity[]> {
-    return await this.userRepository.find({ relations: ['organizations'] });
+    return await this.userRepository.find({ relations: ['organization'] });
   }
 
-  // Obtener un user por id
+  // Get One User
 
   async findOne(id: string): Promise<UserEntity> {
     const user: UserEntity = await this.userRepository.findOne({
       where: { id },
-      relations: ['organizations'],
+      relations: ['organization'],
     });
     if (!user)
       throw new BusinessLogicException(
-        'El user con el id provisto no existe',
+        'The user with the provided id does not exist',
         BusinessError.NOT_FOUND,
       );
 
     return user;
   }
 
-  // crear un user
+  // Create one User
 
   async create(user: UserEntity): Promise<UserEntity> {
     if (!this.isValidEmail(user.email)) {
       throw new BusinessLogicException(
-        'El email proporcionado no es válido',
+        'The email provided is not valid',
         BusinessError.PRECONDITION_FAILED,
       );
     }
     return await this.userRepository.save(user);
   }
 
-  // Actualizar un user
+  // Update a User
 
   async update(id: string, user: UserEntity): Promise<UserEntity> {
     const userToUpdate: UserEntity = await this.userRepository.findOne({
@@ -55,13 +55,13 @@ export class UserService {
     });
     if (!userToUpdate)
       throw new BusinessLogicException(
-        'El user con el id provisto no existe',
+        'The User with the provided id does not exist',
         BusinessError.NOT_FOUND,
       );
 
     if (!this.isValidEmail(user.email)) {
       throw new BusinessLogicException(
-        'El email proporcionado no es válido',
+        'The email provided is not valid',
         BusinessError.PRECONDITION_FAILED,
       );
     }
@@ -69,7 +69,7 @@ export class UserService {
     return await this.userRepository.save(user);
   }
 
-  // Eliminar un user
+  // Delete a User
 
   async delete(id: string) {
     const user: UserEntity = await this.userRepository.findOne({
@@ -77,7 +77,7 @@ export class UserService {
     });
     if (!user)
       throw new BusinessLogicException(
-        'El user con el id provisto no existe',
+        'The User with the provided id does not exist',
         BusinessError.NOT_FOUND,
       );
 

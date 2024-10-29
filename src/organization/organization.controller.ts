@@ -21,19 +21,19 @@ import { plainToInstance } from 'class-transformer';
 export class OrganizationController {
   constructor(private readonly organizationService: OrganizationService) {}
 
-  // Obtener todos los organizations
+  // Get All Organizations
   @Get()
   async findAll() {
     return await this.organizationService.findAll();
   }
 
-  // Obtener un organization por id
+  // Get One
   @Get(':organizationId')
   async findOne(@Param('organizationId') organizationId: string) {
     return await this.organizationService.findOne(organizationId);
   }
 
-  // Crear un organization
+  // Create
   @Post()
   async create(@Body() organizationDto: OrganizationDto) {
     const organization: OrganizationEntity = plainToInstance(
@@ -43,7 +43,7 @@ export class OrganizationController {
     return await this.organizationService.create(organization);
   }
 
-  // Actualizar un organization
+  // Update
   @Put(':organizationId')
   async update(
     @Param('organizationId') organizationId: string,
@@ -56,7 +56,7 @@ export class OrganizationController {
     return await this.organizationService.update(organizationId, organization);
   }
 
-  // Eliminar un organization
+  // Delete
   @Delete(':organizationId')
   @HttpCode(204)
   async delete(@Param('organizationId') organizationId: string) {

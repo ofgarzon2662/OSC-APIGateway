@@ -16,7 +16,7 @@ import { plainToInstance } from 'class-transformer';
 import { UserDto } from './user.dto';
 import { BusinessErrorsInterceptor } from '../shared/interceptors/business-errors.interceptors';
 
-@Controller('members')
+@Controller('users')
 @UseInterceptors(BusinessErrorsInterceptor)
 export class UserController {
   constructor(private readonly userService: UserService) {}

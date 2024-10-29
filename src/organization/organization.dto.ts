@@ -1,23 +1,11 @@
-import { IsDate, IsNotEmpty, IsString, Validate } from 'class-validator';
-import { Type } from 'class-transformer';
-import { IsPastDateConstraint } from '../shared/validators/is-past-date.validators';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class OrganizationDto {
   @IsString()
   @IsNotEmpty()
-  nombre: string;
+  name: string;
 
   @IsString()
   @IsNotEmpty()
-  descripcion: string;
-
-  @IsDate()
-  @IsNotEmpty()
-  @Type(() => Date)
-  @Validate(IsPastDateConstraint)
-  fechaFundacion: Date;
-
-  @IsString()
-  @IsNotEmpty()
-  imagen: string;
+  description: string;
 }
