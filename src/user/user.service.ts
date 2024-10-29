@@ -1,74 +1,91 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { SocioEntity } from './socio.entity';
-import { Repository } from 'typeorm/repository/Repository';
-import { BusinessError, BusinessLogicException } from '../shared/errors/business-errors';
+import { UserEntity } from './user.entity';
+import { Repository } from 'typeorm';
+import {
+  BusinessError,
+  BusinessLogicException,
+} from '../shared/errors/business-errors';
 
 @Injectable()
-export class SocioService {
-    constructor(
-        @InjectRepository(SocioEntity)
-        private readonly socioRepository: Repository<SocioEntity>
-    ) {}
+export class UserService {
+  constructor(
+    @InjectRepository(UserEntity)
+    private readonly userRepository: Repository<UserEntity>,
+  ) {}
 
-    // Obtener todos los socios
-    async findAll(): Promise<SocioEntity[]> {
-        return await this.socioRepository.find( { relations: ["clubs"] });
+  // Obtener todos los users
+  async findAll(): Promise<UserEntity[]> {
+    return await this.userRepository.find({ relations: ['organizations'] });
+  }
+
+  // Obtener un user por id
+
+  async findOne(id: string): Promise<UserEntity> {
+    const user: UserEntity = await this.userRepository.findOne({
+      where: { id },
+      relations: ['organizations'],
+    });
+    if (!user)
+      throw new BusinessLogicException(
+        'El user con el id provisto no existe',
+        BusinessError.NOT_FOUND,
+      );
+
+    return user;
+  }
+
+  // crear un user
+
+  async create(user: UserEntity): Promise<UserEntity> {
+    if (!this.isValidEmail(user.email)) {
+      throw new BusinessLogicException(
+        'El email proporcionado no es válido',
+        BusinessError.PRECONDITION_FAILED,
+      );
+    }
+    return await this.userRepository.save(user);
+  }
+
+  // Actualizar un user
+
+  async update(id: string, user: UserEntity): Promise<UserEntity> {
+    const userToUpdate: UserEntity = await this.userRepository.findOne({
+      where: { id },
+    });
+    if (!userToUpdate)
+      throw new BusinessLogicException(
+        'El user con el id provisto no existe',
+        BusinessError.NOT_FOUND,
+      );
+
+    if (!this.isValidEmail(user.email)) {
+      throw new BusinessLogicException(
+        'El email proporcionado no es válido',
+        BusinessError.PRECONDITION_FAILED,
+      );
     }
 
-    // Obtener un socio por id
+    return await this.userRepository.save(user);
+  }
 
-    async findOne(id: string): Promise<SocioEntity> {
-        const socio: SocioEntity = await this.socioRepository.findOne({where: {id}, relations: ["clubs"] } );
-        if (!socio)
-          throw new BusinessLogicException("El socio con el id provisto no existe", BusinessError.NOT_FOUND);
-    
-        return socio;
-    }
+  // Eliminar un user
 
-    // crear un socio
+  async delete(id: string) {
+    const user: UserEntity = await this.userRepository.findOne({
+      where: { id },
+    });
+    if (!user)
+      throw new BusinessLogicException(
+        'El user con el id provisto no existe',
+        BusinessError.NOT_FOUND,
+      );
 
-    async create(socio: SocioEntity): Promise<SocioEntity> {
-        if (!this.isValidEmail(socio.email)) {
-            throw new BusinessLogicException(
-                "El email proporcionado no es válido",
-                BusinessError.PRECONDITION_FAILED
-            );
-        }
-        return await this.socioRepository.save(socio);
-    }
+    await this.userRepository.remove(user);
+  }
 
-    // Actualizar un socio
-
-    async update(id: string, socio: SocioEntity): Promise<SocioEntity> {
-        const socioToUpdate: SocioEntity = await this.socioRepository.findOne({where: {id}});
-        if (!socioToUpdate)
-          throw new BusinessLogicException("El socio con el id provisto no existe", BusinessError.NOT_FOUND);
-        
-        if (!this.isValidEmail(socio.email)) {
-            throw new BusinessLogicException(
-                "El email proporcionado no es válido",
-                BusinessError.PRECONDITION_FAILED
-            );
-        }
-    
-        return await this.socioRepository.save(socio);
-    }
-
-    // Eliminar un socio
-
-    async delete(id: string) {
-        const socio: SocioEntity = await this.socioRepository.findOne({where:{id}});
-        if (!socio)
-          throw new BusinessLogicException("El socio con el id provisto no existe", BusinessError.NOT_FOUND);
-      
-        await this.socioRepository.remove(socio);
-    }
-    
-    private isValidEmail(email: string): boolean {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(email);
-    }
-
-
+  private isValidEmail(email: string): boolean {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
 }

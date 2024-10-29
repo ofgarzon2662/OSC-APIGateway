@@ -1,113 +1,132 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ClubEntity } from '../club/club.entity';
+import { OrganizationEntity } from '../organization/organization.entity';
 import { Repository } from 'typeorm';
-import { SocioEntity } from '../socio/socio.entity';
+import { UserEntity } from '../user/user.entity';
 import {
   BusinessError,
   BusinessLogicException,
 } from '../shared/errors/business-errors';
 
 @Injectable()
-export class ClubSocioService {
-    constructor(
-        @InjectRepository(ClubEntity)
-        private readonly clubRepository: Repository<ClubEntity>,
-        @InjectRepository(SocioEntity)
-        private readonly socioRepository: Repository<SocioEntity>,
-    ) {}
+export class OrganizationUserService {
+  constructor(
+    @InjectRepository(OrganizationEntity)
+    private readonly organizationRepository: Repository<OrganizationEntity>,
+    @InjectRepository(UserEntity)
+    private readonly userRepository: Repository<UserEntity>,
+  ) {}
 
-    // Add a member to a club
+  // Add a member to a organization
 
-    async addMemberToClub(clubId: string, socioId: string,): Promise<ClubEntity> {
-        const club: ClubEntity = await this.findClubById(clubId);
-        const socio: SocioEntity = await this.findSocioById(socioId);
+  async addMemberToOrganization(
+    organizationId: string,
+    userId: string,
+  ): Promise<OrganizationEntity> {
+    const organization: OrganizationEntity =
+      await this.findOrganizationById(organizationId);
+    const user: UserEntity = await this.findUserById(userId);
 
-    club.socios = [...club.socios, socio];
-    return await this.clubRepository.save(club);
+    organization.users = [...organization.users, user];
+    return await this.organizationRepository.save(organization);
+  }
+
+  // Actualizar Miembros de Un Organization
+
+  async updateMembersFromOrganization(
+    organizationId: string,
+    users: UserEntity[],
+  ): Promise<OrganizationEntity> {
+    const organization: OrganizationEntity =
+      await this.findOrganizationById(organizationId);
+    for (const user of users) {
+      await this.findUserById(user.id);
     }
 
-  // Actualizar Miembros de Un Club
-
-    async updateMembersFromClub(clubId: string, socios: SocioEntity[]): Promise<ClubEntity> {
-        const club: ClubEntity = await this.findClubById(clubId);
-        for (const socio of socios) {
-            await this.findSocioById(socio.id);
-        }
-
-        club.socios = socios;
-        return await this.clubRepository.save(club);
+    organization.users = users;
+    return await this.organizationRepository.save(organization);
   }
 
-    // Encontrar Miembros de un Club
+  // Encontrar Miembros de un Organization
 
-    async findMembersFromClub(clubId: string): Promise<SocioEntity[]> {
-        const club: ClubEntity = await this.findClubById(clubId);
-        return club.socios;
+  async findMembersFromOrganization(
+    organizationId: string,
+  ): Promise<UserEntity[]> {
+    const organization: OrganizationEntity =
+      await this.findOrganizationById(organizationId);
+    return organization.users;
   }
 
-    //  Encontrar Miembro de un Club
-    async findMemberFromClub(clubId: string, socioId: string): Promise<SocioEntity> {
-        const club: ClubEntity = await this.findClubById(clubId);
-        const socio: SocioEntity = await this.findSocioById(socioId);
+  //  Encontrar Miembro de un Organization
+  async findMemberFromOrganization(
+    organizationId: string,
+    userId: string,
+  ): Promise<UserEntity> {
+    const organization: OrganizationEntity =
+      await this.findOrganizationById(organizationId);
+    const user: UserEntity = await this.findUserById(userId);
 
-        const clubSocio: SocioEntity = club.socios.find((entity: SocioEntity) => entity.id === socio.id);
-        if (!clubSocio)
-            throw new BusinessLogicException(
-                'El Socio con el id dado no está asociado a el Club',
-                BusinessError.PRECONDITION_FAILED,
-         );
-    return clubSocio;
-  }
-
-  // Eliminar Miembro de un Club
-
-    async deleteMemberFromClub(clubId: string, socioId: string) {
-        const club: ClubEntity = await this.findClubById(clubId);
-        const socio: SocioEntity = await this.findSocioById(socioId);
-        
-        const clubSocio: SocioEntity = club.socios.find((entity: SocioEntity) => entity.id === socio.id);
-        
-        if (!clubSocio)
-            throw new BusinessLogicException(
-                'El Socio con el id dado no está asociado a el Club',
-                BusinessError.PRECONDITION_FAILED,
-            );
-
-    club.socios = club.socios.filter((entity: SocioEntity) => entity.id !== socioId);
-    await this.clubRepository.save(club);
-    
-  }
-
-  private async findClubById(
-    clubId: string,
-  ): Promise<ClubEntity> {
-    const club: ClubEntity = await this.clubRepository.findOne({
-      where: { id: clubId },
-      relations: ['socios'],
-    });
-    if (!club) {
+    const organizationUser: UserEntity = organization.users.find(
+      (entity: UserEntity) => entity.id === user.id,
+    );
+    if (!organizationUser)
       throw new BusinessLogicException(
-        'El Club con el id dado no fue encontrado',
-        BusinessError.NOT_FOUND,
+        'El User con el id dado no está asociado a el Organization',
+        BusinessError.PRECONDITION_FAILED,
       );
-    }
-    return club;
+    return organizationUser;
   }
 
-  private async findSocioById(
-    socioId: string,
-  ): Promise<SocioEntity> {
-    const socio: SocioEntity =
-      await this.socioRepository.findOne({
-        where: { id: socioId },
+  // Eliminar Miembro de un Organization
+
+  async deleteMemberFromOrganization(organizationId: string, userId: string) {
+    const organization: OrganizationEntity =
+      await this.findOrganizationById(organizationId);
+    const user: UserEntity = await this.findUserById(userId);
+
+    const organizationUser: UserEntity = organization.users.find(
+      (entity: UserEntity) => entity.id === user.id,
+    );
+
+    if (!organizationUser)
+      throw new BusinessLogicException(
+        'El User con el id dado no está asociado a el Organization',
+        BusinessError.PRECONDITION_FAILED,
+      );
+
+    organization.users = organization.users.filter(
+      (entity: UserEntity) => entity.id !== userId,
+    );
+    await this.organizationRepository.save(organization);
+  }
+
+  private async findOrganizationById(
+    organizationId: string,
+  ): Promise<OrganizationEntity> {
+    const organization: OrganizationEntity =
+      await this.organizationRepository.findOne({
+        where: { id: organizationId },
+        relations: ['users'],
       });
-    if (!socio) {
+    if (!organization) {
       throw new BusinessLogicException(
-        'El Socio con el id dado no fue encontrado',
+        'El Organization con el id dado no fue encontrado',
         BusinessError.NOT_FOUND,
       );
     }
-    return socio;
+    return organization;
+  }
+
+  private async findUserById(userId: string): Promise<UserEntity> {
+    const user: UserEntity = await this.userRepository.findOne({
+      where: { id: userId },
+    });
+    if (!user) {
+      throw new BusinessLogicException(
+        'El User con el id dado no fue encontrado',
+        BusinessError.NOT_FOUND,
+      );
+    }
+    return user;
   }
 }

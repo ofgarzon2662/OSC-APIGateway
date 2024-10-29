@@ -1,60 +1,65 @@
 import {
-    Body,
-    Controller,
-    Delete,
-    Get,
-    HttpCode,
-    Param,
-    Post,
-    Put,
-    UseInterceptors,
-  } from '@nestjs/common';
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  Post,
+  Put,
+  UseInterceptors,
+} from '@nestjs/common';
 
 import { BusinessErrorsInterceptor } from '../shared/interceptors/business-errors.interceptors';
-import { ClubService } from './club.service';
-import { ClubEntity } from './club.entity';
-import { ClubDto } from './club.dto';
+import { OrganizationService } from './organization.service';
+import { OrganizationEntity } from './organization.entity';
+import { OrganizationDto } from './organization.dto';
 import { plainToInstance } from 'class-transformer';
 
-@Controller('clubs')
+@Controller('organizations')
 @UseInterceptors(BusinessErrorsInterceptor)
+export class OrganizationController {
+  constructor(private readonly organizationService: OrganizationService) {}
 
-export class ClubController {
-    constructor(private readonly clubService: ClubService) {}
-    
-    // Obtener todos los clubs
-    @Get()
-    async findAll() {
-        return await this.clubService.findAll();
-    }
-    
-    // Obtener un club por id
-    @Get(':clubId')
-    async findOne(@Param('clubId') clubId: string) {
-        return await this.clubService.findOne(clubId);
-    }
-    
-    // Crear un club
-    @Post()
-    async create(@Body() clubDto: ClubDto) {
-        const club: ClubEntity = plainToInstance(ClubEntity, clubDto);
-        return await this.clubService.create(club);
-    }
-    
-    // Actualizar un club
-    @Put(':clubId')
-    async update(
-        @Param('clubId') clubId: string,
-        @Body() clubDto: ClubDto,
-    ) {
-        const club: ClubEntity = plainToInstance(ClubEntity, clubDto);
-        return await this.clubService.update(clubId, club);
-    }
-    
-    // Eliminar un club
-    @Delete(':clubId')
-    @HttpCode(204)
-    async delete(@Param('clubId') clubId: string) {
-        return this.clubService.delete(clubId);
-    }
-    }
+  // Obtener todos los organizations
+  @Get()
+  async findAll() {
+    return await this.organizationService.findAll();
+  }
+
+  // Obtener un organization por id
+  @Get(':organizationId')
+  async findOne(@Param('organizationId') organizationId: string) {
+    return await this.organizationService.findOne(organizationId);
+  }
+
+  // Crear un organization
+  @Post()
+  async create(@Body() organizationDto: OrganizationDto) {
+    const organization: OrganizationEntity = plainToInstance(
+      OrganizationEntity,
+      organizationDto,
+    );
+    return await this.organizationService.create(organization);
+  }
+
+  // Actualizar un organization
+  @Put(':organizationId')
+  async update(
+    @Param('organizationId') organizationId: string,
+    @Body() organizationDto: OrganizationDto,
+  ) {
+    const organization: OrganizationEntity = plainToInstance(
+      OrganizationEntity,
+      organizationDto,
+    );
+    return await this.organizationService.update(organizationId, organization);
+  }
+
+  // Eliminar un organization
+  @Delete(':organizationId')
+  @HttpCode(204)
+  async delete(@Param('organizationId') organizationId: string) {
+    return this.organizationService.delete(organizationId);
+  }
+}

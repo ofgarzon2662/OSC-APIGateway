@@ -2,8 +2,7 @@ import { IsDate, IsNotEmpty, IsString, Validate } from 'class-validator';
 import { Type } from 'class-transformer';
 import { IsPastDateConstraint } from '../shared/validators/is-past-date.validators';
 
-export class ClubDto {
-
+export class OrganizationDto {
   @IsString()
   @IsNotEmpty()
   nombre: string;
@@ -11,7 +10,7 @@ export class ClubDto {
   @IsString()
   @IsNotEmpty()
   descripcion: string;
-  
+
   @IsDate()
   @IsNotEmpty()
   @Type(() => Date)

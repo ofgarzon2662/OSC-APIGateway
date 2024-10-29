@@ -1,62 +1,61 @@
 import {
-    Body,
-    Controller,
-    Delete,
-    Get,
-    HttpCode,
-    Param,
-    Post,
-    Put,
-    UseInterceptors,
-  } from '@nestjs/common';
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  Post,
+  Put,
+  UseInterceptors,
+} from '@nestjs/common';
 
-import { SocioService } from './socio.service';
-import { SocioEntity } from './socio.entity';
+import { UserService } from './user.service';
+import { UserEntity } from './user.entity';
 import { plainToInstance } from 'class-transformer';
-import { SocioDto } from './socio.dto';
+import { UserDto } from './user.dto';
 import { BusinessErrorsInterceptor } from '../shared/interceptors/business-errors.interceptors';
 
 @Controller('members')
 @UseInterceptors(BusinessErrorsInterceptor)
+export class UserController {
+  constructor(private readonly userService: UserService) {}
 
-export class SocioController {
-  constructor(private readonly socioService: SocioService) {}
-
-    // Obtener todos los socios
-    @Get()
-    async findAll(): Promise<SocioEntity[]> {
-        return this.socioService.findAll();
+  // Obtener todos los users
+  @Get()
+  async findAll(): Promise<UserEntity[]> {
+    return this.userService.findAll();
   }
 
-    // Obtener un socio por id
-    @Get(':id')
-    async findOne(@Param('id') id: string): Promise<SocioEntity> {
-        return this.socioService.findOne(id);
-    }
-
-    // Crear un socio
-    @Post()
-    async create(@Body() socioDto: SocioDto) {
-        const socio: SocioEntity = plainToInstance(SocioEntity, socioDto);
-        return await this.socioService.create(socio);
-    }
-
-    // Actualizar un socio
-
-    @Put(':socioId')
-    async update(
-    @Param('socioId') socioId: string,
-    @Body() @Body() socioDto: SocioDto) {
-        const socio: SocioEntity = plainToInstance(SocioEntity, socioDto);
-        return await this.socioService.update(socioId, socio);
+  // Obtener un user por id
+  @Get(':id')
+  async findOne(@Param('id') id: string): Promise<UserEntity> {
+    return this.userService.findOne(id);
   }
 
-  // Eliminar un socio
+  // Crear un user
+  @Post()
+  async create(@Body() userDto: UserDto) {
+    const user: UserEntity = plainToInstance(UserEntity, userDto);
+    return await this.userService.create(user);
+  }
 
-  @Delete(':socioId')
+  // Actualizar un user
+
+  @Put(':userId')
+  async update(
+    @Param('userId') userId: string,
+    @Body() @Body() userDto: UserDto,
+  ) {
+    const user: UserEntity = plainToInstance(UserEntity, userDto);
+    return await this.userService.update(userId, user);
+  }
+
+  // Eliminar un user
+
+  @Delete(':userId')
   @HttpCode(204)
-  async delte(@Param('socioId') socioId: string) {
-    return this.socioService.delete(socioId);
+  async delte(@Param('userId') userId: string) {
+    return this.userService.delete(userId);
   }
-  
 }

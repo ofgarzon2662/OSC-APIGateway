@@ -2,8 +2,7 @@ import { IsDate, IsNotEmpty, IsString, Validate } from 'class-validator';
 import { Type } from 'class-transformer';
 import { IsPastDateConstraint } from '../shared/validators/is-past-date.validators';
 
-export class SocioDto {
-
+export class UserDto {
   @IsString()
   @IsNotEmpty()
   nombre: string;
@@ -17,5 +16,4 @@ export class SocioDto {
   @Type(() => Date)
   @Validate(IsPastDateConstraint)
   fechaNacimiento: Date;
-
 }

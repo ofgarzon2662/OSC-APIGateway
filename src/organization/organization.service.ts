@@ -1,61 +1,88 @@
 import { Injectable } from '@nestjs/common';
-import { In, Repository } from 'typeorm';
-import { ClubEntity } from './club.entity';
+import { Repository } from 'typeorm';
+import { OrganizationEntity } from './organization.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { BusinessError, BusinessLogicException } from '../shared/errors/business-errors';
+import {
+  BusinessError,
+  BusinessLogicException,
+} from '../shared/errors/business-errors';
 
 @Injectable()
-export class ClubService {
-    constructor(
-        @InjectRepository(ClubEntity)
-        private readonly clubRepository: Repository<ClubEntity>,
-    ) {}
+export class OrganizationService {
+  constructor(
+    @InjectRepository(OrganizationEntity)
+    private readonly organizationRepository: Repository<OrganizationEntity>,
+  ) {}
 
-    // Obtener todos los clubes
-    async findAll(): Promise<ClubEntity[]> {
-        return await this.clubRepository.find({ relations: ['socios'] });
+  // Obtener todos los organizationes
+  async findAll(): Promise<OrganizationEntity[]> {
+    return await this.organizationRepository.find({ relations: ['users'] });
+  }
+
+  // Obtener un organization por id
+
+  async findOne(id: string): Promise<OrganizationEntity> {
+    const organization: OrganizationEntity =
+      await this.organizationRepository.findOne({
+        where: { id },
+        relations: ['users'],
+      });
+    if (!organization)
+      throw new BusinessLogicException(
+        'El organization con el id provisto no existe',
+        BusinessError.NOT_FOUND,
+      );
+
+    return organization;
+  }
+
+  // crear un organization
+
+  async create(organization: OrganizationEntity): Promise<OrganizationEntity> {
+    if (organization.descripcion.length > 100) {
+      throw new BusinessLogicException(
+        'La descripción no puede tener más de 100 caracteres',
+        BusinessError.BAD_REQUEST,
+      );
+    }
+    return await this.organizationRepository.save(organization);
+  }
+
+  // Actualizar un organization
+
+  async update(
+    id: string,
+    organization: OrganizationEntity,
+  ): Promise<OrganizationEntity> {
+    const organizationToUpdate: OrganizationEntity =
+      await this.organizationRepository.findOne({ where: { id } });
+    if (!organizationToUpdate)
+      throw new BusinessLogicException(
+        'El organization con el id provisto no existe',
+        BusinessError.NOT_FOUND,
+      );
+
+    if (organization.descripcion.length > 100) {
+      throw new BusinessLogicException(
+        'La descripción no puede tener más de 100 caracteres',
+        BusinessError.BAD_REQUEST,
+      );
     }
 
-    // Obtener un club por id
+    return await this.organizationRepository.save(organization);
+  }
 
-    async findOne(id: string): Promise<ClubEntity> {
-        const club: ClubEntity = await this.clubRepository.findOne({where: {id}, relations: ["socios"] } );
-        if (!club)
-          throw new BusinessLogicException("El club con el id provisto no existe", BusinessError.NOT_FOUND);
-    
-        return club;
-    }
+  // Eliminar un organization
 
-    // crear un club
+  async delete(id: string) {
+    const organization: OrganizationEntity =
+      await this.organizationRepository.findOne({ where: { id } });
+    if (!organization)
+      throw new BusinessLogicException(
+        'El organization con el id provisto no existe',
+        BusinessError.NOT_FOUND,
+      );
 
-    async create(club: ClubEntity): Promise<ClubEntity> {
-        if (club.descripcion.length > 100) {
-            throw new BusinessLogicException("La descripción no puede tener más de 100 caracteres", BusinessError.BAD_REQUEST);
-            }
-        return await this.clubRepository.save(club);
-    }
-
-    // Actualizar un club
-
-    async update(id: string, club: ClubEntity): Promise<ClubEntity> {
-        const clubToUpdate: ClubEntity = await this.clubRepository.findOne({where: {id}});
-        if (!clubToUpdate)
-          throw new BusinessLogicException("El club con el id provisto no existe", BusinessError.NOT_FOUND);
-        
-        if (club.descripcion.length > 100) {
-            throw new BusinessLogicException("La descripción no puede tener más de 100 caracteres", BusinessError.BAD_REQUEST);
-        }
-    
-        return await this.clubRepository.save(club);
-    }
-
-    // Eliminar un club
-
-    async delete(id: string) {
-        const club: ClubEntity = await this.clubRepository.findOne({where:{id}});
-        if (!club)
-          throw new BusinessLogicException("El club con el id provisto no existe", BusinessError.NOT_FOUND);
-      
-        await this.clubRepository.remove(club);
-    }
+    await this.organizationRepository.remove(organization);
+  }
 }

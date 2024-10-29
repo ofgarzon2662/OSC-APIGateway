@@ -1,73 +1,90 @@
 import {
-    Body,
-    Controller,
-    Delete,
-    Get,
-    HttpCode,
-    Param,
-    Post,
-    Put,
-    UseInterceptors,
-  } from '@nestjs/common';
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  Post,
+  Put,
+  UseInterceptors,
+} from '@nestjs/common';
 
-import { ClubSocioService } from './club-socio.service';
+import { OrganizationUserService } from './organization-user.service';
 import { plainToInstance } from 'class-transformer';
-import { SocioDto } from '../socio/socio.dto';
-import { SocioEntity } from '../socio/socio.entity';
+import { UserDto } from '../user/user.dto';
+import { UserEntity } from '../user/user.entity';
 import { BusinessErrorsInterceptor } from '../shared/interceptors/business-errors.interceptors';
 
-@Controller('clubs')
+@Controller('organizations')
 @UseInterceptors(BusinessErrorsInterceptor)
-export class ClubSocioController {
-    constructor(private readonly clubSocioService: ClubSocioService) {}
+export class OrganizationUserController {
+  constructor(
+    private readonly organizationUserService: OrganizationUserService,
+  ) {}
 
-    // Agrergar un socio a un club
-    @Post(':clubId/members/:memberId')
-    async addMemberToClub(
-        @Param('clubId') clubId: string,
-        @Param('memberId') memberId: string,
-    ) {
-        return await this.clubSocioService.addMemberToClub(clubId, memberId);
-    }
+  // Agrergar un user a un organization
+  @Post(':organizationId/members/:memberId')
+  async addMemberToOrganization(
+    @Param('organizationId') organizationId: string,
+    @Param('memberId') memberId: string,
+  ) {
+    return await this.organizationUserService.addMemberToOrganization(
+      organizationId,
+      memberId,
+    );
+  }
 
-    // Enontrar miembros de un club
+  // Enontrar miembros de un organization
 
-    @Get(':clubId/members')
-    async findMembersByClub(@Param('clubId') clubId: string) {
-        return await this.clubSocioService.findMembersFromClub(clubId);
-    }
+  @Get(':organizationId/members')
+  async findMembersByOrganization(
+    @Param('organizationId') organizationId: string,
+  ) {
+    return await this.organizationUserService.findMembersFromOrganization(
+      organizationId,
+    );
+  }
 
-    // Encontrar un miembro de un club
+  // Encontrar un miembro de un organization
 
-    @Get(':clubId/members/:memberId')
-    async findMemberByClub(
-        @Param('clubId') clubId: string,
-        @Param('memberId') memberId: string,
-    ) {
-        return await this.clubSocioService.findMemberFromClub(clubId, memberId);
-    }
+  @Get(':organizationId/members/:memberId')
+  async findMemberByOrganization(
+    @Param('organizationId') organizationId: string,
+    @Param('memberId') memberId: string,
+  ) {
+    return await this.organizationUserService.findMemberFromOrganization(
+      organizationId,
+      memberId,
+    );
+  }
 
+  // Actualizar miembros de un organization
 
-    // Actualizar miembros de un club
+  @Put(':organizationId/members')
+  async updateMembersFromOrganization(
+    @Param('organizationId') organizationId: string,
+    @Body() usersDto: UserDto[],
+  ) {
+    const usersEntities: UserEntity[] = plainToInstance(UserEntity, usersDto);
 
-    @Put(':clubId/members')
-    async updateMembersFromClub(
-        @Param('clubId') clubId: string,
-        @Body() sociosDto: SocioDto[],
-    ) {
-        const sociosEntities: SocioEntity[] = plainToInstance(SocioEntity, sociosDto);
+    return await this.organizationUserService.updateMembersFromOrganization(
+      organizationId,
+      usersEntities,
+    );
+  }
 
-        return await this.clubSocioService.updateMembersFromClub(clubId, sociosEntities);
-    }
+  // Eliminar un user de un organization
 
-    // Eliminar un socio de un club
-
-    @Delete(':clubId/members/:memberId')
-    @HttpCode(204)
-    async deleteMemberFromClub(
-        @Param('clubId') clubId: string,
-        @Param('memberId') memberId: string,
-    ) {
-        return await this.clubSocioService.deleteMemberFromClub(clubId, memberId);
-    }
+  @Delete(':organizationId/members/:memberId')
+  @HttpCode(204)
+  async deleteMemberFromOrganization(
+    @Param('organizationId') organizationId: string,
+    @Param('memberId') memberId: string,
+  ) {
+    return await this.organizationUserService.deleteMemberFromOrganization(
+      organizationId,
+      memberId,
+    );
+  }
 }

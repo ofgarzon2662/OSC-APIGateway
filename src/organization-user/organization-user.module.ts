@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
-import { ClubSocioService } from './club-socio.service';
+import { OrganizationUserService } from './organization-user.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { SocioEntity } from '../socio/socio.entity';
-import { ClubEntity } from '../club/club.entity';
-import { ClubSocioController } from './club-socio.controller';
+import { UserEntity } from '../user/user.entity';
+import { OrganizationEntity } from '../organization/organization.entity';
+import { OrganizationUserController } from './organization-user.controller';
 
 @Module({
-  providers: [ClubSocioService],
-  imports: [TypeOrmModule.forFeature([ClubEntity, SocioEntity])],
-  controllers: [ClubSocioController],
+  providers: [OrganizationUserService],
+  imports: [TypeOrmModule.forFeature([OrganizationEntity, UserEntity])],
+  controllers: [OrganizationUserController],
 })
-export class ClubSocioModule {}
+export class OrganizationUserModule {}
