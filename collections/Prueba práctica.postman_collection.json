@@ -1,0 +1,1710 @@
+{
+	"info": {
+		"_postman_id": "4ea710c1-e0fc-4c02-8269-b673704ffec3",
+		"name": "Prueba práctica",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "22997977"
+	},
+	"item": [
+		{
+			"name": "Club",
+			"item": [
+				{
+					"name": "Crear club",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.globals.set(\"clubId\", pm.response.json().id);\r",
+									"\r",
+									"pm.test(\"El código de estado es 201\", function() {\r",
+									"    pm.response.to.have.status(201)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Información presente\", function() {\r",
+									"    pm.expect(pm.response.json().nombre).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().descripcion).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().fechaFundacion).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().imagen).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"nombre\": \"Club El Nogal\",\r\n    \"descripcion\": \"Club El Nogal es un reconocido club social en América Latina, establecido en Bogotá, Colombia.\",\r\n    \"fechaFundacion\": \"2020-01-01\",\r\n    \"imagen\": \"https://www.clubelnogal.com/co/es\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{baseUrl}}/clubs"
+					},
+					"response": [
+						{
+							"name": "Crear aerolínea",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"nombre\": \"Latam Airlines\",\r\n    \"descripcion\": \"LATAM Airlines es la mayor aerolínea de América Latina, formada por la fusión de LAN y TAM en 2012. Tiene sede en Santiago de Chile y opera vuelos nacionales e internacionales en América, Europa, Asia y Oceanía. Con hubs en ciudades como São Paulo y Lima, LATAM se destaca por su moderna flota y su enfoque en la sostenibilidad.\",\r\n    \"fechaFundacion\": \"2020-01-01\",\r\n    \"urlPaginaWeb\": \"https://www.latamairlines.com/co/es\",\r\n    \"id\": \"211411a8-e705-4795-8b23-bcf41279a4d3\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/airlines"
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "Text",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Crear club 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.globals.set(\"clubId2\", pm.response.json().id);\r",
+									"\r",
+									"pm.test(\"El código de estado es 201\", function() {\r",
+									"    pm.response.to.have.status(201)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Información presente\", function() {\r",
+									"    pm.expect(pm.response.json().nombre).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().descripcion).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().fechaFundacion).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().imagen).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"nombre\": \"FC Barcelona\",\r\n    \"descripcion\": \"Club de fútbol con sede en Barcelona, España, fundado en 1899.\",\r\n    \"fechaFundacion\": \"1899-11-29\",\r\n    \"imagen\": \"https://upload.wikimedia.org/wikipedia/en/thumb/4/47/FC_Barcelona_%28crest%29.svg/1200px-FC_Barcelona_%28crest%29.svg.png\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{baseUrl}}/clubs"
+					},
+					"response": [
+						{
+							"name": "Crear aerolínea 2",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"nombre\": \"Latam Airlines\",\r\n    \"descripcion\": \"LATAM Airlines es la mayor aerolínea de América Latina, formada por la fusión de LAN y TAM en 2012. Tiene sede en Santiago de Chile y opera vuelos nacionales e internacionales en América, Europa, Asia y Oceanía. Con hubs en ciudades como São Paulo y Lima, LATAM se destaca por su moderna flota y su enfoque en la sostenibilidad.\",\r\n    \"fechaFundacion\": \"2020-01-01\",\r\n    \"urlPaginaWeb\": \"https://www.latamairlines.com/co/es\",\r\n    \"id\": \"a48a1a34-6bed-46e4-bc5b-33fbfa1454af\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/airlines"
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "Text",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Crear Club con descripcion de mas de 100 caracteres",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"El código de estado es 400\", function() {\r",
+									"    pm.response.to.have.status(400)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Información presente\", function() {\r",
+									"    pm.expect(pm.response.json().message).to.be.contains('La descripción no puede tener más de 100 caracteres');\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"nombre\": \"Manchester United\",\r\n    \"descripcion\": \"Manchester United es uno de los clubes de fútbol más grandes del mundo, fundado en 1878. Con sede en Old Trafford, ha ganado numerosos títulos nacionales e internacionales, incluyendo la Premier League, la Champions League y la FA Cup. Con una base de fanáticos global y una rica historia, Manchester United es conocido por su estilo de juego ofensivo y su legado en el fútbol europeo.\",\r\n    \"fechaFundacion\": \"1878-03-05\",\r\n    \"imagen\": \"https://upload.wikimedia.org/wikipedia/en/7/7a/Manchester_United_FC_crest.svg\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{baseUrl}}/clubs"
+					},
+					"response": [
+						{
+							"name": "Crear aerolínea con una fecha de fundación en el futuro",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"message\": [\r\n        \"La fecha de fechaFundacion debe ser en el pasado.\"\r\n    ],\r\n    \"error\": \"Bad Request\",\r\n    \"statusCode\": 400\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/airlines"
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "Text",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Obtener todos los clubs",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"El código de estado es 200\", function() {\r",
+									"    pm.response.to.have.status(200)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"La lista no está vacía\", function() {\r",
+									"    pm.expect(pm.response.json()).to.be.an('array').that.is.not.empty;\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{baseUrl}}/clubs"
+					},
+					"response": [
+						{
+							"name": "Obtener todas las aerolíneas",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": "{{baseUrl}}/airlines"
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "Text",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Obtener un club",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"El código de estado es 200\", function() {\r",
+									"    pm.response.to.have.status(200)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"La lista no está vacía\", function() {\r",
+									"    pm.expect(pm.response.json().nombre).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().descripcion).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().fechaFundacion).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().imagen).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{baseUrl}}/clubs/{{clubId}}"
+					},
+					"response": [
+						{
+							"name": "Obtener una aerolínea",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": "{{baseUrl}}/airlines/{{aerolineaId}}"
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "Text",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Obtener un club que no existe",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"El código de estado es 404\", function() {\r",
+									"    pm.response.to.have.status(404)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Obtener el mensaje de error esperado\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"El club con el id provisto no existe\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{baseUrl}}/clubs/{{$guid}}"
+					},
+					"response": [
+						{
+							"name": "Obtener una aerolínea que no existe",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": "{{baseUrl}}/airlines/{{$guid}}"
+							},
+							"status": "Not Found",
+							"code": 404,
+							"_postman_previewlanguage": "Text",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Actualizar un club",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"El código de estado es 200\", function() {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Información presente\", function() {\r",
+									"    pm.expect(pm.response.json().nombre).to.contain('Real Madrid CF');\r",
+									"    pm.expect(pm.response.json().descripcion).to.contain('Club de fútbol de Madrid');\r",
+									"    pm.expect(pm.response.json().fechaFundacion).to.eq(\"1902-03-06\");\r",
+									"    pm.expect(pm.response.json().imagen).to.contain('upload.wikimedia.org');\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"nombre\": \"Real Madrid CF\",\r\n    \"descripcion\": \"Club de fútbol de Madrid, España, fundado en 1902. Ganador de múltiples títulos europeos.\",\r\n    \"fechaFundacion\": \"1902-03-06\",\r\n    \"imagen\": \"https://upload.wikimedia.org/wikipedia/en/5/56/Real_Madrid_CF.svg\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{baseUrl}}/clubs/{{clubId2}}"
+					},
+					"response": [
+						{
+							"name": "Actualizar una aerolínea",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"id\": \"97bcab5c-eb7a-41fe-ba13-b4faf42c5915\",\r\n    \"nombre\": \"Latam Airlines new\",\r\n    \"descripcion\": \"LATAM Airlines es la mayor aerolínea de América Latina, formada por la fusión de LAN y TAM en 2012. Tiene sede en Santiago de Chile y opera vuelos nacionales e internacionales en América, Europa, Asia y Oceanía. Con hubs en ciudades como São Paulo y Lima, LATAM se destaca por su moderna flota y su enfoque en la sostenibilidad. new\",\r\n    \"fechaFundacion\": \"2024-01-01\",\r\n    \"urlPaginaWeb\": \"https://www.latamairlines.com/co/es/new\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/airlines/{{aerolineaId}}"
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "Text",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Actualizar un club que no existe",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"El código de estado es 404\", function() {\r",
+									"    pm.response.to.have.status(404)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Obtener el mensaje de error esperado\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"El club con el id provisto no existe\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"nombre\": \"Real Madrid CF\",\r\n    \"descripcion\": \"Club de fútbol de Madrid, España, fundado en 1902. Ganador de múltiples títulos europeos.\",\r\n    \"fechaFundacion\": \"1902-03-06\",\r\n    \"imagen\": \"https://upload.wikimedia.org/wikipedia/en/5/56/Real_Madrid_CF.svg\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{baseUrl}}/clubs/{{$guid}}"
+					},
+					"response": [
+						{
+							"name": "Actualizar una aerolínea que no existe",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"statusCode\": 404,\r\n    \"message\": \"La aerolínea con el id dado no fue encontrada\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/airlines/{{$guid}}"
+							},
+							"status": "Not Found",
+							"code": 404,
+							"_postman_previewlanguage": "Text",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Eliminar club",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"El código de estado es 204\", function() {\r",
+									"    pm.response.to.have.status(204)\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": "{{baseUrl}}/clubs/{{clubId}}"
+					},
+					"response": [
+						{
+							"name": "Eliminar aerolínea",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [],
+								"url": "{{baseUrl}}/airlines/{{aerolineaId}}"
+							},
+							"status": "No Content",
+							"code": 204,
+							"_postman_previewlanguage": "Text",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Eliminar un club que no existe",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"El código de estado es 404\", function() {\r",
+									"    pm.response.to.have.status(404)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Obtener el mensaje de error esperado\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"El club con el id provisto no existe\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": "{{baseUrl}}/clubs/{{$guid}}"
+					},
+					"response": [
+						{
+							"name": "Eliminar aerolínea que no existe",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"statusCode\": 404,\r\n    \"message\": \"La aerolínea con el id dado no fue encontrada\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/airlines/{{$guid}}"
+							},
+							"status": "Not Found",
+							"code": 404,
+							"_postman_previewlanguage": "Text",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Socio",
+			"item": [
+				{
+					"name": "Crear socio",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.globals.set(\"socioId\", pm.response.json().id);\r",
+									"\r",
+									"pm.test(\"El código de estado es 201\", function() {\r",
+									"    pm.response.to.have.status(201)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Información presente\", function() {\r",
+									"    pm.expect(pm.response.json().nombre).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().email).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().fechaNacimiento).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"nombre\": \"Eduardo Salamanca\",\r\n    \"email\": \"email@email.com\",\r\n    \"fechaNacimiento\": \"2020-01-01\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{baseUrl}}/members"
+					},
+					"response": [
+						{
+							"name": "Crear aeropuerto",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"nombre\": \"El Dorado\",\r\n    \"codigo\": \"BOG\",\r\n    \"pais\": \"Colombia\",\r\n    \"ciudad\": \"Bogotá\",\r\n    \"id\": \"773e1818-a2df-418d-8fed-e6c1c565cee3\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/airports"
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "Text",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "crear socio 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.globals.set(\"socioId2\", pm.response.json().id);\r",
+									"\r",
+									"pm.test(\"El código de estado es 201\", function() {\r",
+									"    pm.response.to.have.status(201)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Información presente\", function() {\r",
+									"    pm.expect(pm.response.json().nombre).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().email).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().fechaNacimiento).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"nombre\": \"Eduardo Salamanca 2\",\r\n    \"email\": \"email2@email.com\",\r\n    \"fechaNacimiento\": \"2020-01-01\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{baseUrl}}/members"
+					},
+					"response": [
+						{
+							"name": "Crear aeropuerto 2",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"nombre\": \"El Dorado\",\r\n    \"codigo\": \"BOG\",\r\n    \"pais\": \"Colombia\",\r\n    \"ciudad\": \"Bogotá\",\r\n    \"id\": \"1619c9c1-b301-4231-94bf-ea9c172ddb14\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/airports"
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "Text",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "crear socio 3",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.globals.set(\"socioId3\", pm.response.json().id);\r",
+									"\r",
+									"pm.test(\"El código de estado es 201\", function() {\r",
+									"    pm.response.to.have.status(201)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Información presente\", function() {\r",
+									"    pm.expect(pm.response.json().nombre).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().email).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().fechaNacimiento).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"nombre\": \"Eduardo Salamanca 3\",\r\n    \"email\": \"email3@email.com\",\r\n    \"fechaNacimiento\": \"2020-01-01\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{baseUrl}}/members"
+					},
+					"response": [
+						{
+							"name": "Crear aeropuerto 3",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"nombre\": \"El Dorado\",\r\n    \"codigo\": \"BOG\",\r\n    \"pais\": \"Colombia\",\r\n    \"ciudad\": \"Bogotá\",\r\n    \"id\": \"41c580d1-0afa-4ef6-9f62-5c7d2d44f1a4\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/airports"
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "Text",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "crear socio no valido",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"El código de estado es 412\", function() {\r",
+									"    pm.response.to.have.status(412)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Información presente\", function() {\r",
+									"    pm.expect(pm.response.json().message).to.be.contains('El email proporcionado no es válido');\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"nombre\": \"Eduardo Salamanca 3\",\r\n    \"email\": \"email3\",\r\n    \"fechaNacimiento\": \"2020-01-01\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{baseUrl}}/members"
+					},
+					"response": [
+						{
+							"name": "Crear aeropuerto 3",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"nombre\": \"El Dorado\",\r\n    \"codigo\": \"BOG\",\r\n    \"pais\": \"Colombia\",\r\n    \"ciudad\": \"Bogotá\",\r\n    \"id\": \"41c580d1-0afa-4ef6-9f62-5c7d2d44f1a4\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/airports"
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "Text",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Obtener todos los socios",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"El código de estado es 200\", function() {\r",
+									"    pm.response.to.have.status(200)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"La lista no está vacía\", function() {\r",
+									"    pm.expect(pm.response.json()).to.be.an('array').that.is.not.empty;\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{baseUrl}}/members"
+					},
+					"response": [
+						{
+							"name": "Obtener todos los aeropuertos",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": "{{baseUrl}}/airports"
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "Text",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Obtener un socio",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"El código de estado es 200\", function() {\r",
+									"    pm.response.to.have.status(200)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Información presente\", function() {\r",
+									"    pm.expect(pm.response.json().nombre).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().email).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().fechaNacimiento).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{baseUrl}}/members/{{socioId}}"
+					},
+					"response": [
+						{
+							"name": "Obtener un aeropuerto",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": "{{baseUrl}}/airports/{{aeropuertoId}}"
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "Text",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Obtener un socio que no existe",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"El código de estado es 404\", function() {\r",
+									"    pm.response.to.have.status(404)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Obtener el mensaje de error esperado\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"El socio con el id provisto no existe\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{baseUrl}}/members/{{$guid}}"
+					},
+					"response": [
+						{
+							"name": "Obtener un aeropuerto que no existe",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": "{{baseUrl}}/airports/{{$guid}}"
+							},
+							"status": "Not Found",
+							"code": 404,
+							"_postman_previewlanguage": "Text",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Actualizar un socio",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.globals.set(\"socioId\", pm.response.json().id);\r",
+									"\r",
+									"pm.test(\"El código de estado es 200\", function() {\r",
+									"    pm.response.to.have.status(200)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Información presente\", function() {\r",
+									"    pm.expect(pm.response.json().nombre).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().email).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().fechaNacimiento).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"nombre\": \"Pepito Perez\",\r\n    \"email\": \"email@email.com\",\r\n    \"fechaNacimiento\": \"2020-01-01\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{baseUrl}}/members/{{socioId}}"
+					},
+					"response": [
+						{
+							"name": "Actualizar un aeropuerto",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"id\": \"773e1818-a2df-418d-8fed-e6c1c565cee3\",\r\n    \"nombre\": \"El Dorado new\",\r\n    \"codigo\": \"BOG new\",\r\n    \"pais\": \"Colombia new\",\r\n    \"ciudad\": \"Bogotá new\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/airports/{{aeropuertoId}}"
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "Text",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Actualizar un socio que no existe",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"El código de estado es 404\", function() {\r",
+									"    pm.response.to.have.status(404)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Obtener el mensaje de error esperado\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"El socio con el id provisto no existe\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"nombre\": \"Eduardo Salamanca\",\r\n    \"email\": \"email@email.com\",\r\n    \"fechaNacimiento\": \"2020-01-01\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{baseUrl}}/members/{{$guid}}"
+					},
+					"response": [
+						{
+							"name": "Actualizar un aeropuerto que no existe",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"statusCode\": 404,\r\n    \"message\": \"El aeropuerto con el id dado no fue encontrado\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/airports/{{$guid}}"
+							},
+							"status": "Not Found",
+							"code": 404,
+							"_postman_previewlanguage": "Text",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Eliminar un socio",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"El código de estado es 204\", function() {\r",
+									"    pm.response.to.have.status(204)\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": "{{baseUrl}}/members/{{socioId}}"
+					},
+					"response": [
+						{
+							"name": "Eliminar un aeropuerto",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [],
+								"url": "{{baseUrl}}/airports/{{aeropuertoId}}"
+							},
+							"status": "No Content",
+							"code": 204,
+							"_postman_previewlanguage": "Text",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Eliminar un aeropuerto que no existe",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"El código de estado es 404\", function() {\r",
+									"    pm.response.to.have.status(404)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Obtener el mensaje de error esperado\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"El socio con el id provisto no existe\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": "{{baseUrl}}/members/{{$guid}}"
+					},
+					"response": [
+						{
+							"name": "Eliminar un aeropuerto que no existe",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"statusCode\": 404,\r\n    \"message\": \"El aeropuerto con el id dado no fue encontrado\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/airports/{{$guid}}"
+							},
+							"status": "Not Found",
+							"code": 404,
+							"_postman_previewlanguage": "Text",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Club-Socio",
+			"item": [
+				{
+					"name": "Agregar un socio a un club",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"El código de estado es 201\", function() {\r",
+									"    pm.response.to.have.status(201)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Información presente\", function() {\r",
+									"    pm.expect(pm.response.json().nombre).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().descripcion).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().fechaFundacion).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().imagen).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"La lista no está vacía\", function() {\r",
+									"    pm.expect(pm.response.json().socios).to.be.an('array').that.is.not.empty;\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "{{baseUrl}}/clubs/{{clubId2}}/members/{{socioId2}}"
+					},
+					"response": [
+						{
+							"name": "Agregar un aeropuerto a una aerolínea",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"id\": \"1edc98e8-ed10-47f0-8370-2af1fdaf8807\",\r\n    \"nombre\": \"Latam Airlines\",\r\n    \"descripcion\": \"LATAM Airlines es la mayor aerolínea de América Latina, formada por la fusión de LAN y TAM en 2012. Tiene sede en Santiago de Chile y opera vuelos nacionales e internacionales en América, Europa, Asia y Oceanía. Con hubs en ciudades como São Paulo y Lima, LATAM se destaca por su moderna flota y su enfoque en la sostenibilidad.\",\r\n    \"fechaFundacion\": \"2020-01-01T05:00:00.000Z\",\r\n    \"urlPaginaWeb\": \"https://www.latamairlines.com/co/es\",\r\n    \"aeropuertos\": [\r\n        {\r\n            \"id\": \"1619c9c1-b301-4231-94bf-ea9c172ddb14\",\r\n            \"nombre\": \"El Dorado\",\r\n            \"codigo\": \"BOG\",\r\n            \"pais\": \"Colombia\",\r\n            \"ciudad\": \"Bogotá\"\r\n        }\r\n    ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/airlines/{{aerolineaId2}}/airports/{{aeropuertoId2}}"
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "Text",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Agregar un socio que no existe a un club",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"El código de estado es 404\", function() {\r",
+									"    pm.response.to.have.status(404)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Obtener el mensaje de error esperado\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"El Socio con el id dado no fue encontrado\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": "{{baseUrl}}/clubs/{{clubId2}}/members/{{$guid}}"
+					},
+					"response": [
+						{
+							"name": "Agregar un aeropuerto a una aerolínea que no existe",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"statusCode\": 404,\r\n    \"message\": \"La aerolínea con el id dado no fue encontrada\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/airlines/{{$guid}}/airports/{{aeropuertoId2}}"
+							},
+							"status": "Not Found",
+							"code": 404,
+							"_postman_previewlanguage": "Text",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Obtener todos los socios de un club",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"El código de estado es 200\", function() {\r",
+									"    pm.response.to.have.status(200)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"La lista no está vacía\", function() {\r",
+									"    pm.expect(pm.response.json()).to.be.an('array').that.is.not.empty;\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{baseUrl}}/clubs/{{clubId2}}/members"
+					},
+					"response": [
+						{
+							"name": "Obtener todos los aeropuertos de una aerolínea",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": "{{baseUrl}}/airlines/{{aerolineaId2}}/airports"
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "Text",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Obtener un socio de una club",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"El código de estado es 200\", function() {\r",
+									"    pm.response.to.have.status(200)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Información presente\", function() {\r",
+									"    pm.expect(pm.response.json().nombre).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().email).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().fechaNacimiento).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{baseUrl}}/clubs/{{clubId2}}/members/{{socioId2}}"
+					},
+					"response": [
+						{
+							"name": "Obtener un aeropuerto de una aerolínea",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": "{{baseUrl}}/airlines/{{aerolineaId2}}/airports/{{aeropuertoId2}}"
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "Text",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Obtener un socio que no está asociado a un club",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"El código de estado es 412\", function() {\r",
+									"    pm.response.to.have.status(412)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Obtener el mensaje de error esperado\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"El Socio con el id dado no está asociado a el Club\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{baseUrl}}/clubs/{{clubId2}}/members/{{socioId3}}"
+					},
+					"response": [
+						{
+							"name": "Obtener un aeropuerto que no está asociado a una aerolínea",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": "{{baseUrl}}/airlines/{{aerolineaId2}}/airports/{{aeropuertoId3}}"
+							},
+							"status": "Precondition Failed",
+							"code": 412,
+							"_postman_previewlanguage": "Text",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Actualizar los socios de un club",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"El código de estado es 200\", function() {\r",
+									"    pm.response.to.have.status(200)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Información presente\", function() {\r",
+									"    pm.expect(pm.response.json().nombre).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().descripcion).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().fechaFundacion).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().imagen).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"La lista no está vacía\", function() {\r",
+									"    pm.expect(pm.response.json().socios).to.be.an('array').that.is.not.empty;\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\r\n    {\r\n        \"id\": \"{{socioId3}}\"\r\n    }\r\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{baseUrl}}/clubs/{{clubId2}}/members/"
+					},
+					"response": [
+						{
+							"name": "Actualizar los aeropuertos de una aerolínea",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"id\": \"1edc98e8-ed10-47f0-8370-2af1fdaf8807\",\r\n    \"nombre\": \"Latam Airlines\",\r\n    \"descripcion\": \"LATAM Airlines es la mayor aerolínea de América Latina, formada por la fusión de LAN y TAM en 2012. Tiene sede en Santiago de Chile y opera vuelos nacionales e internacionales en América, Europa, Asia y Oceanía. Con hubs en ciudades como São Paulo y Lima, LATAM se destaca por su moderna flota y su enfoque en la sostenibilidad.\",\r\n    \"fechaFundacion\": \"2020-01-01T05:00:00.000Z\",\r\n    \"urlPaginaWeb\": \"https://www.latamairlines.com/co/es\",\r\n    \"aeropuertos\": [\r\n        {\r\n            \"id\": \"1619c9c1-b301-4231-94bf-ea9c172ddb14\"\r\n        }\r\n    ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/airlines/{{aerolineaId2}}/airports"
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "Text",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Actualizar los socios de un club con un socio que no existe",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"El código de estado es 404\", function() {\r",
+									"    pm.response.to.have.status(404)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Obtener el mensaje de error esperado\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"El Socio con el id dado no fue encontrado\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\r\n    {\r\n        \"id\": \"{{$guid}}\"\r\n    }\r\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{baseUrl}}/clubs/{{clubId2}}/members/"
+					},
+					"response": [
+						{
+							"name": "Actualizar los aeropuertos de una aerolínea con aeropuertos que no existen",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"statusCode\": 404,\r\n    \"message\": \"El aeropuerto con el id dado no fue encontrado\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/airlines/{{aerolineaId2}}/airports"
+							},
+							"status": "Not Found",
+							"code": 404,
+							"_postman_previewlanguage": "Text",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Eliminar un socio de un club",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"El código de estado es 204\", function() {\r",
+									"    pm.response.to.have.status(204)\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": "{{baseUrl}}/clubs/{{clubId2}}/members/{{socioId3}}"
+					},
+					"response": [
+						{
+							"name": "Eliminar un aeropuerto de una aerolínea",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [],
+								"url": "{{baseUrl}}/airlines/{{aerolineaId2}}/airports/{{aeropuertoId2}}"
+							},
+							"status": "No Content",
+							"code": 204,
+							"_postman_previewlanguage": "Text",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Eliminar un socio que no está asociado al club",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"El código de estado es 412\", function() {\r",
+									"    pm.response.to.have.status(412)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Obtener el mensaje de error esperado\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"El Socio con el id dado no está asociado a el Club\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": "{{baseUrl}}/clubs/{{clubId2}}/members/{{socioId3}}"
+					},
+					"response": [
+						{
+							"name": "Eliminar un aeropuerto que no está asociado a una aerolínea",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"statusCode\": 412,\r\n    \"message\": \"El aeropuerto con el id dado no está asociado a la aerolínea\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/airlines/{{aerolineaId2}}/airports/{{aeropuertoId3}}"
+							},
+							"status": "Precondition Failed",
+							"code": 412,
+							"_postman_previewlanguage": "Text",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				}
+			]
+		}
+	]
+}
