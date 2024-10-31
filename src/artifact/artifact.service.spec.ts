@@ -1,12 +1,12 @@
 /* tslint:disable:no-unused-variable */
 
-import { TestBed, async, inject } from '@angular/core/testing';
+import { TestBed, inject } from '@angular/core/testing';
 import { ArtifactService } from './artifact.service';
 
 describe('Service: Artifact', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [ArtifactService]
+      providers: [ArtifactService],
     });
   });
 

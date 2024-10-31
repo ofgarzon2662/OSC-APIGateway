@@ -3,6 +3,7 @@
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { OrganizationEntity } from '../../organization/organization.entity';
 import { UserEntity } from '../../user/user.entity';
+import { ArtifactEntity } from 'src/artifact/artifact.entity';
 
 export const TypeOrmTestingConfig = () => [
  TypeOrmModule.forRoot({
@@ -12,6 +13,7 @@ export const TypeOrmTestingConfig = () => [
    entities: [
     OrganizationEntity, 
     UserEntity,
+    ArtifactEntity,
   ],
    synchronize: true,
    keepConnectionAlive: true
@@ -19,6 +21,7 @@ export const TypeOrmTestingConfig = () => [
  TypeOrmModule.forFeature([
   OrganizationEntity, 
   UserEntity,
+  ArtifactEntity,
 ]),
 ];
 /* archivo src/shared/testing-utils/typeorm-testing-config.ts*/

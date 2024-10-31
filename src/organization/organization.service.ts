@@ -16,7 +16,21 @@ export class OrganizationService {
 
   // Get All Organizations
   async findAll(): Promise<OrganizationEntity[]> {
-    return await this.organizationRepository.find({ relations: ['users'] });
+    const orgs = await this.organizationRepository.find({
+      relations: ['users', 'artifacts'],
+    });
+    if (!orgs || orgs.length === 0)
+      throw new BusinessLogicException(
+        'There are no organizations in the database',
+        BusinessError.NOT_FOUND,
+      );
+    if (orgs.length > 1)
+      throw new BusinessLogicException(
+        'There is more than one organization in the database. This should not happen',
+        BusinessError.PRECONDITION_FAILED,
+      );
+
+    return orgs;
   }
 
   // Get One Organization
@@ -25,7 +39,7 @@ export class OrganizationService {
     const organization: OrganizationEntity =
       await this.organizationRepository.findOne({
         where: { id },
-        relations: ['users'],
+        relations: ['users', 'artifacts'],
       });
     if (!organization)
       throw new BusinessLogicException(
@@ -45,6 +59,15 @@ export class OrganizationService {
         BusinessError.BAD_REQUEST,
       );
     }
+    const countOrganization = await this.organizationRepository.count();
+
+    if (countOrganization > 0) {
+      throw new BusinessLogicException(
+        'There is already an organization in the database. There can only be one.',
+        BusinessError.PRECONDITION_FAILED,
+      );
+    }
+
     return await this.organizationRepository.save(organization);
   }
 
