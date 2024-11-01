@@ -1,31 +1,34 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { SocioModule } from './socio/socio.module';
-import { ClubModule } from './club/club.module';
+import { UserModule } from './user/user.module';
+import { OrganizationModule } from './organization/organization.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { SocioEntity } from './socio/socio.entity';
-import { ClubEntity } from './club/club.entity';
-import { ClubSocioModule } from './club-socio/club-socio.module';
+import { UserEntity } from './user/user.entity';
+import { OrganizationEntity } from './organization/organization.entity';
+import { OrganizationUserModule } from './organization-user/organization-user.module';
+import { ArtifactEntity } from './artifact/artifact.entity';
+import { ArtifactModule } from './artifact/artifact.module';
 
 @Module({
-  imports: [SocioModule, ClubModule,
+  imports: [
+    UserModule,
+    OrganizationModule,
+    ArtifactModule,
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: 'localhost',
       port: 5432,
       username: 'postgres',
       password: 'postgres',
-      database: 'clubes',
-      entities: [
-        SocioEntity,
-        ClubEntity
-      ],
+      database: 'organizationes',
+      entities: [UserEntity, OrganizationEntity, ArtifactEntity],
       dropSchema: true,
       synchronize: true,
-      keepConnectionAlive: true
+      keepConnectionAlive: true,
     }),
-    ClubSocioModule,
+    OrganizationUserModule,
+    ArtifactModule,
   ],
   controllers: [AppController],
   providers: [AppService],

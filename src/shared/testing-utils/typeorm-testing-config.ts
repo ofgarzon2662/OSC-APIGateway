@@ -1,9 +1,9 @@
 /* eslint-disable prettier/prettier */
 /* archivo src/shared/testing-utils/typeorm-testing-config.ts*/
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ClubEntity } from '../../club/club.entity';
-import { SocioEntity } from '../../socio/socio.entity';
-
+import { OrganizationEntity } from '../../organization/organization.entity';
+import { UserEntity } from '../../user/user.entity';
+import { ArtifactEntity } from '../../artifact/artifact.entity';
 
 export const TypeOrmTestingConfig = () => [
  TypeOrmModule.forRoot({
@@ -11,15 +11,17 @@ export const TypeOrmTestingConfig = () => [
    database: ':memory:',
    dropSchema: true,
    entities: [
-    ClubEntity, 
-    SocioEntity,
+    OrganizationEntity, 
+    UserEntity,
+    ArtifactEntity,
   ],
    synchronize: true,
    keepConnectionAlive: true
  }),
  TypeOrmModule.forFeature([
-  ClubEntity, 
-  SocioEntity,
+  OrganizationEntity, 
+  UserEntity,
+  ArtifactEntity,
 ]),
 ];
 /* archivo src/shared/testing-utils/typeorm-testing-config.ts*/
