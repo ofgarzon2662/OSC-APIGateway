@@ -1,4 +1,4 @@
-import { OrganizationEntity } from 'src/organization/organization.entity';
+import { OrganizationEntity } from '../organization/organization.entity';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
@@ -6,10 +6,10 @@ export class ArtifactEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'jsonb' })
+  @Column({ type: 'text' })
   body: any;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @Column()
   timeStamp: Date;
 
   @ManyToOne(

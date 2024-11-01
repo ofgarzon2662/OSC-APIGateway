@@ -1,6 +1,6 @@
 import { UserEntity } from '../user/user.entity';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { ArtifactEntity } from 'src/artifact/artifact.entity';
+import { ArtifactEntity } from '../artifact/artifact.entity';
 
 @Entity()
 export class OrganizationEntity {

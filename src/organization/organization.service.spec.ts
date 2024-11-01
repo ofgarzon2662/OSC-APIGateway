@@ -57,41 +57,30 @@ describe('OrganizationService', () => {
     expect(organization.description).toEqual(storedOrganization.description);
   });
 
-  //   it('findOne should throw an exception for an invalid Organization', async () => {
-  //     await expect(() => service.findOne('0')).rejects.toHaveProperty(
-  //       'message',
-  //       'El organization con el id provisto no existe',
-  //     );
-  //   });
+  it('findOne should throw an exception for an invalid Organization', async () => {
+    await expect(() => service.findOne('0')).rejects.toHaveProperty(
+      'message',
+      'The organization with the provided id does not exist',
+    );
+  });
 
-  //   it('create should return a new Organization', async () => {
-  //     const organization: Partial<OrganizationEntity> = {
-  //       nombre: faker.company.name(),
-  //       fechaFundacion: faker.date.between({
-  //         from: new Date('2020-01-01'),
-  //         to: new Date('2024-01-01'),
-  //       }),
-  //       imagen: `https://www.${faker.internet.domainName()}`,
-  //       descripcion: 'Organization de prueba',
-  //       users: [],
-  //     };
+  it('create should not return a new Organization', async () => {
+    const organization: Partial<OrganizationEntity> = {
+      name: faker.company.name(),
+      description: 'Test Organization',
+      users: [],
+    };
 
-  //     const newOrganization: OrganizationEntity = await service.create(
-  //       organization as OrganizationEntity,
-  //     );
-  //     expect(newOrganization).not.toBeNull();
+    await expect(
+      service.create(organization as OrganizationEntity),
+    ).rejects.toHaveProperty(
+      'message',
+      'There is already an organization in the database. There can only be one.',
+    );
 
-  //     const storedOrganization: OrganizationEntity = await repository.findOne({
-  //       where: { id: newOrganization.id },
-  //     });
-  //     expect(storedOrganization).not.toBeNull();
-  //     expect(storedOrganization.nombre).toEqual(newOrganization.nombre);
-  //     expect(storedOrganization.descripcion).toEqual(newOrganization.descripcion);
-  //     expect(storedOrganization.imagen).toEqual(newOrganization.imagen);
-  //     expect(storedOrganization.fechaFundacion).toEqual(
-  //       newOrganization.fechaFundacion,
-  //     );
-  //   });
+    const organizations: OrganizationEntity[] = await service.findAll();
+    expect(organizations).toHaveLength(1);
+  });
 
   //   // Test Modify Organization
 

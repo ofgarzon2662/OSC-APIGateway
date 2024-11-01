@@ -3,7 +3,7 @@
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { OrganizationEntity } from '../../organization/organization.entity';
 import { UserEntity } from '../../user/user.entity';
-import { ArtifactEntity } from 'src/artifact/artifact.entity';
+import { ArtifactEntity } from '../../artifact/artifact.entity';
 
 export const TypeOrmTestingConfig = () => [
  TypeOrmModule.forRoot({
