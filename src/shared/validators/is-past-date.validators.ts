@@ -7,6 +7,7 @@ import {
 @ValidatorConstraint({ name: 'isPastDate', async: false })
 export class IsPastDateConstraint implements ValidatorConstraintInterface {
   validate(date: Date, args: ValidationArguments) {
+    console.log(args);
     return date < new Date();
   }
 
