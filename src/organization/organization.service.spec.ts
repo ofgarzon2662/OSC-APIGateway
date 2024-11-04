@@ -25,7 +25,7 @@ describe('OrganizationService', () => {
   });
 
   const seedDatabase = async () => {
-    repository.clear();
+    await repository.clear();
     organizationsList = [];
 
     const organization: OrganizationEntity = await repository.save({
@@ -64,6 +64,8 @@ describe('OrganizationService', () => {
     );
   });
 
+  // Create a new organization
+
   it('create should not return a new Organization', async () => {
     const organization: Partial<OrganizationEntity> = {
       name: faker.company.name(),
@@ -82,91 +84,92 @@ describe('OrganizationService', () => {
     expect(organizations).toHaveLength(1);
   });
 
-  //   // Test Modify Organization
+  // Delete the organization
 
-  //   it('modify should return a modified Organization', async () => {
-  //     const storedOrganization: OrganizationEntity = organizationsList[0];
-  //     const modifiedOrganization: Partial<OrganizationEntity> = {
-  //       nombre: faker.company.name(),
-  //       fechaFundacion: faker.date.between({
-  //         from: new Date('2020-01-01'),
-  //         to: new Date('2024-01-01'),
-  //       }),
-  //       imagen: `https://www.${faker.internet.domainName()}`,
-  //       descripcion: 'Organization de prueba',
-  //       users: [],
-  //     };
+  it('should delete an organization and ensure the list is empty, and then recreates it', async () => {
+    await service.delete(organizationsList[0].id);
 
-  //     const organization: OrganizationEntity = await service.update(
-  //       storedOrganization.id,
-  //       modifiedOrganization as OrganizationEntity,
-  //     );
-  //     expect(organization).not.toBeNull();
-  //     expect(organization.nombre).toEqual(modifiedOrganization.nombre);
-  //     expect(organization.descripcion).toEqual(modifiedOrganization.descripcion);
-  //     expect(organization.imagen).toEqual(modifiedOrganization.imagen);
-  //     expect(organization.fechaFundacion).toEqual(
-  //       modifiedOrganization.fechaFundacion,
-  //     );
-  //   });
+    // Check that the organization was deleted
+    const organizationsInDb = await repository.find();
+    expect(organizationsInDb.length).toBe(0);
 
-  //   // Test Delete Organization
+    // Attempt to delete the organization again
 
-  //   it('delete should remove a Organization', async () => {
-  //     const storedOrganization: OrganizationEntity = organizationsList[0];
-  //     await service.delete(storedOrganization.id);
-  //     const organization: OrganizationEntity = await repository.findOne({
-  //       where: { id: storedOrganization.id },
-  //     });
-  //     expect(organization).toBeNull();
-  //   });
+    await expect(
+      service.delete(organizationsList[0].id),
+    ).rejects.toHaveProperty(
+      'message',
+      'The organization with the provided id does not exist',
+    );
 
-  //   // Lanza Excepción al crear organization con mas de 100 caracteres en descripcion
+    // Create a new organization
+    const organization: Partial<OrganizationEntity> = {
+      name: faker.company.name(),
+      description: 'Test Organization',
+      users: [],
+    };
 
-  //   it('create should throw an exception for a Organization with a description longer than 100 characters', async () => {
-  //     const organization: Partial<OrganizationEntity> = {
-  //       nombre: faker.company.name(),
-  //       fechaFundacion: faker.date.between({
-  //         from: new Date('2020-01-01'),
-  //         to: new Date('2024-01-01'),
-  //       }),
-  //       imagen: `https://www.${faker.internet.domainName()}`,
-  //       descripcion: faker.lorem.paragraphs(5),
-  //       users: [],
-  //     };
+    const newOrganization: OrganizationEntity = await service.create(
+      organization as OrganizationEntity,
+    );
 
-  //     await expect(() =>
-  //       service.create(organization as OrganizationEntity),
-  //     ).rejects.toHaveProperty(
-  //       'message',
-  //       'La descripción no puede tener más de 100 caracteres',
-  //     );
-  //   });
+    expect(newOrganization).toBeDefined();
+    expect(newOrganization.name).toEqual(organization.name);
+    expect(newOrganization.description).toEqual(organization.description);
+  });
 
-  //   // Lanza Excepción al modificar organization con mas de 100 caracteres en descripcion
+  // Update the organization
+  it('should update an organization', async () => {
+    const storedOrganization: OrganizationEntity = organizationsList[0];
+    const modifiedOrganization: Partial<OrganizationEntity> = {
+      name: faker.company.name(),
+      description: 'Test Organization',
+      users: [],
+    };
 
-  //   it('modify should throw an exception for a Organization with a description longer than 100 characters', async () => {
-  //     const storedOrganization: OrganizationEntity = organizationsList[0];
-  //     const modifiedOrganization: Partial<OrganizationEntity> = {
-  //       nombre: faker.company.name(),
-  //       fechaFundacion: faker.date.between({
-  //         from: new Date('2020-01-01'),
-  //         to: new Date('2024-01-01'),
-  //       }),
-  //       imagen: `https://www.${faker.internet.domainName()}`,
-  //       descripcion: faker.lorem.paragraphs(5),
-  //       users: [],
-  //     };
+    const organization: OrganizationEntity = await service.update(
+      storedOrganization.id,
+      modifiedOrganization as OrganizationEntity,
+    );
 
-  //     await expect(() =>
-  //       service.update(
-  //         storedOrganization.id,
-  //         modifiedOrganization as OrganizationEntity,
-  //       ),
-  //     ).rejects.toHaveProperty(
-  //       'message',
-  //       'La descripción no puede tener más de 100 caracteres',
-  //     );
-  //   });
-  // });
+    expect(organization).toBeDefined();
+    expect(organization.name).toEqual(modifiedOrganization.name);
+    expect(organization.description).toEqual(modifiedOrganization.description);
+  });
+
+  // Update the organization with invalid data
+  it('should throw an exception when updating an organization with invalid data', async () => {
+    const storedOrganization: OrganizationEntity = organizationsList[0];
+    const modifiedOrganization: Partial<OrganizationEntity> = {
+      name: faker.company.name(),
+      description: faker.lorem.sentences(300),
+      users: [],
+    };
+
+    await expect(() =>
+      service.update(
+        storedOrganization.id,
+        modifiedOrganization as OrganizationEntity,
+      ),
+    ).rejects.toHaveProperty(
+      'message',
+      'The description cannot be longer than 250 characters',
+    );
+  });
+
+  // Update non existent organization
+  it('should throw an exception when updating a non-existent organization', async () => {
+    const modifiedOrganization: Partial<OrganizationEntity> = {
+      name: faker.company.name(),
+      description: 'Test Organization',
+      users: [],
+    };
+
+    await expect(() =>
+      service.update('0', modifiedOrganization as OrganizationEntity),
+    ).rejects.toHaveProperty(
+      'message',
+      'The organization with the provided id does not exist',
+    );
+  });
 });
