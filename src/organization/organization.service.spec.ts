@@ -40,12 +40,38 @@ describe('OrganizationService', () => {
     expect(service).toBeDefined();
   });
 
+  // Find all organizations
+
   it('findAll should return all organizations', async () => {
     const organizations: OrganizationEntity[] = await service.findAll();
     expect(organizations).toBeDefined();
     expect(organizations).not.toBeNull();
     expect(organizations).toHaveLength(organizationsList.length);
   });
+
+  it('findAll should throw an exception for an empty database', async () => {
+    await repository.clear();
+    await expect(() => service.findAll()).rejects.toHaveProperty(
+      'message',
+      'There are no organizations in the database',
+    );
+  });
+
+  // Throw an exception if there is more than one organization in the database
+
+  it('findAll should throw an exception if there is more than one organization in the database', async () => {
+    await repository.save({
+      name: faker.company.name(),
+      description: faker.lorem.sentence(),
+    });
+
+    await expect(() => service.findAll()).rejects.toHaveProperty(
+      'message',
+      'There is more than one organization in the database. This should not happen',
+    );
+  });
+
+  // Find one organization
 
   it('findOne should return a Organization by id', async () => {
     const storedOrganization: OrganizationEntity = organizationsList[0];
@@ -82,6 +108,22 @@ describe('OrganizationService', () => {
 
     const organizations: OrganizationEntity[] = await service.findAll();
     expect(organizations).toHaveLength(1);
+  });
+
+  // Create an organization with invalid data
+  it('create should throw an exception when creating an organization with invalid data', async () => {
+    const organization: Partial<OrganizationEntity> = {
+      name: faker.company.name(),
+      description: faker.lorem.sentences(300),
+      users: [],
+    };
+
+    await expect(() =>
+      service.create(organization as OrganizationEntity),
+    ).rejects.toHaveProperty(
+      'message',
+      'The description cannot be longer than 250 characters',
+    );
   });
 
   // Delete the organization
