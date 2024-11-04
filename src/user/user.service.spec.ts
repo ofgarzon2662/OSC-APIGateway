@@ -97,6 +97,37 @@ describe('OrganizationService', () => {
       service.create(user as UserEntity),
     ).rejects.toHaveProperty('message', 'The email provided is not valid');
   });
+  // Create a User with an existing email
+  it('create should throw an exception for an existing email', async () => {
+    const randomIndex = Math.floor(Math.random() * userList.length);
+    const user: Partial<UserEntity> = {
+      name: faker.person.fullName(),
+      username: faker.internet.username(),
+      email: userList[randomIndex].email,
+    };
+    await expect(() =>
+      service.create(user as UserEntity),
+    ).rejects.toHaveProperty(
+      'message',
+      'The email or username provided is already in use',
+    );
+  });
+
+  // Create a User with an existing username
+  it('create should throw an exception for an existing username', async () => {
+    const randomIndex = Math.floor(Math.random() * userList.length);
+    const user: Partial<UserEntity> = {
+      name: faker.person.fullName(),
+      username: userList[randomIndex].username,
+      email: faker.internet.email(),
+    };
+    await expect(() =>
+      service.create(user as UserEntity),
+    ).rejects.toHaveProperty(
+      'message',
+      'The email or username provided is already in use',
+    );
+  });
 
   // Update a User
   it('update should update a user', async () => {
