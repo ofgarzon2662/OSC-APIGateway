@@ -6,6 +6,7 @@ import {
   BusinessError,
   BusinessLogicException,
 } from '../shared/errors/business-errors';
+import validator from 'validator';
 
 @Injectable()
 export class UserService {
@@ -85,7 +86,6 @@ export class UserService {
   }
 
   private isValidEmail(email: string): boolean {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+    return validator.isEmail(email);
   }
 }
