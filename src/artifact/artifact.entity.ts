@@ -6,6 +6,12 @@ export class ArtifactEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column()
+  name: string;
+
+  @Column()
+  description: string;
+
   @Column({ type: 'text' })
   body: any;
 
