@@ -51,20 +51,38 @@ export class OrganizationService {
   }
 
   // Create one organization
-
   async create(organization: OrganizationEntity): Promise<OrganizationEntity> {
-    if (organization.description.length > 250) {
-      throw new BusinessLogicException(
-        'The description cannot be longer than 250 characters',
-        BusinessError.BAD_REQUEST,
-      );
-    }
+    // Check if an organization already exists
     const countOrganization = await this.organizationRepository.count();
-
     if (countOrganization > 0) {
       throw new BusinessLogicException(
         'There is already an organization in the database. There can only be one.',
         BusinessError.PRECONDITION_FAILED,
+      );
+    }
+    // Validate name
+    if (!organization.name || organization.name.trim().length < 4) {
+      throw new BusinessLogicException(
+        'The name of the organization is required and must have at least 4 characters',
+        BusinessError.BAD_REQUEST,
+      );
+    }
+
+    // Validate description
+    if (
+      !organization.description ||
+      organization.description.trim().length < 20
+    ) {
+      throw new BusinessLogicException(
+        'The description is required and must be at least 20 characters long',
+        BusinessError.BAD_REQUEST,
+      );
+    }
+
+    if (organization.description.length > 250) {
+      throw new BusinessLogicException(
+        'The description cannot be longer than 250 characters',
+        BusinessError.BAD_REQUEST,
       );
     }
 

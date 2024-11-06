@@ -194,6 +194,112 @@ describe('ArtifactService', () => {
     );
   });
 
+  // Update an artifact with valid data
+  it('update should successfully update an artifact with valid data', async () => {
+    const artifactId = artifactList[0].id;
+    const updateData: Partial<ArtifactEntity> = {
+      name: faker.commerce.productName(),
+      description: faker.lorem.sentence(200),
+      body: generateRandomBody(),
+    };
+    const updatedArtifact = await service.update(artifactId, updateData);
+    expect(updatedArtifact).toBeDefined();
+    expect(updatedArtifact).toMatchObject(updateData);
+    expect(updatedArtifact.id).toEqual(artifactId);
+  });
+
+  // Update an artifact with only name
+  it('update should allow updating only the name of an artifact', async () => {
+    const artifactId = artifactList[1].id;
+    const newName = faker.commerce.productName();
+    const updatedArtifact = await service.update(artifactId, { name: newName });
+    expect(updatedArtifact).toBeDefined();
+    expect(updatedArtifact.name).toEqual(newName);
+    expect(updatedArtifact.id).toEqual(artifactId);
+  });
+
+  // Update an artifact with only body
+  it('update should allow updating only the body of an artifact', async () => {
+    const artifactId = artifactList[2].id;
+    const newBody = generateRandomBody();
+    const updatedArtifact = await service.update(artifactId, { body: newBody });
+    expect(updatedArtifact).toBeDefined();
+    expect(updatedArtifact.body).toEqual(newBody);
+    expect(updatedArtifact.id).toEqual(artifactId);
+  });
+
+  // Attempt to update an artifact with an invalid UUID
+  it('update should throw an error with an invalid artifact id', async () => {
+    const invalidId = 'invalid-id';
+    const updateData: Partial<ArtifactEntity> = {
+      name: faker.commerce.productName(),
+    };
+    await expect(service.update(invalidId, updateData)).rejects.toHaveProperty(
+      'message',
+      'The artifact Id provided is not valid',
+    );
+  });
+
+  // Attempt to update a non-existent artifact
+  it('update should throw an exception for a non-existent artifact id', async () => {
+    const nonExistentId = faker.string.uuid();
+    const updateData: Partial<ArtifactEntity> = {
+      name: faker.commerce.productName(),
+    };
+    await expect(
+      service.update(nonExistentId, updateData),
+    ).rejects.toHaveProperty(
+      'message',
+      'The artifact with the provided id does not exist',
+    );
+  });
+
+  // Attempt to update an artifact with a description too short
+  it('update should throw an error if the new description is too short', async () => {
+    const artifactId = artifactList[3].id;
+    const shortDescription = 'short';
+    const updateData: Partial<ArtifactEntity> = {
+      description: shortDescription,
+    };
+    await expect(service.update(artifactId, updateData)).rejects.toHaveProperty(
+      'message',
+      'The new description of the artifact should be at least 200 characters long',
+    );
+  });
+
+  // Delete an artifact with a valid ID
+  it('delete should successfully delete an existing artifact', async () => {
+    const artifactId = artifactList[0].id;
+
+    await service.delete(artifactId);
+
+    // Check if the artifact has been removed
+    const deletedArtifact = await artifactRepository.findOne({
+      where: { id: artifactId },
+    });
+    expect(deletedArtifact).toBeNull();
+  });
+
+  // Delete an artifact with an invalid ID
+  it('delete should throw an error with an invalid artifact id', async () => {
+    const invalidId = 'invalid-id';
+
+    await expect(service.delete(invalidId)).rejects.toHaveProperty(
+      'message',
+      'The artifact Id provided is not valid',
+    );
+  });
+
+  // Delete a non-existent artifact
+  it('delete should throw an exception for a non-existent artifact id', async () => {
+    const nonExistentId = faker.string.uuid();
+
+    await expect(service.delete(nonExistentId)).rejects.toHaveProperty(
+      'message',
+      'The artifact with the provided id does not exist',
+    );
+  });
+
   // create a function that generates a random body for an artifact
   const generateRandomBody = () => {
     return JSON.stringify({
