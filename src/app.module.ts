@@ -21,7 +21,7 @@ import { ArtifactModule } from './artifact/artifact.module';
       port: 5432,
       username: 'postgres',
       password: 'postgres',
-      database: 'organizationes',
+      database: 'organization',
       entities: [UserEntity, OrganizationEntity, ArtifactEntity],
       dropSchema: true,
       synchronize: true,

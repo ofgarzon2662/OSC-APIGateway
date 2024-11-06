@@ -35,9 +35,12 @@ export class UserController {
 
   // Crear un user
   @Post()
-  async create(@Body() userDto: UserDto) {
+  async create(
+    @Param('organizationId') organizationId: string,
+    @Body() userDto: UserDto,
+  ) {
     const user: UserEntity = plainToInstance(UserEntity, userDto);
-    return await this.userService.create(user);
+    return await this.userService.create(user, organizationId);
   }
 
   // Actualizar un user

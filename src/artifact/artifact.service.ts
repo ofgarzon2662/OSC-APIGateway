@@ -109,4 +109,67 @@ export class ArtifactService {
 
     return await this.artifactRepository.save(newArtifact);
   }
+
+  // Update one Artifact
+  async update(
+    id: string,
+    artifact: Partial<ArtifactEntity>,
+  ): Promise<ArtifactEntity> {
+    if (!validator.isUUID(id)) {
+      throw new BusinessLogicException(
+        'The artifact Id provided is not valid',
+        BusinessError.PRECONDITION_FAILED,
+      );
+    }
+
+    const existingArtifact = await this.artifactRepository.findOne({
+      where: { id },
+    });
+
+    if (!existingArtifact) {
+      throw new BusinessLogicException(
+        'The artifact with the provided id does not exist',
+        BusinessError.NOT_FOUND,
+      );
+    }
+
+    if (artifact.name) existingArtifact.name = artifact.name;
+
+    if (artifact.description) {
+      if (artifact.description.length < 200) {
+        throw new BusinessLogicException(
+          'The new description of the artifact should be at least 200 characters long',
+          BusinessError.PRECONDITION_FAILED,
+        );
+      }
+      existingArtifact.description = artifact.description;
+    }
+
+    if (artifact.body) existingArtifact.body = artifact.body;
+
+    return this.artifactRepository.save(existingArtifact);
+  }
+
+  // Delete one Artifact
+  async delete(id: string): Promise<void> {
+    if (!validator.isUUID(id)) {
+      throw new BusinessLogicException(
+        'The artifact Id provided is not valid',
+        BusinessError.PRECONDITION_FAILED,
+      );
+    }
+
+    const existingArtifact = await this.artifactRepository.findOne({
+      where: { id },
+    });
+
+    if (!existingArtifact) {
+      throw new BusinessLogicException(
+        'The artifact with the provided id does not exist',
+        BusinessError.NOT_FOUND,
+      );
+    }
+
+    await this.artifactRepository.delete(existingArtifact);
+  }
 }

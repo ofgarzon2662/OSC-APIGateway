@@ -112,6 +112,7 @@ describe('OrganizationService', () => {
 
   // Create an organization with invalid data
   it('create should throw an exception when creating an organization with invalid data', async () => {
+    await service.delete(organizationsList[0].id);
     const organization: Partial<OrganizationEntity> = {
       name: faker.company.name(),
       description: faker.lorem.sentences(300),
@@ -147,7 +148,8 @@ describe('OrganizationService', () => {
     // Create a new organization
     const organization: Partial<OrganizationEntity> = {
       name: faker.company.name(),
-      description: 'Test Organization',
+      // add a description with at least 20 characters
+      description: faker.lorem.words(20),
       users: [],
     };
 
@@ -160,12 +162,117 @@ describe('OrganizationService', () => {
     expect(newOrganization.description).toEqual(organization.description);
   });
 
+  // Create an organization with description exceeding max length
+  it('create should throw an exception when creating an organization with a description longer than 250 characters', async () => {
+    await service.delete(organizationsList[0].id);
+    const organization: Partial<OrganizationEntity> = {
+      name: faker.company.name(),
+      description: faker.lorem.words(300), // Exceeds 250 characters
+      users: [],
+    };
+
+    await expect(
+      service.create(organization as OrganizationEntity),
+    ).rejects.toHaveProperty(
+      'message',
+      'The description cannot be longer than 250 characters',
+    );
+  });
+
+  // Create an organization with a name shorter than 4 characters
+  it('create should throw an exception when creating an organization with a name shorter than 4 characters', async () => {
+    await service.delete(organizationsList[0].id);
+    const organization: Partial<OrganizationEntity> = {
+      name: 'Org', // Less than 4 characters
+      description: 'Valid description with more than 20 characters.',
+      users: [],
+    };
+
+    await expect(
+      service.create(organization as OrganizationEntity),
+    ).rejects.toHaveProperty(
+      'message',
+      'The name of the organization is required and must have at least 4 characters',
+    );
+  });
+
+  // Create an organization with a description shorter than 20 characters
+  it('create should throw an exception when creating an organization with a description shorter than 20 characters', async () => {
+    await service.delete(organizationsList[0].id);
+    const organization: Partial<OrganizationEntity> = {
+      name: faker.company.name(),
+      description: 'Too short', // Less than 20 characters
+      users: [],
+    };
+
+    await expect(
+      service.create(organization as OrganizationEntity),
+    ).rejects.toHaveProperty(
+      'message',
+      'The description is required and must be at least 20 characters long',
+    );
+  });
+
+  // Create an organization with an empty name
+  it('create should throw an exception when creating an organization with an empty name', async () => {
+    await service.delete(organizationsList[0].id);
+    const organization: Partial<OrganizationEntity> = {
+      name: '',
+      description: 'Valid description with more than 20 characters.',
+      users: [],
+    };
+
+    await expect(
+      service.create(organization as OrganizationEntity),
+    ).rejects.toHaveProperty(
+      'message',
+      'The name of the organization is required and must have at least 4 characters',
+    );
+  });
+
+  // Create an organization with an empty description
+  it('create should throw an exception when creating an organization with an empty description', async () => {
+    await service.delete(organizationsList[0].id);
+    const organization: Partial<OrganizationEntity> = {
+      name: faker.company.name(),
+      description: '',
+      users: [],
+    };
+
+    await expect(
+      service.create(organization as OrganizationEntity),
+    ).rejects.toHaveProperty(
+      'message',
+      'The description is required and must be at least 20 characters long',
+    );
+  });
+
+  // Delete all organizations
+  it('deleteAll should delete all organizations if they exist', async () => {
+    const organizations = await service.findAll();
+    expect(organizations.length).toBe(1);
+
+    await service.deleteAll();
+
+    const remainingOrganizations = await repository.find();
+    expect(remainingOrganizations).toHaveLength(0);
+  });
+
+  it('deleteAll should throw an exception if no organizations exist', async () => {
+    await repository.clear();
+
+    await expect(() => service.deleteAll()).rejects.toHaveProperty(
+      'message',
+      'There are no organizations in the database',
+    );
+  });
+
   // Update the organization
   it('should update an organization', async () => {
     const storedOrganization: OrganizationEntity = organizationsList[0];
     const modifiedOrganization: Partial<OrganizationEntity> = {
       name: faker.company.name(),
-      description: 'Test Organization',
+      description: 'Test Organization longer than 20 characters',
       users: [],
     };
 
@@ -212,6 +319,26 @@ describe('OrganizationService', () => {
     ).rejects.toHaveProperty(
       'message',
       'The organization with the provided id does not exist',
+    );
+  });
+
+  // Update an organization with a description shorter than 20 characters
+  it('should throw an exception when updating an organization with a description shorter than 20 characters', async () => {
+    const storedOrganization: OrganizationEntity = organizationsList[0];
+    const modifiedOrganization: Partial<OrganizationEntity> = {
+      name: faker.company.name(),
+      description: 'Too short', // Less than 20 characters
+      users: [],
+    };
+
+    await expect(() =>
+      service.update(
+        storedOrganization.id,
+        modifiedOrganization as OrganizationEntity,
+      ),
+    ).rejects.toHaveProperty(
+      'message',
+      'The description is required and must be at least 20 characters long',
     );
   });
 });

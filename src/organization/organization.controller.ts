@@ -62,4 +62,11 @@ export class OrganizationController {
   async delete(@Param('organizationId') organizationId: string) {
     return this.organizationService.delete(organizationId);
   }
+
+  // Delete all organizations
+  @Delete()
+  @HttpCode(204)
+  async deleteAll() {
+    await this.organizationService.deleteAll();
+  }
 }

@@ -1,34 +1,22 @@
 {
 	"info": {
-		"_postman_id": "4ea710c1-e0fc-4c02-8269-b673704ffec3",
-		"name": "Prueba práctica",
+		"_postman_id": "bb648290-d705-4221-9c13-b04f58060e1b",
+		"name": "OSC-APIGW",
 		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
 		"_exporter_id": "22997977"
 	},
 	"item": [
 		{
-			"name": "Club",
+			"name": "Organization",
 			"item": [
 				{
-					"name": "Crear club",
+					"name": "Delete All",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.globals.set(\"clubId\", pm.response.json().id);\r",
-									"\r",
-									"pm.test(\"El código de estado es 201\", function() {\r",
-									"    pm.response.to.have.status(201)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Información presente\", function() {\r",
-									"    pm.expect(pm.response.json().nombre).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().descripcion).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().fechaFundacion).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().imagen).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
-									"});"
+									""
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -36,144 +24,18 @@
 						}
 					],
 					"request": {
-						"method": "POST",
+						"method": "DELETE",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"nombre\": \"Club El Nogal\",\r\n    \"descripcion\": \"Club El Nogal es un reconocido club social en América Latina, establecido en Bogotá, Colombia.\",\r\n    \"fechaFundacion\": \"2020-01-01\",\r\n    \"imagen\": \"https://www.clubelnogal.com/co/es\"\r\n}",
+							"raw": "",
 							"options": {
 								"raw": {
 									"language": "json"
 								}
 							}
 						},
-						"url": "{{baseUrl}}/clubs"
-					},
-					"response": [
-						{
-							"name": "Crear aerolínea",
-							"originalRequest": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"nombre\": \"Latam Airlines\",\r\n    \"descripcion\": \"LATAM Airlines es la mayor aerolínea de América Latina, formada por la fusión de LAN y TAM en 2012. Tiene sede en Santiago de Chile y opera vuelos nacionales e internacionales en América, Europa, Asia y Oceanía. Con hubs en ciudades como São Paulo y Lima, LATAM se destaca por su moderna flota y su enfoque en la sostenibilidad.\",\r\n    \"fechaFundacion\": \"2020-01-01\",\r\n    \"urlPaginaWeb\": \"https://www.latamairlines.com/co/es\",\r\n    \"id\": \"211411a8-e705-4795-8b23-bcf41279a4d3\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": "{{baseUrl}}/airlines"
-							},
-							"status": "Created",
-							"code": 201,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
-				},
-				{
-					"name": "Crear club 2",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.globals.set(\"clubId2\", pm.response.json().id);\r",
-									"\r",
-									"pm.test(\"El código de estado es 201\", function() {\r",
-									"    pm.response.to.have.status(201)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Información presente\", function() {\r",
-									"    pm.expect(pm.response.json().nombre).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().descripcion).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().fechaFundacion).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().imagen).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"nombre\": \"FC Barcelona\",\r\n    \"descripcion\": \"Club de fútbol con sede en Barcelona, España, fundado en 1899.\",\r\n    \"fechaFundacion\": \"1899-11-29\",\r\n    \"imagen\": \"https://upload.wikimedia.org/wikipedia/en/thumb/4/47/FC_Barcelona_%28crest%29.svg/1200px-FC_Barcelona_%28crest%29.svg.png\"\r\n}\r\n",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": "{{baseUrl}}/clubs"
-					},
-					"response": [
-						{
-							"name": "Crear aerolínea 2",
-							"originalRequest": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"nombre\": \"Latam Airlines\",\r\n    \"descripcion\": \"LATAM Airlines es la mayor aerolínea de América Latina, formada por la fusión de LAN y TAM en 2012. Tiene sede en Santiago de Chile y opera vuelos nacionales e internacionales en América, Europa, Asia y Oceanía. Con hubs en ciudades como São Paulo y Lima, LATAM se destaca por su moderna flota y su enfoque en la sostenibilidad.\",\r\n    \"fechaFundacion\": \"2020-01-01\",\r\n    \"urlPaginaWeb\": \"https://www.latamairlines.com/co/es\",\r\n    \"id\": \"a48a1a34-6bed-46e4-bc5b-33fbfa1454af\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": "{{baseUrl}}/airlines"
-							},
-							"status": "Created",
-							"code": 201,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
-				},
-				{
-					"name": "Crear Club con descripcion de mas de 100 caracteres",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"El código de estado es 400\", function() {\r",
-									"    pm.response.to.have.status(400)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Información presente\", function() {\r",
-									"    pm.expect(pm.response.json().message).to.be.contains('La descripción no puede tener más de 100 caracteres');\r",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"nombre\": \"Manchester United\",\r\n    \"descripcion\": \"Manchester United es uno de los clubes de fútbol más grandes del mundo, fundado en 1878. Con sede en Old Trafford, ha ganado numerosos títulos nacionales e internacionales, incluyendo la Premier League, la Champions League y la FA Cup. Con una base de fanáticos global y una rica historia, Manchester United es conocido por su estilo de juego ofensivo y su legado en el fútbol europeo.\",\r\n    \"fechaFundacion\": \"1878-03-05\",\r\n    \"imagen\": \"https://upload.wikimedia.org/wikipedia/en/7/7a/Manchester_United_FC_crest.svg\"\r\n}\r\n",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": "{{baseUrl}}/clubs"
+						"url": "{{baseUrl}}/organizations"
 					},
 					"response": [
 						{
@@ -202,18 +64,509 @@
 					]
 				},
 				{
-					"name": "Obtener todos los clubs",
+					"name": "Create Org",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"El código de estado es 200\", function() {\r",
-									"    pm.response.to.have.status(200)\r",
+									"pm.environment.set(\"orgId\", pm.response.json().id);\r",
+									"\r",
+									"pm.test(\"El código de estado es 201\", function() {\r",
+									"    pm.response.to.have.status(201)\r",
 									"});\r",
 									"\r",
-									"pm.test(\"La lista no está vacía\", function() {\r",
+									"pm.test(\"Información presente\", function() {\r",
+									"    pm.expect(pm.response.json().name).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().description).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{$randomCompanyName}}\",\r\n    \"description\": \"This organization focuses on {{$randomLoremWords}} and its main mission in life is {{$randomLoremWords}}\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{baseUrl}}/organizations"
+					},
+					"response": [
+						{
+							"name": "Crear aerolínea",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"nombre\": \"Latam Airlines\",\r\n    \"descripcion\": \"LATAM Airlines es la mayor aerolínea de América Latina, formada por la fusión de LAN y TAM en 2012. Tiene sede en Santiago de Chile y opera vuelos nacionales e internacionales en América, Europa, Asia y Oceanía. Con hubs en ciudades como São Paulo y Lima, LATAM se destaca por su moderna flota y su enfoque en la sostenibilidad.\",\r\n    \"fechaFundacion\": \"2020-01-01\",\r\n    \"urlPaginaWeb\": \"https://www.latamairlines.com/co/es\",\r\n    \"id\": \"211411a8-e705-4795-8b23-bcf41279a4d3\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/airlines"
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "Text",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Create a second org",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"El código de estado es 201\", function() {\r",
+									"    pm.response.to.have.status(412)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Obtener el mensaje de error esperado\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"There is already an organization in the database. There can only be one.\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{$randomCompanyName}}\",\r\n    \"description\": \"This organization focuses on {{$randomLoremWords}} and its main mission in life is {{$randomLoremWords}}\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{baseUrl}}/organizations"
+					},
+					"response": [
+						{
+							"name": "Crear aerolínea 2",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"nombre\": \"Latam Airlines\",\r\n    \"descripcion\": \"LATAM Airlines es la mayor aerolínea de América Latina, formada por la fusión de LAN y TAM en 2012. Tiene sede en Santiago de Chile y opera vuelos nacionales e internacionales en América, Europa, Asia y Oceanía. Con hubs en ciudades como São Paulo y Lima, LATAM se destaca por su moderna flota y su enfoque en la sostenibilidad.\",\r\n    \"fechaFundacion\": \"2020-01-01\",\r\n    \"urlPaginaWeb\": \"https://www.latamairlines.com/co/es\",\r\n    \"id\": \"a48a1a34-6bed-46e4-bc5b-33fbfa1454af\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/airlines"
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "Text",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Delete Org",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"code is 204\", function() {\r",
+									"    pm.response.to.have.status(204)\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{baseUrl}}/organizations/{{orgId}}"
+					},
+					"response": [
+						{
+							"name": "Crear aerolínea con una fecha de fundación en el futuro",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"message\": [\r\n        \"La fecha de fechaFundacion debe ser en el pasado.\"\r\n    ],\r\n    \"error\": \"Bad Request\",\r\n    \"statusCode\": 400\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/airlines"
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "Text",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Delete NonExistent Org",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"code is 404\", function() {\r",
+									"    pm.response.to.have.status(404)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Get error message\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"The organization with the provided id does not exist\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{baseUrl}}/organizations/{{orgId}}"
+					},
+					"response": [
+						{
+							"name": "Crear aerolínea con una fecha de fundación en el futuro",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"message\": [\r\n        \"La fecha de fechaFundacion debe ser en el pasado.\"\r\n    ],\r\n    \"error\": \"Bad Request\",\r\n    \"statusCode\": 400\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/airlines"
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "Text",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Create Org short name",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"CODE IS 400\", function() {\r",
+									"    pm.response.to.have.status(400)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Obtener el mensaje de error esperado\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"The name of the organization is required and must have at least 4 characters\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"UCS\",\r\n    \"description\": \"This organization focuses on {{$randomLoremWords}} and its main mission in life is {{$randomLoremWords}}\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{baseUrl}}/organizations"
+					},
+					"response": [
+						{
+							"name": "Crear aerolínea",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"nombre\": \"Latam Airlines\",\r\n    \"descripcion\": \"LATAM Airlines es la mayor aerolínea de América Latina, formada por la fusión de LAN y TAM en 2012. Tiene sede en Santiago de Chile y opera vuelos nacionales e internacionales en América, Europa, Asia y Oceanía. Con hubs en ciudades como São Paulo y Lima, LATAM se destaca por su moderna flota y su enfoque en la sostenibilidad.\",\r\n    \"fechaFundacion\": \"2020-01-01\",\r\n    \"urlPaginaWeb\": \"https://www.latamairlines.com/co/es\",\r\n    \"id\": \"211411a8-e705-4795-8b23-bcf41279a4d3\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/airlines"
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "Text",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Create Org No Description",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"CODE IS 400\", function() {\r",
+									"    pm.response.to.have.status(400)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Obtener el mensaje de error esperado\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"The description is required and must be at least 20 characters long\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"UCSD\",\r\n    \"description\": \"Short\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{baseUrl}}/organizations"
+					},
+					"response": [
+						{
+							"name": "Crear aerolínea",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"nombre\": \"Latam Airlines\",\r\n    \"descripcion\": \"LATAM Airlines es la mayor aerolínea de América Latina, formada por la fusión de LAN y TAM en 2012. Tiene sede en Santiago de Chile y opera vuelos nacionales e internacionales en América, Europa, Asia y Oceanía. Con hubs en ciudades como São Paulo y Lima, LATAM se destaca por su moderna flota y su enfoque en la sostenibilidad.\",\r\n    \"fechaFundacion\": \"2020-01-01\",\r\n    \"urlPaginaWeb\": \"https://www.latamairlines.com/co/es\",\r\n    \"id\": \"211411a8-e705-4795-8b23-bcf41279a4d3\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/airlines"
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "Text",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Create Org long Description",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"CODE IS 400\", function() {\r",
+									"    pm.response.to.have.status(400)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Obtener el mensaje de error esperado\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"The description cannot be longer than 250 characters\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"UCSD\",\r\n    \"description\": \"Founded in 1960, the University of California, San Diego (UCSD) is a renowned public research university located in La Jolla, California. Known for its innovation, academic excellence, and vibrant campus culture, UCSD offers top-ranked programs in a wide range of fields including oceanography, engineering, biological sciences, and public health. The university is home to over 38,000 students, cutting-edge research facilities, and numerous Nobel laureates and distinguished faculty members. UCSD also prioritizes sustainability, diversity, and global engagement, fostering an inclusive environment that supports groundbreaking research and community impact.\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{baseUrl}}/organizations"
+					},
+					"response": [
+						{
+							"name": "Crear aerolínea",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"nombre\": \"Latam Airlines\",\r\n    \"descripcion\": \"LATAM Airlines es la mayor aerolínea de América Latina, formada por la fusión de LAN y TAM en 2012. Tiene sede en Santiago de Chile y opera vuelos nacionales e internacionales en América, Europa, Asia y Oceanía. Con hubs en ciudades como São Paulo y Lima, LATAM se destaca por su moderna flota y su enfoque en la sostenibilidad.\",\r\n    \"fechaFundacion\": \"2020-01-01\",\r\n    \"urlPaginaWeb\": \"https://www.latamairlines.com/co/es\",\r\n    \"id\": \"211411a8-e705-4795-8b23-bcf41279a4d3\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/airlines"
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "Text",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Create Org 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"orgId\", pm.response.json().id);\r",
+									"\r",
+									"pm.test(\"El código de estado es 201\", function() {\r",
+									"    pm.response.to.have.status(201)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Información presente\", function() {\r",
+									"    pm.expect(pm.response.json().name).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().description).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{$randomCompanyName}}\",\r\n    \"description\": \"This organization focuses on {{$randomLoremWords}} and its main mission in life is {{$randomLoremWords}}\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{baseUrl}}/organizations"
+					},
+					"response": [
+						{
+							"name": "Crear aerolínea",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"nombre\": \"Latam Airlines\",\r\n    \"descripcion\": \"LATAM Airlines es la mayor aerolínea de América Latina, formada por la fusión de LAN y TAM en 2012. Tiene sede en Santiago de Chile y opera vuelos nacionales e internacionales en América, Europa, Asia y Oceanía. Con hubs en ciudades como São Paulo y Lima, LATAM se destaca por su moderna flota y su enfoque en la sostenibilidad.\",\r\n    \"fechaFundacion\": \"2020-01-01\",\r\n    \"urlPaginaWeb\": \"https://www.latamairlines.com/co/es\",\r\n    \"id\": \"211411a8-e705-4795-8b23-bcf41279a4d3\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/airlines"
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "Text",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Get All Orgs",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 200\", function() {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Non Empty list\", function() {\r",
 									"    pm.expect(pm.response.json()).to.be.an('array').that.is.not.empty;\r",
+									"    pm.expect(pm.response.json()).to.have.lengthOf(1);\r",
+									"    pm.expect(pm.response.json()[0].id).to.equal(pm.environment.get(\"orgId\"));\r",
 									"});\r",
 									""
 								],
@@ -225,7 +578,7 @@
 					"request": {
 						"method": "GET",
 						"header": [],
-						"url": "{{baseUrl}}/clubs"
+						"url": "{{baseUrl}}/organizations"
 					},
 					"response": [
 						{
@@ -251,22 +604,22 @@
 					]
 				},
 				{
-					"name": "Obtener un club",
+					"name": "Get One Org",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"El código de estado es 200\", function() {\r",
+									"pm.test(\"Code is 200\", function() {\r",
 									"    pm.response.to.have.status(200)\r",
 									"});\r",
 									"\r",
-									"pm.test(\"La lista no está vacía\", function() {\r",
-									"    pm.expect(pm.response.json().nombre).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().descripcion).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().fechaFundacion).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().imagen).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
+									"pm.test(\"Non empty response\", function() {\r",
+									"    const responseData = pm.response.json();\r",
+									"    pm.expect(responseData.name).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.description).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.id).to.equal(pm.environment.get(\"orgId\"));\r",
 									"});\r",
 									""
 								],
@@ -278,7 +631,7 @@
 					"request": {
 						"method": "GET",
 						"header": [],
-						"url": "{{baseUrl}}/clubs/{{clubId}}"
+						"url": "{{baseUrl}}/organizations/{{orgId}}"
 					},
 					"response": [
 						{
@@ -304,18 +657,135 @@
 					]
 				},
 				{
-					"name": "Obtener un club que no existe",
+					"name": "Delete Org",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"El código de estado es 404\", function() {\r",
+									"pm.test(\"code is 204\", function() {\r",
+									"    pm.response.to.have.status(204)\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{baseUrl}}/organizations/{{orgId}}"
+					},
+					"response": [
+						{
+							"name": "Crear aerolínea con una fecha de fundación en el futuro",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"message\": [\r\n        \"La fecha de fechaFundacion debe ser en el pasado.\"\r\n    ],\r\n    \"error\": \"Bad Request\",\r\n    \"statusCode\": 400\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/airlines"
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "Text",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Delete NonExistent Org",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"code is 404\", function() {\r",
 									"    pm.response.to.have.status(404)\r",
 									"});\r",
 									"\r",
-									"pm.test(\"Obtener el mensaje de error esperado\", function() {\r",
-									"   pm.expect(pm.response.json().message).to.eql(\"El club con el id provisto no existe\");\r",
+									"pm.test(\"Get error message\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"The organization with the provided id does not exist\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{baseUrl}}/organizations/{{orgId}}"
+					},
+					"response": [
+						{
+							"name": "Crear aerolínea con una fecha de fundación en el futuro",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"message\": [\r\n        \"La fecha de fechaFundacion debe ser en el pasado.\"\r\n    ],\r\n    \"error\": \"Bad Request\",\r\n    \"statusCode\": 400\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/airlines"
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "Text",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Get One Org No Orgs",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 404\", function() {\r",
+									"    pm.response.to.have.status(404)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Get error message\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"The organization with the provided id does not exist\");\r",
 									"});\r",
 									""
 								],
@@ -327,11 +797,11 @@
 					"request": {
 						"method": "GET",
 						"header": [],
-						"url": "{{baseUrl}}/clubs/{{$guid}}"
+						"url": "{{baseUrl}}/organizations/{{orgId}}"
 					},
 					"response": [
 						{
-							"name": "Obtener una aerolínea que no existe",
+							"name": "Obtener una aerolínea",
 							"originalRequest": {
 								"method": "GET",
 								"header": [
@@ -341,10 +811,10 @@
 										"type": "text"
 									}
 								],
-								"url": "{{baseUrl}}/airlines/{{$guid}}"
+								"url": "{{baseUrl}}/airlines/{{aerolineaId}}"
 							},
-							"status": "Not Found",
-							"code": 404,
+							"status": "OK",
+							"code": 200,
 							"_postman_previewlanguage": "Text",
 							"header": [],
 							"cookie": [],
@@ -353,7 +823,120 @@
 					]
 				},
 				{
-					"name": "Actualizar un club",
+					"name": "Get All Orgs No Orgs",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 404\", function() {\r",
+									"    pm.response.to.have.status(404)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Get error message\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"There are no organizations in the database\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{baseUrl}}/organizations"
+					},
+					"response": [
+						{
+							"name": "Obtener todas las aerolíneas",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": "{{baseUrl}}/airlines"
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "Text",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Create Org 3",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"orgId\", pm.response.json().id);\r",
+									"\r",
+									"pm.test(\"El código de estado es 201\", function() {\r",
+									"    pm.response.to.have.status(201)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Información presente\", function() {\r",
+									"    pm.expect(pm.response.json().name).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().description).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{$randomCompanyName}}\",\r\n    \"description\": \"This organization focuses on {{$randomLoremWords}} and its main mission in life is {{$randomLoremWords}}\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{baseUrl}}/organizations"
+					},
+					"response": [
+						{
+							"name": "Crear aerolínea",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"nombre\": \"Latam Airlines\",\r\n    \"descripcion\": \"LATAM Airlines es la mayor aerolínea de América Latina, formada por la fusión de LAN y TAM en 2012. Tiene sede en Santiago de Chile y opera vuelos nacionales e internacionales en América, Europa, Asia y Oceanía. Con hubs en ciudades como São Paulo y Lima, LATAM se destaca por su moderna flota y su enfoque en la sostenibilidad.\",\r\n    \"fechaFundacion\": \"2020-01-01\",\r\n    \"urlPaginaWeb\": \"https://www.latamairlines.com/co/es\",\r\n    \"id\": \"211411a8-e705-4795-8b23-bcf41279a4d3\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/airlines"
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "Text",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Update an Org",
 					"event": [
 						{
 							"listen": "test",
@@ -364,10 +947,10 @@
 									"});\r",
 									"\r",
 									"pm.test(\"Información presente\", function() {\r",
-									"    pm.expect(pm.response.json().nombre).to.contain('Real Madrid CF');\r",
-									"    pm.expect(pm.response.json().descripcion).to.contain('Club de fútbol de Madrid');\r",
-									"    pm.expect(pm.response.json().fechaFundacion).to.eq(\"1902-03-06\");\r",
-									"    pm.expect(pm.response.json().imagen).to.contain('upload.wikimedia.org');\r",
+									"    pm.expect(pm.response.json().name).to.contain('Real Madrid CF');\r",
+									"    pm.expect(pm.response.json().description).to.contain('Club de fútbol de Madrid');\r",
+									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().id).to.equal(pm.environment.get(\"orgId\"));\r",
 									"});\r",
 									""
 								],
@@ -381,14 +964,14 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"nombre\": \"Real Madrid CF\",\r\n    \"descripcion\": \"Club de fútbol de Madrid, España, fundado en 1902. Ganador de múltiples títulos europeos.\",\r\n    \"fechaFundacion\": \"1902-03-06\",\r\n    \"imagen\": \"https://upload.wikimedia.org/wikipedia/en/5/56/Real_Madrid_CF.svg\"\r\n}\r\n",
+							"raw": "{\r\n    \"name\": \"Real Madrid CF\",\r\n    \"description\": \"Club de fútbol de Madrid, España, fundado en 1902. Ganador de múltiples títulos europeos.\"\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
 								}
 							}
 						},
-						"url": "{{baseUrl}}/clubs/{{clubId2}}"
+						"url": "{{baseUrl}}/organizations/{{orgId}}"
 					},
 					"response": [
 						{
@@ -417,18 +1000,73 @@
 					]
 				},
 				{
-					"name": "Actualizar un club que no existe",
+					"name": "Get One Org 2",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"El código de estado es 404\", function() {\r",
+									"pm.test(\"Code is 200\", function() {\r",
+									"    pm.response.to.have.status(200)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Non empty response\", function() {\r",
+									"    const responseData = pm.response.json();\r",
+									"    pm.expect(pm.response.json().name).to.contain('Real Madrid CF');\r",
+									"    pm.expect(pm.response.json().description).to.contain('Club de fútbol de Madrid');\r",
+									"    pm.expect(responseData.name).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.description).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.id).to.equal(pm.environment.get(\"orgId\"));\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{baseUrl}}/organizations/{{orgId}}"
+					},
+					"response": [
+						{
+							"name": "Obtener una aerolínea",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"url": "{{baseUrl}}/airlines/{{aerolineaId}}"
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "Text",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Update an Org that doesn't exist",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 404\", function() {\r",
 									"    pm.response.to.have.status(404)\r",
 									"});\r",
 									"\r",
-									"pm.test(\"Obtener el mensaje de error esperado\", function() {\r",
-									"   pm.expect(pm.response.json().message).to.eql(\"El club con el id provisto no existe\");\r",
+									"pm.test(\"Get error message\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"The organization with the provided id does not exist\");\r",
 									"});\r",
 									""
 								],
@@ -442,14 +1080,75 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"nombre\": \"Real Madrid CF\",\r\n    \"descripcion\": \"Club de fútbol de Madrid, España, fundado en 1902. Ganador de múltiples títulos europeos.\",\r\n    \"fechaFundacion\": \"1902-03-06\",\r\n    \"imagen\": \"https://upload.wikimedia.org/wikipedia/en/5/56/Real_Madrid_CF.svg\"\r\n}\r\n",
+							"raw": "{\r\n    \"name\": \"Real Madrid CF\",\r\n    \"description\": \"Club de fútbol de Madrid, España, fundado en 1902. Ganador de múltiples títulos europeos.\"\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
 								}
 							}
 						},
-						"url": "{{baseUrl}}/clubs/{{$guid}}"
+						"url": "{{baseUrl}}/organizations/{{$guid}}"
+					},
+					"response": [
+						{
+							"name": "Actualizar una aerolínea que no existe",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"statusCode\": 404,\r\n    \"message\": \"La aerolínea con el id dado no fue encontrada\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/airlines/c856b160-c367-417a-8890-6fd97a075d00"
+							},
+							"status": "Not Found",
+							"code": 404,
+							"_postman_previewlanguage": "Text",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Update an Org short desc",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 400\", function() {\r",
+									"    pm.response.to.have.status(400)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Get error message\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"The description is required and must be at least 20 characters long\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Real Madrid CF\",\r\n    \"description\": \"Club.\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{baseUrl}}/organizations/{{orgId}}"
 					},
 					"response": [
 						{
@@ -478,56 +1177,18 @@
 					]
 				},
 				{
-					"name": "Eliminar club",
+					"name": "Update an Org long description",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"El código de estado es 204\", function() {\r",
-									"    pm.response.to.have.status(204)\r",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "DELETE",
-						"header": [],
-						"url": "{{baseUrl}}/clubs/{{clubId}}"
-					},
-					"response": [
-						{
-							"name": "Eliminar aerolínea",
-							"originalRequest": {
-								"method": "DELETE",
-								"header": [],
-								"url": "{{baseUrl}}/airlines/{{aerolineaId}}"
-							},
-							"status": "No Content",
-							"code": 204,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
-				},
-				{
-					"name": "Eliminar un club que no existe",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"El código de estado es 404\", function() {\r",
-									"    pm.response.to.have.status(404)\r",
+									"pm.test(\"Code is 400\", function() {\r",
+									"    pm.response.to.have.status(400)\r",
 									"});\r",
 									"\r",
 									"pm.test(\"Obtener el mensaje de error esperado\", function() {\r",
-									"   pm.expect(pm.response.json().message).to.eql(\"El club con el id provisto no existe\");\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"The description cannot be longer than 250 characters\");\r",
 									"});\r",
 									""
 								],
@@ -537,22 +1198,25 @@
 						}
 					],
 					"request": {
-						"method": "DELETE",
+						"method": "PUT",
 						"header": [],
-						"url": "{{baseUrl}}/clubs/{{$guid}}"
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Real Madrid CF\",\r\n    \"description\": \"Real Madrid Club de Fútbol, commonly known as Real Madrid, is a professional football club based in Madrid, Spain. Founded on March 6, 1902, it is one of the most successful and prestigious clubs in football history. Known for its iconic all-white kit, Real Madrid has a rich legacy that includes numerous domestic and international titles, including a record number of UEFA Champions League titles and La Liga championships. The club is renowned for its loyal fanbase, global influence, and its home stadium, the Santiago Bernabéu, which has witnessed some of the greatest moments in football history. Real Madrid's philosophy emphasizes excellence, resilience, and a commitment to nurturing talent, from legendary players like Alfredo Di Stéfano and Cristiano Ronaldo to rising stars. As a symbol of Spanish football, the club is celebrated worldwide for its contributions to the sport and its enduring spirit of competition and success.\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{baseUrl}}/organizations/{{orgId}}"
 					},
 					"response": [
 						{
-							"name": "Eliminar aerolínea que no existe",
+							"name": "Actualizar una aerolínea que no existe",
 							"originalRequest": {
-								"method": "DELETE",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json",
-										"type": "text"
-									}
-								],
+								"method": "PUT",
+								"header": [],
 								"body": {
 									"mode": "raw",
 									"raw": "{\r\n    \"statusCode\": 404,\r\n    \"message\": \"La aerolínea con el id dado no fue encontrada\"\r\n}",
@@ -572,11 +1236,128 @@
 							"body": ""
 						}
 					]
+				},
+				{
+					"name": "Delete Org",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"code is 204\", function() {\r",
+									"    pm.response.to.have.status(204)\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{baseUrl}}/organizations/{{orgId}}"
+					},
+					"response": [
+						{
+							"name": "Crear aerolínea con una fecha de fundación en el futuro",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"message\": [\r\n        \"La fecha de fechaFundacion debe ser en el pasado.\"\r\n    ],\r\n    \"error\": \"Bad Request\",\r\n    \"statusCode\": 400\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/airlines"
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "Text",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Delete NonExistent Org",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"code is 404\", function() {\r",
+									"    pm.response.to.have.status(404)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Get error message\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"The organization with the provided id does not exist\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{baseUrl}}/organizations/{{orgId}}"
+					},
+					"response": [
+						{
+							"name": "Crear aerolínea con una fecha de fundación en el futuro",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"message\": [\r\n        \"La fecha de fechaFundacion debe ser en el pasado.\"\r\n    ],\r\n    \"error\": \"Bad Request\",\r\n    \"statusCode\": 400\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/airlines"
+							},
+							"status": "Bad Request",
+							"code": 400,
+							"_postman_previewlanguage": "Text",
+							"header": [],
+							"cookie": [],
+							"body": ""
+						}
+					]
 				}
 			]
 		},
 		{
-			"name": "Socio",
+			"name": "User",
 			"item": [
 				{
 					"name": "Crear socio",
