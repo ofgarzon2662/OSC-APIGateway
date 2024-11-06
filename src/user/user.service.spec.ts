@@ -4,12 +4,15 @@ import { Repository } from 'typeorm';
 import { TypeOrmTestingConfig } from '../shared/testing-utils/typeorm-testing-config';
 import { UserService } from './user.service';
 import { UserEntity } from './user.entity';
+import { OrganizationEntity } from '../organization/organization.entity';
 import { faker } from '@faker-js/faker';
 
-describe('OrganizationService', () => {
+describe('UserService', () => {
   let service: UserService;
-  let repository: Repository<UserEntity>;
+  let userRepository: Repository<UserEntity>;
+  let organizationRepository: Repository<OrganizationEntity>;
   let userList: UserEntity[];
+  let org: OrganizationEntity;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -18,22 +21,31 @@ describe('OrganizationService', () => {
     }).compile();
 
     service = module.get<UserService>(UserService);
-    repository = module.get<Repository<UserEntity>>(
+    userRepository = module.get<Repository<UserEntity>>(
       getRepositoryToken(UserEntity),
+    );
+    organizationRepository = module.get<Repository<OrganizationEntity>>(
+      getRepositoryToken(OrganizationEntity),
     );
     await seedDatabase();
   });
 
   const seedDatabase = async () => {
-    await repository.clear();
+    await organizationRepository.clear();
+    await userRepository.clear();
     userList = [];
+    org = await organizationRepository.save({
+      name: faker.company.name(),
+      description: faker.company.catchPhrase(),
+    });
     const usersAmount = 50;
 
     for (let i = 0; i < usersAmount; i++) {
-      const user: UserEntity = await repository.save({
+      const user: UserEntity = await userRepository.save({
         name: faker.person.fullName(),
         username: faker.internet.username(),
         email: faker.internet.email(),
+        organization: org,
       });
 
       userList.push(user);
@@ -80,7 +92,7 @@ describe('OrganizationService', () => {
       username: faker.internet.username(),
       email: faker.internet.email(),
     };
-    const createdUser: UserEntity = await service.create(user as UserEntity);
+    const createdUser: UserEntity = await service.create(user, org.id);
     expect(createdUser).toBeDefined();
     expect(createdUser).not.toBeNull();
     expect(createdUser).toHaveProperty('id');
@@ -93,9 +105,10 @@ describe('OrganizationService', () => {
       username: faker.internet.username(),
       email: 'invalid-email',
     };
-    await expect(() =>
-      service.create(user as UserEntity),
-    ).rejects.toHaveProperty('message', 'The email provided is not valid');
+    await expect(() => service.create(user, org.id)).rejects.toHaveProperty(
+      'message',
+      'The email provided is not valid',
+    );
   });
   // Create a User with an existing email
   it('create should throw an exception for an existing email', async () => {
@@ -105,9 +118,7 @@ describe('OrganizationService', () => {
       username: faker.internet.username(),
       email: userList[randomIndex].email,
     };
-    await expect(() =>
-      service.create(user as UserEntity),
-    ).rejects.toHaveProperty(
+    await expect(() => service.create(user, org.id)).rejects.toHaveProperty(
       'message',
       'The email or username provided is already in use',
     );
@@ -121,11 +132,38 @@ describe('OrganizationService', () => {
       username: userList[randomIndex].username,
       email: faker.internet.email(),
     };
-    await expect(() =>
-      service.create(user as UserEntity),
-    ).rejects.toHaveProperty(
+    await expect(() => service.create(user, org.id)).rejects.toHaveProperty(
       'message',
       'The email or username provided is already in use',
+    );
+  });
+
+  // Create a User with an non vaild organization
+  it('create should throw an exception for an invalid organization', async () => {
+    const user: Partial<UserEntity> = {
+      name: faker.person.fullName(),
+      username: faker.internet.username(),
+      email: faker.internet.email(),
+    };
+    await expect(() =>
+      service.create(user, 'invalid-organization-id'),
+    ).rejects.toHaveProperty(
+      'message',
+      'The organizationId provided is not valid',
+    );
+  });
+
+  // create a User with an non existent organization
+  it('create should throw an exception for a non existent organization', async () => {
+    const user: Partial<UserEntity> = {
+      name: faker.person.fullName(),
+      username: faker.internet.username(),
+      email: faker.internet.email(),
+    };
+    const orgId = faker.string.uuid();
+    await expect(() => service.create(user, orgId)).rejects.toHaveProperty(
+      'message',
+      'The organization provided does not exist',
     );
   });
 
@@ -172,6 +210,23 @@ describe('OrganizationService', () => {
       'The User with the provided id does not exist',
     );
   });
+
+  // Update a User with an existing email
+  it('update should throw an exception for an existing email', async () => {
+    const randomIndex = Math.floor(Math.random() * userList.length);
+    const user: Partial<UserEntity> = {
+      name: faker.person.fullName(),
+      username: faker.internet.username(),
+      email: userList[randomIndex].email,
+    };
+    await expect(() =>
+      service.update(userList[randomIndex].id, user as UserEntity),
+    ).rejects.toHaveProperty(
+      'message',
+      'The email or username provided is already in use',
+    );
+  });
+
   // Delete a User
   it('delete should delete a user', async () => {
     const randomIndex = Math.floor(Math.random() * userList.length);
