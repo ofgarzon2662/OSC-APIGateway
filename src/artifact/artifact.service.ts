@@ -6,7 +6,7 @@ import {
   BusinessError,
   BusinessLogicException,
 } from '../shared/errors/business-errors';
-import { OrganizationEntity } from 'src/organization/organization.entity';
+import { OrganizationEntity } from '../organization/organization.entity';
 import validator from 'validator';
 
 @Injectable()
@@ -14,6 +14,7 @@ export class ArtifactService {
   constructor(
     @InjectRepository(ArtifactEntity)
     private readonly artifactRepository: Repository<ArtifactEntity>,
+    @InjectRepository(OrganizationEntity)
     private readonly organizationRepository: Repository<OrganizationEntity>,
   ) {}
 
@@ -24,6 +25,11 @@ export class ArtifactService {
 
   // Get One Artifact
   async findOne(id: string): Promise<ArtifactEntity> {
+    if (!validator.isUUID(id))
+      throw new BusinessLogicException(
+        'The artifact Id provided is not valid',
+        BusinessError.PRECONDITION_FAILED,
+      );
     const artifact: ArtifactEntity = await this.artifactRepository.findOne({
       where: { id },
       relations: ['organization'],

@@ -107,6 +107,18 @@ export class UserService {
         BusinessError.PRECONDITION_FAILED,
       );
     }
+    // Email and Username of User should be unique
+    const existingUser: UserEntity = await this.userRepository.findOne({
+      where: { username: user.username },
+    });
+    const existingEmail: UserEntity = await this.userRepository.findOne({
+      where: { email: user.email },
+    });
+    if (existingUser || existingEmail)
+      throw new BusinessLogicException(
+        'The email or username provided is already in use',
+        BusinessError.BAD_REQUEST,
+      );
 
     return await this.userRepository.save(user);
   }

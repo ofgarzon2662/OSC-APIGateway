@@ -138,6 +138,35 @@ describe('UserService', () => {
     );
   });
 
+  // Create a User with an non vaild organization
+  it('create should throw an exception for an invalid organization', async () => {
+    const user: Partial<UserEntity> = {
+      name: faker.person.fullName(),
+      username: faker.internet.username(),
+      email: faker.internet.email(),
+    };
+    await expect(() =>
+      service.create(user, 'invalid-organization-id'),
+    ).rejects.toHaveProperty(
+      'message',
+      'The organizationId provided is not valid',
+    );
+  });
+
+  // create a User with an non existent organization
+  it('create should throw an exception for a non existent organization', async () => {
+    const user: Partial<UserEntity> = {
+      name: faker.person.fullName(),
+      username: faker.internet.username(),
+      email: faker.internet.email(),
+    };
+    const orgId = faker.string.uuid();
+    await expect(() => service.create(user, orgId)).rejects.toHaveProperty(
+      'message',
+      'The organization provided does not exist',
+    );
+  });
+
   // Update a User
   it('update should update a user', async () => {
     const randomIndex = Math.floor(Math.random() * userList.length);
@@ -181,6 +210,23 @@ describe('UserService', () => {
       'The User with the provided id does not exist',
     );
   });
+
+  // Update a User with an existing email
+  it('update should throw an exception for an existing email', async () => {
+    const randomIndex = Math.floor(Math.random() * userList.length);
+    const user: Partial<UserEntity> = {
+      name: faker.person.fullName(),
+      username: faker.internet.username(),
+      email: userList[randomIndex].email,
+    };
+    await expect(() =>
+      service.update(userList[randomIndex].id, user as UserEntity),
+    ).rejects.toHaveProperty(
+      'message',
+      'The email or username provided is already in use',
+    );
+  });
+
   // Delete a User
   it('delete should delete a user', async () => {
     const randomIndex = Math.floor(Math.random() * userList.length);
