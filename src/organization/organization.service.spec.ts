@@ -252,7 +252,7 @@ describe('OrganizationService', () => {
     const storedOrganization: OrganizationEntity = organizationsList[0];
     const modifiedOrganization: Partial<OrganizationEntity> = {
       name: faker.company.name(),
-      description: 'Test Organization',
+      description: 'Test Organization longer than 20 characters',
       users: [],
     };
 
@@ -299,6 +299,26 @@ describe('OrganizationService', () => {
     ).rejects.toHaveProperty(
       'message',
       'The organization with the provided id does not exist',
+    );
+  });
+
+  // Update an organization with a description shorter than 20 characters
+  it('should throw an exception when updating an organization with a description shorter than 20 characters', async () => {
+    const storedOrganization: OrganizationEntity = organizationsList[0];
+    const modifiedOrganization: Partial<OrganizationEntity> = {
+      name: faker.company.name(),
+      description: 'Too short', // Less than 20 characters
+      users: [],
+    };
+
+    await expect(() =>
+      service.update(
+        storedOrganization.id,
+        modifiedOrganization as OrganizationEntity,
+      ),
+    ).rejects.toHaveProperty(
+      'message',
+      'The description is required and must be at least 20 characters long',
     );
   });
 });
