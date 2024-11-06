@@ -247,6 +247,26 @@ describe('OrganizationService', () => {
     );
   });
 
+  // Delete all organizations
+  it('deleteAll should delete all organizations if they exist', async () => {
+    const organizations = await service.findAll();
+    expect(organizations.length).toBe(1);
+
+    await service.deleteAll();
+
+    const remainingOrganizations = await repository.find();
+    expect(remainingOrganizations).toHaveLength(0);
+  });
+
+  it('deleteAll should throw an exception if no organizations exist', async () => {
+    await repository.clear();
+
+    await expect(() => service.deleteAll()).rejects.toHaveProperty(
+      'message',
+      'There are no organizations in the database',
+    );
+  });
+
   // Update the organization
   it('should update an organization', async () => {
     const storedOrganization: OrganizationEntity = organizationsList[0];
