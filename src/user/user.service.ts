@@ -19,17 +19,70 @@ export class UserService {
   ) {}
 
   // Get All Users
-  async findAll(): Promise<UserEntity[]> {
+  async findAll(organizationId): Promise<UserEntity[]> {
+    if (!organizationId) {
+      throw new BusinessLogicException(
+        'The organizationId provided is missing',
+        BusinessError.PRECONDITION_FAILED,
+      );
+    }
+    // The organizationId should be a valid UUID
+    if (!validator.isUUID(organizationId))
+      throw new BusinessLogicException(
+        'The organizationId provided is not valid',
+        BusinessError.PRECONDITION_FAILED,
+      );
+    // Check if the organization exists
+    const organization = await this.organizationRepository.findOne({
+      where: { id: organizationId },
+    });
+    if (!organization) {
+      throw new BusinessLogicException(
+        'The organization provided does not exist',
+        BusinessError.NOT_FOUND,
+      );
+    }
     return await this.userRepository.find({ relations: ['organization'] });
   }
 
   // Get One User
 
-  async findOne(id: string): Promise<UserEntity> {
+  async findOne(orgId: string, userId: string): Promise<UserEntity> {
+    // Check orgId is a valid UUID
+    if (!validator.isUUID(orgId)) {
+      throw new BusinessLogicException(
+        'The organizationId provided is not valid',
+        BusinessError.PRECONDITION_FAILED,
+      );
+    }
+    // Check userId is a valid UUID
+    if (!validator.isUUID(userId)) {
+      throw new BusinessLogicException(
+        'The userId provided is not valid',
+        BusinessError.PRECONDITION_FAILED,
+      );
+    }
+    // Check if the organization exists
+    const organization = await this.organizationRepository.findOne({
+      where: { id: orgId },
+    });
+    if (!organization) {
+      throw new BusinessLogicException(
+        'The organization provided does not exist',
+        BusinessError.NOT_FOUND,
+      );
+    }
+    // check that the user is part of the organization
     const user: UserEntity = await this.userRepository.findOne({
-      where: { id },
+      where: { id: userId, organization },
       relations: ['organization'],
     });
+    if (!user)
+      throw new BusinessLogicException(
+        'The user with the provided id does not exist',
+        BusinessError.NOT_FOUND,
+      );
+      
     if (!user)
       throw new BusinessLogicException(
         'The user with the provided id does not exist',
@@ -45,6 +98,12 @@ export class UserService {
     user: Partial<UserEntity>,
     organizationId: string,
   ): Promise<UserEntity> {
+    if (!organizationId) {
+      throw new BusinessLogicException(
+        'The organizationId provided is missing',
+        BusinessError.PRECONDITION_FAILED,
+      );
+    }
     // The organizationId should be a valid UUID
     if (!validator.isUUID(organizationId))
       throw new BusinessLogicException(

@@ -58,7 +58,7 @@ describe('UserService', () => {
 
   // Find all users
   it('findAll should return all users', async () => {
-    const users: UserEntity[] = await service.findAll();
+    const users: UserEntity[] = await service.findAll(org.id);
     expect(users).toBeDefined();
     expect(users).not.toBeNull();
     expect(users).toHaveLength(userList.length);
@@ -232,7 +232,7 @@ describe('UserService', () => {
     const randomIndex = Math.floor(Math.random() * userList.length);
     const id = userList[randomIndex].id;
     await service.delete(id);
-    const users: UserEntity[] = await service.findAll();
+    const users: UserEntity[] = await service.findAll(org.id);
     expect(users).toHaveLength(userList.length - 1);
     // Check that the user was deleted
     await expect(() => service.findOne(id)).rejects.toHaveProperty(
