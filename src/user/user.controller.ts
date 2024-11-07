@@ -31,8 +31,11 @@ export class UserController {
 
   // Obtener un user por id
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<UserEntity> {
-    return this.userService.findOne(id);
+  async findOne(
+    @Param('organizationId') organizationId: string,
+    @Param('id') id: string,
+  ): Promise<UserEntity> {
+    return this.userService.findOne(organizationId, id);
   }
 
   // Crear un user

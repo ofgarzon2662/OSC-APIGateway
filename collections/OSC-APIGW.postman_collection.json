@@ -52,7 +52,7 @@
 										}
 									}
 								},
-								"url": "{{baseUrl}}/airlines"
+								"url": "localhost:3000/api/v1/airlines"
 							},
 							"status": "Bad Request",
 							"code": 400,
@@ -116,7 +116,7 @@
 										}
 									}
 								},
-								"url": "{{baseUrl}}/airlines"
+								"url": "localhost:3000/api/v1/airlines"
 							},
 							"status": "Created",
 							"code": 201,
@@ -177,7 +177,7 @@
 										}
 									}
 								},
-								"url": "{{baseUrl}}/airlines"
+								"url": "localhost:3000/api/v1/airlines"
 							},
 							"status": "Created",
 							"code": 201,
@@ -233,7 +233,7 @@
 										}
 									}
 								},
-								"url": "{{baseUrl}}/airlines"
+								"url": "localhost:3000/api/v1/airlines"
 							},
 							"status": "Bad Request",
 							"code": 400,
@@ -294,7 +294,7 @@
 										}
 									}
 								},
-								"url": "{{baseUrl}}/airlines"
+								"url": "localhost:3000/api/v1/airlines"
 							},
 							"status": "Bad Request",
 							"code": 400,
@@ -355,7 +355,7 @@
 										}
 									}
 								},
-								"url": "{{baseUrl}}/airlines"
+								"url": "localhost:3000/api/v1/airlines"
 							},
 							"status": "Created",
 							"code": 201,
@@ -416,7 +416,7 @@
 										}
 									}
 								},
-								"url": "{{baseUrl}}/airlines"
+								"url": "localhost:3000/api/v1/airlines"
 							},
 							"status": "Created",
 							"code": 201,
@@ -477,7 +477,7 @@
 										}
 									}
 								},
-								"url": "{{baseUrl}}/airlines"
+								"url": "localhost:3000/api/v1/airlines"
 							},
 							"status": "Created",
 							"code": 201,
@@ -541,7 +541,7 @@
 										}
 									}
 								},
-								"url": "{{baseUrl}}/airlines"
+								"url": "localhost:3000/api/v1/airlines"
 							},
 							"status": "Created",
 							"code": 201,
@@ -592,7 +592,7 @@
 										"type": "text"
 									}
 								],
-								"url": "{{baseUrl}}/airlines"
+								"url": "localhost:3000/api/v1/airlines"
 							},
 							"status": "OK",
 							"code": 200,
@@ -645,7 +645,7 @@
 										"type": "text"
 									}
 								],
-								"url": "{{baseUrl}}/airlines/{{aerolineaId}}"
+								"url": "localhost:3000/api/v1/airlines/{{aerolineaId}}"
 							},
 							"status": "OK",
 							"code": 200,
@@ -1360,22 +1360,73 @@
 			"name": "User",
 			"item": [
 				{
-					"name": "Crear socio",
+					"name": "Delete All",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.globals.set(\"socioId\", pm.response.json().id);\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{baseUrl}}/organizations"
+					},
+					"response": [
+						{
+							"name": "Crear aerolínea con una fecha de fundación en el futuro",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/organizations"
+							},
+							"_postman_previewlanguage": "",
+							"header": "",
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Create Org",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"orgId\", pm.response.json().id);\r",
 									"\r",
 									"pm.test(\"El código de estado es 201\", function() {\r",
 									"    pm.response.to.have.status(201)\r",
 									"});\r",
 									"\r",
 									"pm.test(\"Información presente\", function() {\r",
-									"    pm.expect(pm.response.json().nombre).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().email).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().fechaNacimiento).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().name).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().description).to.be.a('string').and.to.not.be.empty;\r",
 									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
 									"});"
 								],
@@ -1389,31 +1440,139 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"nombre\": \"Eduardo Salamanca\",\r\n    \"email\": \"email@email.com\",\r\n    \"fechaNacimiento\": \"2020-01-01\"\r\n}",
+							"raw": "{\r\n    \"name\": \"{{$randomCompanyName}}\",\r\n    \"description\": \"This organization focuses on {{$randomLoremWords}} and its main mission in life is {{$randomLoremWords}}\"\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
 								}
 							}
 						},
-						"url": "{{baseUrl}}/members"
+						"url": "{{baseUrl}}/organizations"
 					},
 					"response": [
 						{
-							"name": "Crear aeropuerto",
+							"name": "Crear aerolínea",
 							"originalRequest": {
 								"method": "POST",
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"nombre\": \"El Dorado\",\r\n    \"codigo\": \"BOG\",\r\n    \"pais\": \"Colombia\",\r\n    \"ciudad\": \"Bogotá\",\r\n    \"id\": \"773e1818-a2df-418d-8fed-e6c1c565cee3\"\r\n}",
+									"raw": "{\r\n    \"name\": \"{{$randomCompanyName}}\",\r\n    \"description\": \"This organization focuses on {{$randomLoremWords}} and its main mission in life is {{$randomLoremWords}}\"\r\n}\r\n",
 									"options": {
 										"raw": {
 											"language": "json"
 										}
 									}
 								},
-								"url": "{{baseUrl}}/airports"
+								"url": "{{baseUrl}}/organizations"
+							},
+							"_postman_previewlanguage": "",
+							"header": "",
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Get All Orgs",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 200\", function() {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Non Empty list\", function() {\r",
+									"    pm.expect(pm.response.json()).to.be.an('array').that.is.not.empty;\r",
+									"    pm.expect(pm.response.json()).to.have.lengthOf(1);\r",
+									"    pm.expect(pm.response.json()[0].id).to.equal(pm.environment.get(\"orgId\"));\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{baseUrl}}/organizations"
+					},
+					"response": [
+						{
+							"name": "Obtener todas las aerolíneas",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": "{{baseUrl}}/organizations"
+							},
+							"_postman_previewlanguage": "",
+							"header": "",
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Create User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"userId1\", pm.response.json().id);\r",
+									"\r",
+									"pm.test(\"El código de estado es 201\", function() {\r",
+									"    pm.response.to.have.status(201)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Información presente\", function() {\r",
+									"    pm.expect(pm.response.json().name).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().email).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().username).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().organization.id).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().organization.id).to.equal(pm.environment.get(\"orgId\"))\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{$randomFullName}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"{{$randomUserName}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{baseUrl}}/organizations/{{orgId}}/users"
+					},
+					"response": [
+						{
+							"name": "Crear aeropuerto 3",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"nombre\": \"El Dorado\",\r\n    \"codigo\": \"BOG\",\r\n    \"pais\": \"Colombia\",\r\n    \"ciudad\": \"Bogotá\",\r\n    \"id\": \"41c580d1-0afa-4ef6-9f62-5c7d2d44f1a4\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "localhost:3000/api/v1/airports"
 							},
 							"status": "Created",
 							"code": 201,
@@ -1425,23 +1584,215 @@
 					]
 				},
 				{
-					"name": "crear socio 2",
+					"name": "Get User 1",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.globals.set(\"socioId2\", pm.response.json().id);\r",
+									"pm.test(\"Code is 200\", function() {\r",
+									"    pm.response.to.have.status(200)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Non empty response\", function() {\r",
+									"    const responseData = pm.response.json();\r",
+									"    pm.expect(responseData.name).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.username).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.id).to.equal(pm.environment.get(\"userId1\"));\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{baseUrl}}/organizations/{{orgId}}/users/{{userId1}}"
+					},
+					"response": [
+						{
+							"name": "Crear aeropuerto 3",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/organizations/{{orgId}}/users/{{userId1}}"
+							},
+							"_postman_previewlanguage": "",
+							"header": "",
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Get User 1 Wrong Org Id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 404\", function() {\r",
+									"    pm.response.to.have.status(404)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Get error message\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"The organization provided does not exist\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{baseUrl}}/organizations/{{$randomUUID}}/users/{{userId1}}"
+					},
+					"response": [
+						{
+							"name": "Crear aeropuerto 3",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/organizations/{{$randomUUID}}/users/{{userId1}}"
+							},
+							"_postman_previewlanguage": "",
+							"header": "",
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Get User 1 bad Org Id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 412\", function() {\r",
+									"    pm.response.to.have.status(412)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Get error message\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"The organizationId provided is not valid\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{baseUrl}}/organizations/no-valid-id/users/{{userId1}}"
+					},
+					"response": [
+						{
+							"name": "Crear aeropuerto 3",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/organizations/no-valid-id/users/{{userId1}}"
+							},
+							"_postman_previewlanguage": "",
+							"header": "",
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Create User 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"userId2\", pm.response.json().id);\r",
 									"\r",
 									"pm.test(\"El código de estado es 201\", function() {\r",
 									"    pm.response.to.have.status(201)\r",
 									"});\r",
 									"\r",
 									"pm.test(\"Información presente\", function() {\r",
-									"    pm.expect(pm.response.json().nombre).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().name).to.be.a('string').and.to.not.be.empty;\r",
 									"    pm.expect(pm.response.json().email).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().fechaNacimiento).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().username).to.be.a('string').and.to.not.be.empty;\r",
 									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().organization.id).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().organization.id).to.equal(pm.environment.get(\"orgId\"))\r",
 									"});"
 								],
 								"type": "text/javascript",
@@ -1454,36 +1805,564 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"nombre\": \"Eduardo Salamanca 2\",\r\n    \"email\": \"email2@email.com\",\r\n    \"fechaNacimiento\": \"2020-01-01\"\r\n}",
+							"raw": "{\r\n    \"name\": \"{{$randomFullName}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"{{$randomUserName}}\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
 								}
 							}
 						},
-						"url": "{{baseUrl}}/members"
+						"url": "{{baseUrl}}/organizations/{{orgId}}/users"
 					},
 					"response": [
 						{
-							"name": "Crear aeropuerto 2",
+							"name": "Crear aeropuerto 3",
 							"originalRequest": {
 								"method": "POST",
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"nombre\": \"El Dorado\",\r\n    \"codigo\": \"BOG\",\r\n    \"pais\": \"Colombia\",\r\n    \"ciudad\": \"Bogotá\",\r\n    \"id\": \"1619c9c1-b301-4231-94bf-ea9c172ddb14\"\r\n}",
+									"raw": "{\r\n    \"name\": \"{{$randomFullName}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"{{$randomUserName}}\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
 										}
 									}
 								},
-								"url": "{{baseUrl}}/airports"
+								"url": "{{baseUrl}}/organizations/{{orgId}}/users"
 							},
-							"status": "Created",
-							"code": 201,
-							"_postman_previewlanguage": "Text",
-							"header": [],
+							"_postman_previewlanguage": "",
+							"header": "",
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Get User 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 200\", function() {\r",
+									"    pm.response.to.have.status(200)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Non empty response\", function() {\r",
+									"    const responseData = pm.response.json();\r",
+									"    pm.expect(responseData.name).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.username).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.id).to.equal(pm.environment.get(\"userId2\"));\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{baseUrl}}/organizations/{{orgId}}/users/{{userId2}}"
+					},
+					"response": [
+						{
+							"name": "Crear aeropuerto 3",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/organizations/{{orgId}}/users/{{userId2}}"
+							},
+							"_postman_previewlanguage": "",
+							"header": "",
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Create User 3",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"userId3\", pm.response.json().id);\r",
+									"\r",
+									"pm.test(\"El código de estado es 201\", function() {\r",
+									"    pm.response.to.have.status(201)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Información presente\", function() {\r",
+									"    pm.expect(pm.response.json().name).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().email).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().username).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().organization.id).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().organization.id).to.equal(pm.environment.get(\"orgId\"))\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{$randomFullName}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"{{$randomUserName}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{baseUrl}}/organizations/{{orgId}}/users"
+					},
+					"response": [
+						{
+							"name": "Crear aeropuerto 3",
+							"originalRequest": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"name\": \"{{$randomFullName}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"{{$randomUserName}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/organizations/{{orgId}}/users"
+							},
+							"_postman_previewlanguage": "",
+							"header": "",
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Get User 3",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 200\", function() {\r",
+									"    pm.response.to.have.status(200)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Non empty response\", function() {\r",
+									"    const responseData = pm.response.json();\r",
+									"    pm.expect(responseData.name).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.username).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.id).to.equal(pm.environment.get(\"userId3\"));\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{baseUrl}}/organizations/{{orgId}}/users/{{userId3}}"
+					},
+					"response": [
+						{
+							"name": "Crear aeropuerto 3",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/organizations/{{orgId}}/users/{{userId3}}"
+							},
+							"_postman_previewlanguage": "",
+							"header": "",
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Get User that doesn't exist",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 404\", function() {\r",
+									"    pm.response.to.have.status(404)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Get error message\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"The user with the provided id does not exist\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{$randomFullName}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"{{$randomUserName}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{baseUrl}}/organizations/{{orgId}}/users/{{$randomUUID}}"
+					},
+					"response": [
+						{
+							"name": "Crear aeropuerto 3",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"name\": \"{{$randomFullName}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"{{$randomUserName}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/organizations/{{orgId}}/users/{{$randomUUID}}"
+							},
+							"_postman_previewlanguage": "",
+							"header": "",
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Get All Orgs",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 200\", function() {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Non Empty list\", function() {\r",
+									"    pm.expect(pm.response.json()).to.be.an('array').that.is.not.empty;\r",
+									"    pm.expect(pm.response.json()).to.have.lengthOf(1);\r",
+									"    pm.expect(pm.response.json()[0].id).to.equal(pm.environment.get(\"orgId\"));\r",
+									"    pm.expect(pm.response.json()[0].users).to.not.be.empty;\r",
+									"    pm.expect(pm.response.json()[0].users).to.be.an('array').that.has.lengthOf(3);\r",
+									"    pm.expect(pm.response.json()[0].artifacts).to.be.an('array').that.has.lengthOf(0);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{baseUrl}}/organizations"
+					},
+					"response": [
+						{
+							"name": "Obtener todas las aerolíneas",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": "{{baseUrl}}/organizations"
+							},
+							"_postman_previewlanguage": "",
+							"header": "",
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Get All Users in Org",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 200\", function() {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Non Empty list\", function() {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson).to.be.an('array').that.is.not.empty;\r",
+									"    pm.expect(responseJson).to.have.lengthOf(3);\r",
+									"    pm.expect(responseJson[0].id).to.equal(pm.environment.get(\"userId1\"));\r",
+									"    pm.expect(responseJson[1].id).to.equal(pm.environment.get(\"userId2\"));\r",
+									"    pm.expect(responseJson[2].id).to.equal(pm.environment.get(\"userId3\"));\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{$randomFullName}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"{{$randomUserName}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{baseUrl}}/organizations/{{orgId}}/users"
+					},
+					"response": [
+						{
+							"name": "Crear aeropuerto 3",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"name\": \"{{$randomFullName}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"{{$randomUserName}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/organizations/{{orgId}}/users"
+							},
+							"_postman_previewlanguage": "",
+							"header": "",
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Get All Users in Org that doesn't exist",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 412\", function() {\r",
+									"    pm.response.to.have.status(404)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Get error message\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"The organization provided does not exist\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{$randomFullName}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"{{$randomUserName}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{baseUrl}}/organizations/{{$randomUUID}}/users"
+					},
+					"response": [
+						{
+							"name": "Crear aeropuerto 3",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"name\": \"{{$randomFullName}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"{{$randomUserName}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/organizations/{{$randomUUID}}/users"
+							},
+							"_postman_previewlanguage": "",
+							"header": "",
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "Get All Users Bad Org id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 412\", function() {\r",
+									"    pm.response.to.have.status(412)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Get error message\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"The organizationId provided is not valid\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{$randomFullName}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"{{$randomUserName}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{baseUrl}}/organizations/bad-org-id/users"
+					},
+					"response": [
+						{
+							"name": "Crear aeropuerto 3",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"name\": \"{{$randomFullName}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"{{$randomUserName}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/organizations/bad-org-id/users"
+							},
+							"_postman_previewlanguage": "",
+							"header": "",
+							"cookie": [],
+							"body": ""
+						}
+					]
+				},
+				{
+					"name": "{{baseUrl}}/api/v1/organizations/6c5fd955-c829-498c-91dd-79bebd0d0c43/users",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{baseUrl}}/api/v1/organizations/6c5fd955-c829-498c-91dd-79bebd0d0c43/users"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "User Copy",
+			"item": [
+				{
+					"name": "crear socio 2",
+					"request": {
+						"method": "POST",
+						"header": []
+					},
+					"response": [
+						{
+							"name": "Crear aeropuerto 2",
+							"originalRequest": {
+								"method": "POST",
+								"header": []
+							},
+							"_postman_previewlanguage": "",
+							"header": "",
 							"cookie": [],
 							"body": ""
 						}
@@ -1491,64 +2370,19 @@
 				},
 				{
 					"name": "crear socio 3",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.globals.set(\"socioId3\", pm.response.json().id);\r",
-									"\r",
-									"pm.test(\"El código de estado es 201\", function() {\r",
-									"    pm.response.to.have.status(201)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Información presente\", function() {\r",
-									"    pm.expect(pm.response.json().nombre).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().email).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().fechaNacimiento).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
 					"request": {
 						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"nombre\": \"Eduardo Salamanca 3\",\r\n    \"email\": \"email3@email.com\",\r\n    \"fechaNacimiento\": \"2020-01-01\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": "{{baseUrl}}/members"
+						"header": []
 					},
 					"response": [
 						{
 							"name": "Crear aeropuerto 3",
 							"originalRequest": {
 								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"nombre\": \"El Dorado\",\r\n    \"codigo\": \"BOG\",\r\n    \"pais\": \"Colombia\",\r\n    \"ciudad\": \"Bogotá\",\r\n    \"id\": \"41c580d1-0afa-4ef6-9f62-5c7d2d44f1a4\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": "{{baseUrl}}/airports"
+								"header": []
 							},
-							"status": "Created",
-							"code": 201,
-							"_postman_previewlanguage": "Text",
-							"header": [],
+							"_postman_previewlanguage": "",
+							"header": "",
 							"cookie": [],
 							"body": ""
 						}
@@ -1556,59 +2390,19 @@
 				},
 				{
 					"name": "crear socio no valido",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"El código de estado es 412\", function() {\r",
-									"    pm.response.to.have.status(412)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Información presente\", function() {\r",
-									"    pm.expect(pm.response.json().message).to.be.contains('El email proporcionado no es válido');\r",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
 					"request": {
 						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"nombre\": \"Eduardo Salamanca 3\",\r\n    \"email\": \"email3\",\r\n    \"fechaNacimiento\": \"2020-01-01\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": "{{baseUrl}}/members"
+						"header": []
 					},
 					"response": [
 						{
 							"name": "Crear aeropuerto 3",
 							"originalRequest": {
 								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"nombre\": \"El Dorado\",\r\n    \"codigo\": \"BOG\",\r\n    \"pais\": \"Colombia\",\r\n    \"ciudad\": \"Bogotá\",\r\n    \"id\": \"41c580d1-0afa-4ef6-9f62-5c7d2d44f1a4\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": "{{baseUrl}}/airports"
+								"header": []
 							},
-							"status": "Created",
-							"code": 201,
-							"_postman_previewlanguage": "Text",
-							"header": [],
+							"_postman_previewlanguage": "",
+							"header": "",
 							"cookie": [],
 							"body": ""
 						}
@@ -1616,47 +2410,19 @@
 				},
 				{
 					"name": "Obtener todos los socios",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"El código de estado es 200\", function() {\r",
-									"    pm.response.to.have.status(200)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"La lista no está vacía\", function() {\r",
-									"    pm.expect(pm.response.json()).to.be.an('array').that.is.not.empty;\r",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
 					"request": {
 						"method": "GET",
-						"header": [],
-						"url": "{{baseUrl}}/members"
+						"header": []
 					},
 					"response": [
 						{
 							"name": "Obtener todos los aeropuertos",
 							"originalRequest": {
 								"method": "GET",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json",
-										"type": "text"
-									}
-								],
-								"url": "{{baseUrl}}/airports"
+								"header": []
 							},
-							"status": "OK",
-							"code": 200,
-							"_postman_previewlanguage": "Text",
-							"header": [],
+							"_postman_previewlanguage": "",
+							"header": "",
 							"cookie": [],
 							"body": ""
 						}
@@ -1664,50 +2430,19 @@
 				},
 				{
 					"name": "Obtener un socio",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"El código de estado es 200\", function() {\r",
-									"    pm.response.to.have.status(200)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Información presente\", function() {\r",
-									"    pm.expect(pm.response.json().nombre).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().email).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().fechaNacimiento).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
 					"request": {
 						"method": "GET",
-						"header": [],
-						"url": "{{baseUrl}}/members/{{socioId}}"
+						"header": []
 					},
 					"response": [
 						{
 							"name": "Obtener un aeropuerto",
 							"originalRequest": {
 								"method": "GET",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json",
-										"type": "text"
-									}
-								],
-								"url": "{{baseUrl}}/airports/{{aeropuertoId}}"
+								"header": []
 							},
-							"status": "OK",
-							"code": 200,
-							"_postman_previewlanguage": "Text",
-							"header": [],
+							"_postman_previewlanguage": "",
+							"header": "",
 							"cookie": [],
 							"body": ""
 						}
@@ -1715,48 +2450,19 @@
 				},
 				{
 					"name": "Obtener un socio que no existe",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"El código de estado es 404\", function() {\r",
-									"    pm.response.to.have.status(404)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Obtener el mensaje de error esperado\", function() {\r",
-									"   pm.expect(pm.response.json().message).to.eql(\"El socio con el id provisto no existe\");\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
 					"request": {
 						"method": "GET",
-						"header": [],
-						"url": "{{baseUrl}}/members/{{$guid}}"
+						"header": []
 					},
 					"response": [
 						{
 							"name": "Obtener un aeropuerto que no existe",
 							"originalRequest": {
 								"method": "GET",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json",
-										"type": "text"
-									}
-								],
-								"url": "{{baseUrl}}/airports/{{$guid}}"
+								"header": []
 							},
-							"status": "Not Found",
-							"code": 404,
-							"_postman_previewlanguage": "Text",
-							"header": [],
+							"_postman_previewlanguage": "",
+							"header": "",
 							"cookie": [],
 							"body": ""
 						}
@@ -1764,64 +2470,19 @@
 				},
 				{
 					"name": "Actualizar un socio",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.globals.set(\"socioId\", pm.response.json().id);\r",
-									"\r",
-									"pm.test(\"El código de estado es 200\", function() {\r",
-									"    pm.response.to.have.status(200)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Información presente\", function() {\r",
-									"    pm.expect(pm.response.json().nombre).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().email).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().fechaNacimiento).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
 					"request": {
 						"method": "PUT",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"nombre\": \"Pepito Perez\",\r\n    \"email\": \"email@email.com\",\r\n    \"fechaNacimiento\": \"2020-01-01\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": "{{baseUrl}}/members/{{socioId}}"
+						"header": []
 					},
 					"response": [
 						{
 							"name": "Actualizar un aeropuerto",
 							"originalRequest": {
 								"method": "PUT",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"id\": \"773e1818-a2df-418d-8fed-e6c1c565cee3\",\r\n    \"nombre\": \"El Dorado new\",\r\n    \"codigo\": \"BOG new\",\r\n    \"pais\": \"Colombia new\",\r\n    \"ciudad\": \"Bogotá new\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": "{{baseUrl}}/airports/{{aeropuertoId}}"
+								"header": []
 							},
-							"status": "OK",
-							"code": 200,
-							"_postman_previewlanguage": "Text",
-							"header": [],
+							"_postman_previewlanguage": "",
+							"header": "",
 							"cookie": [],
 							"body": ""
 						}
@@ -1829,60 +2490,19 @@
 				},
 				{
 					"name": "Actualizar un socio que no existe",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"El código de estado es 404\", function() {\r",
-									"    pm.response.to.have.status(404)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Obtener el mensaje de error esperado\", function() {\r",
-									"   pm.expect(pm.response.json().message).to.eql(\"El socio con el id provisto no existe\");\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
 					"request": {
 						"method": "PUT",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"nombre\": \"Eduardo Salamanca\",\r\n    \"email\": \"email@email.com\",\r\n    \"fechaNacimiento\": \"2020-01-01\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": "{{baseUrl}}/members/{{$guid}}"
+						"header": []
 					},
 					"response": [
 						{
 							"name": "Actualizar un aeropuerto que no existe",
 							"originalRequest": {
 								"method": "PUT",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"statusCode\": 404,\r\n    \"message\": \"El aeropuerto con el id dado no fue encontrado\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": "{{baseUrl}}/airports/{{$guid}}"
+								"header": []
 							},
-							"status": "Not Found",
-							"code": 404,
-							"_postman_previewlanguage": "Text",
-							"header": [],
+							"_postman_previewlanguage": "",
+							"header": "",
 							"cookie": [],
 							"body": ""
 						}
@@ -1890,37 +2510,19 @@
 				},
 				{
 					"name": "Eliminar un socio",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"El código de estado es 204\", function() {\r",
-									"    pm.response.to.have.status(204)\r",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
 					"request": {
 						"method": "DELETE",
-						"header": [],
-						"url": "{{baseUrl}}/members/{{socioId}}"
+						"header": []
 					},
 					"response": [
 						{
 							"name": "Eliminar un aeropuerto",
 							"originalRequest": {
 								"method": "DELETE",
-								"header": [],
-								"url": "{{baseUrl}}/airports/{{aeropuertoId}}"
+								"header": []
 							},
-							"status": "No Content",
-							"code": 204,
-							"_postman_previewlanguage": "Text",
-							"header": [],
+							"_postman_previewlanguage": "",
+							"header": "",
 							"cookie": [],
 							"body": ""
 						}
@@ -1928,57 +2530,19 @@
 				},
 				{
 					"name": "Eliminar un aeropuerto que no existe",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"El código de estado es 404\", function() {\r",
-									"    pm.response.to.have.status(404)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Obtener el mensaje de error esperado\", function() {\r",
-									"   pm.expect(pm.response.json().message).to.eql(\"El socio con el id provisto no existe\");\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
 					"request": {
 						"method": "DELETE",
-						"header": [],
-						"url": "{{baseUrl}}/members/{{$guid}}"
+						"header": []
 					},
 					"response": [
 						{
 							"name": "Eliminar un aeropuerto que no existe",
 							"originalRequest": {
 								"method": "DELETE",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json",
-										"type": "text"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"statusCode\": 404,\r\n    \"message\": \"El aeropuerto con el id dado no fue encontrado\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": "{{baseUrl}}/airports/{{$guid}}"
+								"header": []
 							},
-							"status": "Not Found",
-							"code": 404,
-							"_postman_previewlanguage": "Text",
-							"header": [],
+							"_postman_previewlanguage": "",
+							"header": "",
 							"cookie": [],
 							"body": ""
 						}
