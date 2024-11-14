@@ -236,63 +236,65 @@ describe('UserService', () => {
     );
   });
 
-  // Update a User
-  it('update should update a user', async () => {
-    const randomIndex = Math.floor(Math.random() * userList.length);
-    const user: Partial<UserEntity> = {
+  // Update user
+  it('update should modify user data', async () => {
+    const updatedData: Partial<UserEntity> = {
       name: faker.person.fullName(),
       username: faker.internet.username(),
       email: faker.internet.email(),
     };
     const updatedUser: UserEntity = await service.update(
-      userList[randomIndex].id,
-      user as UserEntity,
+      userList[0].id,
+      updatedData as UserEntity,
     );
-    expect(updatedUser).toBeDefined();
-    expect(updatedUser).not.toBeNull();
-    expect(updatedUser).toMatchObject(user);
+    expect(updatedUser).toMatchObject(updatedData);
   });
 
-  // Update a User with invalid email
-  it('update should throw an exception for an invalid email', async () => {
-    const randomIndex = Math.floor(Math.random() * userList.length);
-    const user: Partial<UserEntity> = {
-      name: faker.person.fullName(),
-      username: faker.internet.username(),
+  it('update should throw an error for invalid email', async () => {
+    const updatedData: Partial<UserEntity> = {
       email: 'invalid-email',
     };
-    await expect(() =>
-      service.update(userList[randomIndex].id, user as UserEntity),
+    await expect(
+      service.update(userList[0].id, updatedData as UserEntity),
     ).rejects.toHaveProperty('message', 'The email provided is not valid');
   });
-  // Update a non existent user
-  it('update should throw an exception for a non existent user', async () => {
-    const user: Partial<UserEntity> = {
+
+  it('update should throw an error for non-existent user', async () => {
+    const updatedData: Partial<UserEntity> = {
       name: faker.person.fullName(),
-      username: faker.internet.username(),
-      email: faker.internet.email(),
     };
-    await expect(() =>
-      service.update('non-existent-id', user as UserEntity),
+    await expect(
+      service.update(faker.string.uuid(), updatedData as UserEntity),
     ).rejects.toHaveProperty(
       'message',
       'The User with the provided id does not exist',
     );
   });
 
-  // Update a User with an existing email
-  it('update should throw an exception for an existing email', async () => {
-    const randomIndex = Math.floor(Math.random() * userList.length);
-    const user: Partial<UserEntity> = {
-      name: faker.person.fullName(),
-      username: faker.internet.username(),
-      email: userList[randomIndex].email,
+  // Update a user with an existing email
+  it('update should throw an exception for an email already in use by another user', async () => {
+    const [userToUpdate, existingUser] = userList;
+    const updatedData: Partial<UserEntity> = {
+      email: existingUser.email,
     };
-    await expect(() =>
-      service.update(userList[randomIndex].id, user as UserEntity),
+
+    await expect(
+      service.update(userToUpdate.id, updatedData as UserEntity),
+    ).rejects.toHaveProperty('message', 'The email provided is already in use');
+  });
+
+  // Update a user with an existing username
+  it('update should throw an exception for a username already in use by another user', async () => {
+    const [userToUpdate, existingUser] = userList;
+    const updatedData: Partial<UserEntity> = {
+      username: existingUser.username,
+    };
+
+    await expect(
+      service.update(userToUpdate.id, updatedData as UserEntity),
     ).rejects.toHaveProperty(
       'message',
-      'The email or username provided is already in use',
+      'The username provided is already in use',
     );
   });
 

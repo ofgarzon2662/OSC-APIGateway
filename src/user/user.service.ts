@@ -144,36 +144,55 @@ export class UserService {
 
   // Update a User
 
-  async update(id: string, user: UserEntity): Promise<UserEntity> {
+  async update(id: string, user: Partial<UserEntity>): Promise<UserEntity> {
+    // Find the user to update
     const userToUpdate: UserEntity = await this.userRepository.findOne({
       where: { id },
     });
-    if (!userToUpdate)
+    if (!userToUpdate) {
       throw new BusinessLogicException(
         'The User with the provided id does not exist',
         BusinessError.NOT_FOUND,
       );
-
-    if (!this.isValidEmail(user.email)) {
-      throw new BusinessLogicException(
-        'The email provided is not valid',
-        BusinessError.PRECONDITION_FAILED,
-      );
     }
-    // Email and Username of User should be unique
-    const existingUser: UserEntity = await this.userRepository.findOne({
-      where: { username: user.username },
-    });
-    const existingEmail: UserEntity = await this.userRepository.findOne({
-      where: { email: user.email },
-    });
-    if (existingUser || existingEmail)
-      throw new BusinessLogicException(
-        'The email or username provided is already in use',
-        BusinessError.BAD_REQUEST,
-      );
 
-    return await this.userRepository.save(user);
+    // Validate and check uniqueness of email if it's being updated
+    if (user.email && user.email !== userToUpdate.email) {
+      if (!this.isValidEmail(user.email)) {
+        throw new BusinessLogicException(
+          'The email provided is not valid',
+          BusinessError.PRECONDITION_FAILED,
+        );
+      }
+      const existingEmailUser = await this.userRepository.findOne({
+        where: { email: user.email },
+      });
+      if (existingEmailUser && existingEmailUser.id !== id) {
+        throw new BusinessLogicException(
+          'The email provided is already in use',
+          BusinessError.BAD_REQUEST,
+        );
+      }
+    }
+
+    // Check uniqueness of username if it's being updated
+    if (user.username && user.username !== userToUpdate.username) {
+      const existingUsernameUser = await this.userRepository.findOne({
+        where: { username: user.username },
+      });
+      if (existingUsernameUser && existingUsernameUser.id !== id) {
+        throw new BusinessLogicException(
+          'The username provided is already in use',
+          BusinessError.BAD_REQUEST,
+        );
+      }
+    }
+
+    // Merge the updated fields into the existing user
+    Object.assign(userToUpdate, user);
+
+    // Save the updated user
+    return await this.userRepository.save(userToUpdate);
   }
 
   // Delete a User
