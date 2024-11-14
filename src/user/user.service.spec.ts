@@ -63,10 +63,39 @@ describe('UserService', () => {
     expect(users).not.toBeNull();
     expect(users).toHaveLength(userList.length);
   });
+
+  it('findAll should return no Users for invalid OrgId', async () => {
+    await expect(() =>
+      service.findAll('invalid-org-id'),
+    ).rejects.toHaveProperty(
+      'message',
+      'The organizationId provided is not valid',
+    );
+  });
+
+  it('findAll should return no Users for no OrgId', async () => {
+    await expect(() => service.findAll('')).rejects.toHaveProperty(
+      'message',
+      'The organizationId provided is missing',
+    );
+  });
+
+  it('findAll should return error for non existing Org', async () => {
+    await expect(() =>
+      service.findAll(faker.string.uuid()),
+    ).rejects.toHaveProperty(
+      'message',
+      'The organization provided does not exist',
+    );
+  });
+
   // Get One User
   it('findOne should return one user', async () => {
     const randomIndex = Math.floor(Math.random() * userList.length);
-    const user: UserEntity = await service.findOne(userList[randomIndex].id);
+    const user: UserEntity = await service.findOne(
+      org.id,
+      userList[randomIndex].id,
+    );
     expect(user).toBeDefined();
     expect(user).not.toBeNull();
     expect(user).toMatchObject({
@@ -79,12 +108,40 @@ describe('UserService', () => {
   // Get non existent user
   it('findOne should throw an exception for a non existent user', async () => {
     await expect(() =>
-      service.findOne('non-existent-id'),
+      service.findOne(org.id, 'non-existent-id'),
+    ).rejects.toHaveProperty('message', 'The userId provided is not valid');
+  });
+
+  // Get a User with an invalid organization
+  it('findOne should throw an exception for an invalid organization', async () => {
+    await expect(() =>
+      service.findOne('invalid-organization-id', faker.string.uuid()),
+    ).rejects.toHaveProperty(
+      'message',
+      'The organizationId provided is not valid',
+    );
+  });
+
+  // Get a User with a non existent organization
+  it('findOne should throw an exception for a non existent organization', async () => {
+    await expect(() =>
+      service.findOne(faker.string.uuid(), faker.string.uuid()),
+    ).rejects.toHaveProperty(
+      'message',
+      'The organization provided does not exist',
+    );
+  });
+
+  // Get a User - Non existent User
+  it('findOne should throw an exception for a non existent user', async () => {
+    await expect(() =>
+      service.findOne(org.id, faker.string.uuid()),
     ).rejects.toHaveProperty(
       'message',
       'The user with the provided id does not exist',
     );
   });
+
   // Create a User
   it('create should create a user', async () => {
     const user: Partial<UserEntity> = {
@@ -97,6 +154,18 @@ describe('UserService', () => {
     expect(createdUser).not.toBeNull();
     expect(createdUser).toHaveProperty('id');
     expect(createdUser).toMatchObject(user);
+  });
+  // Create a User with non existent organization
+  it('create should throw an exception for a non existent organization', async () => {
+    const user: Partial<UserEntity> = {
+      name: faker.person.fullName(),
+      username: faker.internet.username(),
+      email: faker.internet.email(),
+    };
+    await expect(() => service.create(user, '')).rejects.toHaveProperty(
+      'message',
+      'The organizationId provided is missing',
+    );
   });
   // Create a User with invalid email
   it('create should throw an exception for an invalid email', async () => {
@@ -235,7 +304,7 @@ describe('UserService', () => {
     const users: UserEntity[] = await service.findAll(org.id);
     expect(users).toHaveLength(userList.length - 1);
     // Check that the user was deleted
-    await expect(() => service.findOne(id)).rejects.toHaveProperty(
+    await expect(() => service.findOne(org.id, id)).rejects.toHaveProperty(
       'message',
       'The user with the provided id does not exist',
     );

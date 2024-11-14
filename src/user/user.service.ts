@@ -83,12 +83,6 @@ export class UserService {
         BusinessError.NOT_FOUND,
       );
 
-    if (!user)
-      throw new BusinessLogicException(
-        'The user with the provided id does not exist',
-        BusinessError.NOT_FOUND,
-      );
-
     return user;
   }
 
