@@ -94,13 +94,16 @@ export class ArtifactService {
       );
     }
 
-    try {
-      JSON.parse(artifact.body);
-    } catch {
-      throw new BusinessLogicException(
-        'The body of the artifact should be a valid JSON object',
-        BusinessError.PRECONDITION_FAILED,
-      );
+    // Parse `body` JSON string if necessary
+    if (typeof artifact.body === 'string') {
+      try {
+        artifact.body = JSON.parse(artifact.body); // Parse only if it's a string
+      } catch {
+        throw new BusinessLogicException(
+          'The body of the artifact should be a valid JSON object',
+          BusinessError.PRECONDITION_FAILED,
+        );
+      }
     }
 
     // Validate name uniqueness within organization

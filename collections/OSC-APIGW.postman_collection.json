@@ -45,39 +45,7 @@
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Crear aerolínea con una fecha de fundación en el futuro",
-							"originalRequest": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"message\": [\r\n        \"La fecha de fechaFundacion debe ser en el pasado.\"\r\n    ],\r\n    \"error\": \"Bad Request\",\r\n    \"statusCode\": 400\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/airlines",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airlines"
-									]
-								}
-							},
-							"status": "Bad Request",
-							"code": 400,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
 					"name": "Create Org",
@@ -125,39 +93,7 @@
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Crear aerolínea",
-							"originalRequest": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"nombre\": \"Latam Airlines\",\r\n    \"descripcion\": \"LATAM Airlines es la mayor aerolínea de América Latina, formada por la fusión de LAN y TAM en 2012. Tiene sede en Santiago de Chile y opera vuelos nacionales e internacionales en América, Europa, Asia y Oceanía. Con hubs en ciudades como São Paulo y Lima, LATAM se destaca por su moderna flota y su enfoque en la sostenibilidad.\",\r\n    \"fechaFundacion\": \"2020-01-01\",\r\n    \"urlPaginaWeb\": \"https://www.latamairlines.com/co/es\",\r\n    \"id\": \"211411a8-e705-4795-8b23-bcf41279a4d3\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/airlines",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airlines"
-									]
-								}
-							},
-							"status": "Created",
-							"code": 201,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
 					"name": "Create a second org",
@@ -202,39 +138,7 @@
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Crear aerolínea 2",
-							"originalRequest": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"nombre\": \"Latam Airlines\",\r\n    \"descripcion\": \"LATAM Airlines es la mayor aerolínea de América Latina, formada por la fusión de LAN y TAM en 2012. Tiene sede en Santiago de Chile y opera vuelos nacionales e internacionales en América, Europa, Asia y Oceanía. Con hubs en ciudades como São Paulo y Lima, LATAM se destaca por su moderna flota y su enfoque en la sostenibilidad.\",\r\n    \"fechaFundacion\": \"2020-01-01\",\r\n    \"urlPaginaWeb\": \"https://www.latamairlines.com/co/es\",\r\n    \"id\": \"a48a1a34-6bed-46e4-bc5b-33fbfa1454af\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/airlines",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airlines"
-									]
-								}
-							},
-							"status": "Created",
-							"code": 201,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
 					"name": "Delete Org",
@@ -275,39 +179,7 @@
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Crear aerolínea con una fecha de fundación en el futuro",
-							"originalRequest": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"message\": [\r\n        \"La fecha de fechaFundacion debe ser en el pasado.\"\r\n    ],\r\n    \"error\": \"Bad Request\",\r\n    \"statusCode\": 400\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/airlines",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airlines"
-									]
-								}
-							},
-							"status": "Bad Request",
-							"code": 400,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
 					"name": "Delete NonExistent Org",
@@ -353,39 +225,7 @@
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Crear aerolínea con una fecha de fundación en el futuro",
-							"originalRequest": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"message\": [\r\n        \"La fecha de fechaFundacion debe ser en el pasado.\"\r\n    ],\r\n    \"error\": \"Bad Request\",\r\n    \"statusCode\": 400\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/airlines",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airlines"
-									]
-								}
-							},
-							"status": "Bad Request",
-							"code": 400,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
 					"name": "Create Org short name",
@@ -430,39 +270,7 @@
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Crear aerolínea",
-							"originalRequest": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"nombre\": \"Latam Airlines\",\r\n    \"descripcion\": \"LATAM Airlines es la mayor aerolínea de América Latina, formada por la fusión de LAN y TAM en 2012. Tiene sede en Santiago de Chile y opera vuelos nacionales e internacionales en América, Europa, Asia y Oceanía. Con hubs en ciudades como São Paulo y Lima, LATAM se destaca por su moderna flota y su enfoque en la sostenibilidad.\",\r\n    \"fechaFundacion\": \"2020-01-01\",\r\n    \"urlPaginaWeb\": \"https://www.latamairlines.com/co/es\",\r\n    \"id\": \"211411a8-e705-4795-8b23-bcf41279a4d3\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/airlines",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airlines"
-									]
-								}
-							},
-							"status": "Created",
-							"code": 201,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
 					"name": "Create Org No Description",
@@ -507,39 +315,7 @@
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Crear aerolínea",
-							"originalRequest": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"nombre\": \"Latam Airlines\",\r\n    \"descripcion\": \"LATAM Airlines es la mayor aerolínea de América Latina, formada por la fusión de LAN y TAM en 2012. Tiene sede en Santiago de Chile y opera vuelos nacionales e internacionales en América, Europa, Asia y Oceanía. Con hubs en ciudades como São Paulo y Lima, LATAM se destaca por su moderna flota y su enfoque en la sostenibilidad.\",\r\n    \"fechaFundacion\": \"2020-01-01\",\r\n    \"urlPaginaWeb\": \"https://www.latamairlines.com/co/es\",\r\n    \"id\": \"211411a8-e705-4795-8b23-bcf41279a4d3\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/airlines",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airlines"
-									]
-								}
-							},
-							"status": "Created",
-							"code": 201,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
 					"name": "Create Org long Description",
@@ -584,39 +360,7 @@
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Crear aerolínea",
-							"originalRequest": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"nombre\": \"Latam Airlines\",\r\n    \"descripcion\": \"LATAM Airlines es la mayor aerolínea de América Latina, formada por la fusión de LAN y TAM en 2012. Tiene sede en Santiago de Chile y opera vuelos nacionales e internacionales en América, Europa, Asia y Oceanía. Con hubs en ciudades como São Paulo y Lima, LATAM se destaca por su moderna flota y su enfoque en la sostenibilidad.\",\r\n    \"fechaFundacion\": \"2020-01-01\",\r\n    \"urlPaginaWeb\": \"https://www.latamairlines.com/co/es\",\r\n    \"id\": \"211411a8-e705-4795-8b23-bcf41279a4d3\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/airlines",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airlines"
-									]
-								}
-							},
-							"status": "Created",
-							"code": 201,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
 					"name": "Create Org 2",
@@ -664,39 +408,7 @@
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Crear aerolínea",
-							"originalRequest": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"nombre\": \"Latam Airlines\",\r\n    \"descripcion\": \"LATAM Airlines es la mayor aerolínea de América Latina, formada por la fusión de LAN y TAM en 2012. Tiene sede en Santiago de Chile y opera vuelos nacionales e internacionales en América, Europa, Asia y Oceanía. Con hubs en ciudades como São Paulo y Lima, LATAM se destaca por su moderna flota y su enfoque en la sostenibilidad.\",\r\n    \"fechaFundacion\": \"2020-01-01\",\r\n    \"urlPaginaWeb\": \"https://www.latamairlines.com/co/es\",\r\n    \"id\": \"211411a8-e705-4795-8b23-bcf41279a4d3\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/airlines",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airlines"
-									]
-								}
-							},
-							"status": "Created",
-							"code": 201,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
 					"name": "Get All Orgs",
@@ -734,36 +446,7 @@
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Obtener todas las aerolíneas",
-							"originalRequest": {
-								"method": "GET",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json",
-										"type": "text"
-									}
-								],
-								"url": {
-									"raw": "{{baseUrl}}/airlines",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airlines"
-									]
-								}
-							},
-							"status": "OK",
-							"code": 200,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
 					"name": "Get One Org",
@@ -804,37 +487,7 @@
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Obtener una aerolínea",
-							"originalRequest": {
-								"method": "GET",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json",
-										"type": "text"
-									}
-								],
-								"url": {
-									"raw": "{{baseUrl}}/airlines/{{aerolineaId}}",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airlines",
-										"{{aerolineaId}}"
-									]
-								}
-							},
-							"status": "OK",
-							"code": 200,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
 					"name": "Delete Org",
@@ -875,39 +528,7 @@
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Crear aerolínea con una fecha de fundación en el futuro",
-							"originalRequest": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"message\": [\r\n        \"La fecha de fechaFundacion debe ser en el pasado.\"\r\n    ],\r\n    \"error\": \"Bad Request\",\r\n    \"statusCode\": 400\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/airlines",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airlines"
-									]
-								}
-							},
-							"status": "Bad Request",
-							"code": 400,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
 					"name": "Delete NonExistent Org",
@@ -953,39 +574,7 @@
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Crear aerolínea con una fecha de fundación en el futuro",
-							"originalRequest": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"message\": [\r\n        \"La fecha de fechaFundacion debe ser en el pasado.\"\r\n    ],\r\n    \"error\": \"Bad Request\",\r\n    \"statusCode\": 400\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/airlines",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airlines"
-									]
-								}
-							},
-							"status": "Bad Request",
-							"code": 400,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
 					"name": "Get One Org No Orgs",
@@ -1022,37 +611,7 @@
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Obtener una aerolínea",
-							"originalRequest": {
-								"method": "GET",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json",
-										"type": "text"
-									}
-								],
-								"url": {
-									"raw": "{{baseUrl}}/airlines/{{aerolineaId}}",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airlines",
-										"{{aerolineaId}}"
-									]
-								}
-							},
-							"status": "OK",
-							"code": 200,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
 					"name": "Get All Orgs No Orgs",
@@ -1088,36 +647,7 @@
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Obtener todas las aerolíneas",
-							"originalRequest": {
-								"method": "GET",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json",
-										"type": "text"
-									}
-								],
-								"url": {
-									"raw": "{{baseUrl}}/airlines",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airlines"
-									]
-								}
-							},
-							"status": "OK",
-							"code": 200,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
 					"name": "Create Org 3",
@@ -1165,39 +695,7 @@
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Crear aerolínea",
-							"originalRequest": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"nombre\": \"Latam Airlines\",\r\n    \"descripcion\": \"LATAM Airlines es la mayor aerolínea de América Latina, formada por la fusión de LAN y TAM en 2012. Tiene sede en Santiago de Chile y opera vuelos nacionales e internacionales en América, Europa, Asia y Oceanía. Con hubs en ciudades como São Paulo y Lima, LATAM se destaca por su moderna flota y su enfoque en la sostenibilidad.\",\r\n    \"fechaFundacion\": \"2020-01-01\",\r\n    \"urlPaginaWeb\": \"https://www.latamairlines.com/co/es\",\r\n    \"id\": \"211411a8-e705-4795-8b23-bcf41279a4d3\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/airlines",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airlines"
-									]
-								}
-							},
-							"status": "Created",
-							"code": 201,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
 					"name": "Update an Org",
@@ -1246,40 +744,7 @@
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Actualizar una aerolínea",
-							"originalRequest": {
-								"method": "PUT",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"id\": \"97bcab5c-eb7a-41fe-ba13-b4faf42c5915\",\r\n    \"nombre\": \"Latam Airlines new\",\r\n    \"descripcion\": \"LATAM Airlines es la mayor aerolínea de América Latina, formada por la fusión de LAN y TAM en 2012. Tiene sede en Santiago de Chile y opera vuelos nacionales e internacionales en América, Europa, Asia y Oceanía. Con hubs en ciudades como São Paulo y Lima, LATAM se destaca por su moderna flota y su enfoque en la sostenibilidad. new\",\r\n    \"fechaFundacion\": \"2024-01-01\",\r\n    \"urlPaginaWeb\": \"https://www.latamairlines.com/co/es/new\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/airlines/{{aerolineaId}}",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airlines",
-										"{{aerolineaId}}"
-									]
-								}
-							},
-							"status": "OK",
-							"code": 200,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
 					"name": "Get One Org 2",
@@ -1322,37 +787,7 @@
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Obtener una aerolínea",
-							"originalRequest": {
-								"method": "GET",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json",
-										"type": "text"
-									}
-								],
-								"url": {
-									"raw": "{{baseUrl}}/airlines/{{aerolineaId}}",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airlines",
-										"{{aerolineaId}}"
-									]
-								}
-							},
-							"status": "OK",
-							"code": 200,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
 					"name": "Update an Org that doesn't exist",
@@ -1398,40 +833,7 @@
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Actualizar una aerolínea que no existe",
-							"originalRequest": {
-								"method": "PUT",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"statusCode\": 404,\r\n    \"message\": \"La aerolínea con el id dado no fue encontrada\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/airlines/{{$guid}}",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airlines",
-										"{{$guid}}"
-									]
-								}
-							},
-							"status": "Not Found",
-							"code": 404,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
 					"name": "Update an Org short desc",
@@ -1477,40 +879,7 @@
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Actualizar una aerolínea que no existe",
-							"originalRequest": {
-								"method": "PUT",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"statusCode\": 404,\r\n    \"message\": \"La aerolínea con el id dado no fue encontrada\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/airlines/{{$guid}}",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airlines",
-										"{{$guid}}"
-									]
-								}
-							},
-							"status": "Not Found",
-							"code": 404,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
 					"name": "Update an Org long description",
@@ -1556,40 +925,7 @@
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Actualizar una aerolínea que no existe",
-							"originalRequest": {
-								"method": "PUT",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"statusCode\": 404,\r\n    \"message\": \"La aerolínea con el id dado no fue encontrada\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/airlines/{{$guid}}",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airlines",
-										"{{$guid}}"
-									]
-								}
-							},
-							"status": "Not Found",
-							"code": 404,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
 					"name": "Delete Org",
@@ -1630,39 +966,7 @@
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Crear aerolínea con una fecha de fundación en el futuro",
-							"originalRequest": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"message\": [\r\n        \"La fecha de fechaFundacion debe ser en el pasado.\"\r\n    ],\r\n    \"error\": \"Bad Request\",\r\n    \"statusCode\": 400\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/airlines",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airlines"
-									]
-								}
-							},
-							"status": "Bad Request",
-							"code": 400,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
 					"name": "Delete NonExistent Org",
@@ -1708,39 +1012,7 @@
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Crear aerolínea con una fecha de fundación en el futuro",
-							"originalRequest": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"message\": [\r\n        \"La fecha de fechaFundacion debe ser en el pasado.\"\r\n    ],\r\n    \"error\": \"Bad Request\",\r\n    \"statusCode\": 400\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/airlines",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airlines"
-									]
-								}
-							},
-							"status": "Bad Request",
-							"code": 400,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				}
 			]
 		},
@@ -1783,39 +1055,7 @@
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Crear aerolínea con una fecha de fundación en el futuro",
-							"originalRequest": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"message\": [\r\n        \"La fecha de fechaFundacion debe ser en el pasado.\"\r\n    ],\r\n    \"error\": \"Bad Request\",\r\n    \"statusCode\": 400\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/airlines",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airlines"
-									]
-								}
-							},
-							"status": "Bad Request",
-							"code": 400,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
 					"name": "Create Org",
@@ -1863,39 +1103,7 @@
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Crear aerolínea",
-							"originalRequest": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"nombre\": \"Latam Airlines\",\r\n    \"descripcion\": \"LATAM Airlines es la mayor aerolínea de América Latina, formada por la fusión de LAN y TAM en 2012. Tiene sede en Santiago de Chile y opera vuelos nacionales e internacionales en América, Europa, Asia y Oceanía. Con hubs en ciudades como São Paulo y Lima, LATAM se destaca por su moderna flota y su enfoque en la sostenibilidad.\",\r\n    \"fechaFundacion\": \"2020-01-01\",\r\n    \"urlPaginaWeb\": \"https://www.latamairlines.com/co/es\",\r\n    \"id\": \"211411a8-e705-4795-8b23-bcf41279a4d3\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/airlines",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airlines"
-									]
-								}
-							},
-							"status": "Created",
-							"code": 201,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
 					"name": "Get All Orgs",
@@ -1933,36 +1141,7 @@
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Obtener todas las aerolíneas",
-							"originalRequest": {
-								"method": "GET",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json",
-										"type": "text"
-									}
-								],
-								"url": {
-									"raw": "{{baseUrl}}/airlines",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airlines"
-									]
-								}
-							},
-							"status": "OK",
-							"code": 200,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
 					"name": "Create User",
@@ -1972,6 +1151,11 @@
 							"script": {
 								"exec": [
 									"pm.environment.set(\"userId1\", pm.response.json().id);\r",
+									"pm.environment.set(\"emailUser1\", pm.response.json().email);\r",
+									"pm.environment.set(\"usernameUser1\", pm.response.json().username);\r",
+									"pm.environment.set(\"nameOfUser1\", pm.response.json().name);\r",
+									"\r",
+									"\r",
 									"\r",
 									"pm.test(\"El código de estado es 201\", function() {\r",
 									"    pm.response.to.have.status(201)\r",
@@ -2015,39 +1199,7 @@
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Crear aeropuerto 3",
-							"originalRequest": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"nombre\": \"El Dorado\",\r\n    \"codigo\": \"BOG\",\r\n    \"pais\": \"Colombia\",\r\n    \"ciudad\": \"Bogotá\",\r\n    \"id\": \"41c580d1-0afa-4ef6-9f62-5c7d2d44f1a4\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/airports",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airports"
-									]
-								}
-							},
-							"status": "Created",
-							"code": 201,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
 					"name": "Get User 1",
@@ -2102,39 +1254,7 @@
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Crear aeropuerto 3",
-							"originalRequest": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"nombre\": \"El Dorado\",\r\n    \"codigo\": \"BOG\",\r\n    \"pais\": \"Colombia\",\r\n    \"ciudad\": \"Bogotá\",\r\n    \"id\": \"41c580d1-0afa-4ef6-9f62-5c7d2d44f1a4\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/airports",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airports"
-									]
-								}
-							},
-							"status": "Created",
-							"code": 201,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
 					"name": "Get User 1 Wrong Org Id",
@@ -2185,39 +1305,7 @@
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Crear aeropuerto 3",
-							"originalRequest": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"nombre\": \"El Dorado\",\r\n    \"codigo\": \"BOG\",\r\n    \"pais\": \"Colombia\",\r\n    \"ciudad\": \"Bogotá\",\r\n    \"id\": \"41c580d1-0afa-4ef6-9f62-5c7d2d44f1a4\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/airports",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airports"
-									]
-								}
-							},
-							"status": "Created",
-							"code": 201,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
 					"name": "Get User 1 bad Org Id",
@@ -2268,39 +1356,7 @@
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Crear aeropuerto 3",
-							"originalRequest": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"nombre\": \"El Dorado\",\r\n    \"codigo\": \"BOG\",\r\n    \"pais\": \"Colombia\",\r\n    \"ciudad\": \"Bogotá\",\r\n    \"id\": \"41c580d1-0afa-4ef6-9f62-5c7d2d44f1a4\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/airports",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airports"
-									]
-								}
-							},
-							"status": "Created",
-							"code": 201,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
 					"name": "Create User 2",
@@ -2310,6 +1366,10 @@
 							"script": {
 								"exec": [
 									"pm.environment.set(\"userId2\", pm.response.json().id);\r",
+									"pm.environment.set(\"emailUser2\", pm.response.json().email);\r",
+									"pm.environment.set(\"usernameUser2\", pm.response.json().username);\r",
+									"pm.environment.set(\"nameOfUser2\", pm.response.json().name);\r",
+									"\r",
 									"\r",
 									"pm.test(\"El código de estado es 201\", function() {\r",
 									"    pm.response.to.have.status(201)\r",
@@ -2353,39 +1413,7 @@
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Crear aeropuerto 3",
-							"originalRequest": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"nombre\": \"El Dorado\",\r\n    \"codigo\": \"BOG\",\r\n    \"pais\": \"Colombia\",\r\n    \"ciudad\": \"Bogotá\",\r\n    \"id\": \"41c580d1-0afa-4ef6-9f62-5c7d2d44f1a4\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/airports",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airports"
-									]
-								}
-							},
-							"status": "Created",
-							"code": 201,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
 					"name": "Get User 2",
@@ -2440,39 +1468,7 @@
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Crear aeropuerto 3",
-							"originalRequest": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"nombre\": \"El Dorado\",\r\n    \"codigo\": \"BOG\",\r\n    \"pais\": \"Colombia\",\r\n    \"ciudad\": \"Bogotá\",\r\n    \"id\": \"41c580d1-0afa-4ef6-9f62-5c7d2d44f1a4\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/airports",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airports"
-									]
-								}
-							},
-							"status": "Created",
-							"code": 201,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
 					"name": "Create User 3",
@@ -2482,6 +1478,9 @@
 							"script": {
 								"exec": [
 									"pm.environment.set(\"userId3\", pm.response.json().id);\r",
+									"pm.environment.set(\"emailUser3\", pm.response.json().email);\r",
+									"pm.environment.set(\"usernameUser3\", pm.response.json().username);\r",
+									"pm.environment.set(\"nameOfUser3\", pm.response.json().name);\r",
 									"\r",
 									"pm.test(\"El código de estado es 201\", function() {\r",
 									"    pm.response.to.have.status(201)\r",
@@ -2525,39 +1524,7 @@
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Crear aeropuerto 3",
-							"originalRequest": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"nombre\": \"El Dorado\",\r\n    \"codigo\": \"BOG\",\r\n    \"pais\": \"Colombia\",\r\n    \"ciudad\": \"Bogotá\",\r\n    \"id\": \"41c580d1-0afa-4ef6-9f62-5c7d2d44f1a4\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/airports",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airports"
-									]
-								}
-							},
-							"status": "Created",
-							"code": 201,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
 					"name": "Get User 3",
@@ -2612,39 +1579,7 @@
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Crear aeropuerto 3",
-							"originalRequest": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"nombre\": \"El Dorado\",\r\n    \"codigo\": \"BOG\",\r\n    \"pais\": \"Colombia\",\r\n    \"ciudad\": \"Bogotá\",\r\n    \"id\": \"41c580d1-0afa-4ef6-9f62-5c7d2d44f1a4\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/airports",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airports"
-									]
-								}
-							},
-							"status": "Created",
-							"code": 201,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
 					"name": "Get User that doesn't exist",
@@ -2695,39 +1630,7 @@
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Crear aeropuerto 3",
-							"originalRequest": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"nombre\": \"El Dorado\",\r\n    \"codigo\": \"BOG\",\r\n    \"pais\": \"Colombia\",\r\n    \"ciudad\": \"Bogotá\",\r\n    \"id\": \"41c580d1-0afa-4ef6-9f62-5c7d2d44f1a4\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/airports",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airports"
-									]
-								}
-							},
-							"status": "Created",
-							"code": 201,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
 					"name": "Get All Orgs",
@@ -2768,36 +1671,7 @@
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Obtener todas las aerolíneas",
-							"originalRequest": {
-								"method": "GET",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json",
-										"type": "text"
-									}
-								],
-								"url": {
-									"raw": "{{baseUrl}}/airlines",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airlines"
-									]
-								}
-							},
-							"status": "OK",
-							"code": 200,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
 					"name": "Get All Users in Org",
@@ -2852,39 +1726,7 @@
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Crear aeropuerto 3",
-							"originalRequest": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"nombre\": \"El Dorado\",\r\n    \"codigo\": \"BOG\",\r\n    \"pais\": \"Colombia\",\r\n    \"ciudad\": \"Bogotá\",\r\n    \"id\": \"41c580d1-0afa-4ef6-9f62-5c7d2d44f1a4\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/airports",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airports"
-									]
-								}
-							},
-							"status": "Created",
-							"code": 201,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
 					"name": "Get All Users in Org that doesn't exist",
@@ -2934,39 +1776,7 @@
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Crear aeropuerto 3",
-							"originalRequest": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"nombre\": \"El Dorado\",\r\n    \"codigo\": \"BOG\",\r\n    \"pais\": \"Colombia\",\r\n    \"ciudad\": \"Bogotá\",\r\n    \"id\": \"41c580d1-0afa-4ef6-9f62-5c7d2d44f1a4\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/airports",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airports"
-									]
-								}
-							},
-							"status": "Created",
-							"code": 201,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
 					"name": "Get All Users Bad Org id",
@@ -3016,42 +1826,10 @@
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Crear aeropuerto 3",
-							"originalRequest": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"nombre\": \"El Dorado\",\r\n    \"codigo\": \"BOG\",\r\n    \"pais\": \"Colombia\",\r\n    \"ciudad\": \"Bogotá\",\r\n    \"id\": \"41c580d1-0afa-4ef6-9f62-5c7d2d44f1a4\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/airports",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airports"
-									]
-								}
-							},
-							"status": "Created",
-							"code": 201,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
-					"name": "Update User 1",
+					"name": "Update User 1 username",
 					"event": [
 						{
 							"listen": "test",
@@ -3081,7 +1859,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"Owen Donnelly\",\r\n    \"email\": \"Dallas_Carroll11@hotmail.com\",\r\n    \"username\": \"updated_username\"\r\n}",
+							"raw": "{\r\n    \"name\": \"{{nameOfUser1}}\",\r\n    \"email\": \"{{emailUser1}}\",\r\n    \"username\": \"updated_username\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -3101,40 +1879,7 @@
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Actualizar un aeropuerto",
-							"originalRequest": {
-								"method": "PUT",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"id\": \"773e1818-a2df-418d-8fed-e6c1c565cee3\",\r\n    \"nombre\": \"El Dorado new\",\r\n    \"codigo\": \"BOG new\",\r\n    \"pais\": \"Colombia new\",\r\n    \"ciudad\": \"Bogotá new\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/airports/{{aeropuertoId}}",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airports",
-										"{{aeropuertoId}}"
-									]
-								}
-							},
-							"status": "OK",
-							"code": 200,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
 					"name": "Get User 1",
@@ -3154,7 +1899,7 @@
 									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
 									"    pm.expect(responseData.id).to.equal(pm.environment.get(\"userId1\"));\r",
 									"    pm.expect(responseData.username).to.equal(\"updated_username\")\r",
-									"    pm.expect(responseData.name).to.equal(\"Owen Donnelly\")\r",
+									"    pm.expect(responseData.name).to.equal(pm.environment.get(\"nameOfUser1\"));\r",
 									"});\r",
 									""
 								],
@@ -3191,296 +1936,27 @@
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Crear aeropuerto 3",
-							"originalRequest": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"nombre\": \"El Dorado\",\r\n    \"codigo\": \"BOG\",\r\n    \"pais\": \"Colombia\",\r\n    \"ciudad\": \"Bogotá\",\r\n    \"id\": \"41c580d1-0afa-4ef6-9f62-5c7d2d44f1a4\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/airports",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airports"
-									]
-								}
-							},
-							"status": "Created",
-							"code": 201,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
-				}
-			]
-		},
-		{
-			"name": "User Copy",
-			"item": [
-				{
-					"name": "crear socio 2",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.globals.set(\"socioId2\", pm.response.json().id);\r",
-									"\r",
-									"pm.test(\"El código de estado es 201\", function() {\r",
-									"    pm.response.to.have.status(201)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Información presente\", function() {\r",
-									"    pm.expect(pm.response.json().nombre).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().email).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().fechaNacimiento).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"nombre\": \"Eduardo Salamanca 2\",\r\n    \"email\": \"email2@email.com\",\r\n    \"fechaNacimiento\": \"2020-01-01\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/members",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"members"
-							]
-						}
-					},
-					"response": [
-						{
-							"name": "Crear aeropuerto 2",
-							"originalRequest": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"nombre\": \"El Dorado\",\r\n    \"codigo\": \"BOG\",\r\n    \"pais\": \"Colombia\",\r\n    \"ciudad\": \"Bogotá\",\r\n    \"id\": \"1619c9c1-b301-4231-94bf-ea9c172ddb14\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/airports",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airports"
-									]
-								}
-							},
-							"status": "Created",
-							"code": 201,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
-					"name": "crear socio 3",
+					"name": "Update User 2 email",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.globals.set(\"socioId3\", pm.response.json().id);\r",
-									"\r",
-									"pm.test(\"El código de estado es 201\", function() {\r",
-									"    pm.response.to.have.status(201)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Información presente\", function() {\r",
-									"    pm.expect(pm.response.json().nombre).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().email).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().fechaNacimiento).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"nombre\": \"Eduardo Salamanca 3\",\r\n    \"email\": \"email3@email.com\",\r\n    \"fechaNacimiento\": \"2020-01-01\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/members",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"members"
-							]
-						}
-					},
-					"response": [
-						{
-							"name": "Crear aeropuerto 3",
-							"originalRequest": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"nombre\": \"El Dorado\",\r\n    \"codigo\": \"BOG\",\r\n    \"pais\": \"Colombia\",\r\n    \"ciudad\": \"Bogotá\",\r\n    \"id\": \"41c580d1-0afa-4ef6-9f62-5c7d2d44f1a4\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/airports",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airports"
-									]
-								}
-							},
-							"status": "Created",
-							"code": 201,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
-				},
-				{
-					"name": "crear socio no valido",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"El código de estado es 412\", function() {\r",
-									"    pm.response.to.have.status(412)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Información presente\", function() {\r",
-									"    pm.expect(pm.response.json().message).to.be.contains('El email proporcionado no es válido');\r",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"nombre\": \"Eduardo Salamanca 3\",\r\n    \"email\": \"email3\",\r\n    \"fechaNacimiento\": \"2020-01-01\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/members",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"members"
-							]
-						}
-					},
-					"response": [
-						{
-							"name": "Crear aeropuerto 3",
-							"originalRequest": {
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"nombre\": \"El Dorado\",\r\n    \"codigo\": \"BOG\",\r\n    \"pais\": \"Colombia\",\r\n    \"ciudad\": \"Bogotá\",\r\n    \"id\": \"41c580d1-0afa-4ef6-9f62-5c7d2d44f1a4\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/airports",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airports"
-									]
-								}
-							},
-							"status": "Created",
-							"code": 201,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
-				},
-				{
-					"name": "Obtener todos los socios",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"El código de estado es 200\", function() {\r",
+									"pm.test(\"Code is 200\", function() {\r",
 									"    pm.response.to.have.status(200)\r",
 									"});\r",
 									"\r",
-									"pm.test(\"La lista no está vacía\", function() {\r",
-									"    pm.expect(pm.response.json()).to.be.an('array').that.is.not.empty;\r",
+									"pm.test(\"Info is present\", function() {\r",
+									"    const responseData = pm.response.json();\r",
+									"    pm.expect(pm.response.json().name).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().email).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().username).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.id).to.equal(pm.environment.get(\"userId2\"));\r",
+									"    pm.expect(responseData.email).to.equal(\"new_email@hotmail.com\")\r",
 									"});"
 								],
 								"type": "text/javascript",
@@ -3489,131 +1965,52 @@
 						}
 					],
 					"request": {
-						"method": "GET",
+						"method": "PUT",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{nameOfUser2}}\",\r\n    \"email\": \"new_email@hotmail.com\",\r\n    \"username\": \"{{usernameUser2}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
-							"raw": "{{baseUrl}}/members",
+							"raw": "{{baseUrl}}/organizations/{{orgId}}/users/{{userId2}}",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"members"
+								"organizations",
+								"{{orgId}}",
+								"users",
+								"{{userId2}}"
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Obtener todos los aeropuertos",
-							"originalRequest": {
-								"method": "GET",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json",
-										"type": "text"
-									}
-								],
-								"url": {
-									"raw": "{{baseUrl}}/airports",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airports"
-									]
-								}
-							},
-							"status": "OK",
-							"code": 200,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
-					"name": "Obtener un socio",
+					"name": "Get User 2",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"El código de estado es 200\", function() {\r",
+									"pm.test(\"Code is 200\", function() {\r",
 									"    pm.response.to.have.status(200)\r",
 									"});\r",
 									"\r",
-									"pm.test(\"Información presente\", function() {\r",
-									"    pm.expect(pm.response.json().nombre).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().email).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().fechaNacimiento).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/members/{{socioId}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"members",
-								"{{socioId}}"
-							]
-						}
-					},
-					"response": [
-						{
-							"name": "Obtener un aeropuerto",
-							"originalRequest": {
-								"method": "GET",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json",
-										"type": "text"
-									}
-								],
-								"url": {
-									"raw": "{{baseUrl}}/airports/{{aeropuertoId}}",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airports",
-										"{{aeropuertoId}}"
-									]
-								}
-							},
-							"status": "OK",
-							"code": 200,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
-				},
-				{
-					"name": "Obtener un socio que no existe",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"El código de estado es 404\", function() {\r",
-									"    pm.response.to.have.status(404)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Obtener el mensaje de error esperado\", function() {\r",
-									"   pm.expect(pm.response.json().message).to.eql(\"El socio con el id provisto no existe\");\r",
+									"pm.test(\"Non empty response\", function() {\r",
+									"    const responseData = pm.response.json();\r",
+									"    pm.expect(responseData.name).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.username).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.id).to.equal(pm.environment.get(\"userId2\"));\r",
+									"    pm.expect(responseData.username).to.equal(pm.environment.get(\"usernameUser2\"));\r",
+									"    pm.expect(responseData.name).to.equal(pm.environment.get(\"nameOfUser2\"));\r",
+									"    pm.expect(responseData.email).to.equal(\"new_email@hotmail.com\")\r",
 									"});\r",
 									""
 								],
@@ -3622,65 +2019,49 @@
 							}
 						}
 					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
 					"request": {
 						"method": "GET",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
-							"raw": "{{baseUrl}}/members/{{$guid}}",
+							"raw": "{{baseUrl}}/organizations/{{orgId}}/users/{{userId2}}",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"members",
-								"{{$guid}}"
+								"organizations",
+								"{{orgId}}",
+								"users",
+								"{{userId2}}"
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Obtener un aeropuerto que no existe",
-							"originalRequest": {
-								"method": "GET",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json",
-										"type": "text"
-									}
-								],
-								"url": {
-									"raw": "{{baseUrl}}/airports/{{$guid}}",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airports",
-										"{{$guid}}"
-									]
-								}
-							},
-							"status": "Not Found",
-							"code": 404,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
-					"name": "Actualizar un socio que no existe",
+					"name": "Update User 3 with existing email",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"El código de estado es 404\", function() {\r",
-									"    pm.response.to.have.status(404)\r",
+									"pm.test(\"Code is 400\", function() {\r",
+									"    pm.response.to.have.status(400)\r",
 									"});\r",
 									"\r",
-									"pm.test(\"Obtener el mensaje de error esperado\", function() {\r",
-									"   pm.expect(pm.response.json().message).to.eql(\"El socio con el id provisto no existe\");\r",
+									"pm.test(\"Get error message\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"The email provided is already in use\");\r",
 									"});\r",
 									""
 								],
@@ -3694,7 +2075,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"nombre\": \"Eduardo Salamanca\",\r\n    \"email\": \"email@email.com\",\r\n    \"fechaNacimiento\": \"2020-01-01\"\r\n}",
+							"raw": "{\r\n    \"name\": \"{{nameOfUser3}}\",\r\n    \"email\": \"new_email@hotmail.com\",\r\n    \"username\": \"{{usernameUser3}}\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -3702,59 +2083,124 @@
 							}
 						},
 						"url": {
-							"raw": "{{baseUrl}}/members/{{$guid}}",
+							"raw": "{{baseUrl}}/organizations/{{orgId}}/users/{{userId3}}",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"members",
-								"{{$guid}}"
+								"organizations",
+								"{{orgId}}",
+								"users",
+								"{{userId3}}"
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Actualizar un aeropuerto que no existe",
-							"originalRequest": {
-								"method": "PUT",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"statusCode\": 404,\r\n    \"message\": \"El aeropuerto con el id dado no fue encontrado\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/airports/{{$guid}}",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airports",
-										"{{$guid}}"
-									]
-								}
-							},
-							"status": "Not Found",
-							"code": 404,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
-					"name": "Eliminar un socio",
+					"name": "Update User 3 with existing username",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"El código de estado es 204\", function() {\r",
+									"pm.test(\"Code is 400\", function() {\r",
+									"    pm.response.to.have.status(400)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Get error message\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"The username provided is already in use\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{nameOfUser3}}\",\r\n    \"email\": \"{{emailUser3}}\",\r\n    \"username\": \"{{usernameUser2}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/organizations/{{orgId}}/users/{{userId3}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								"{{orgId}}",
+								"users",
+								"{{userId3}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update User that doesn't exist",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 404\", function() {\r",
+									"    pm.response.to.have.status(404)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Get error message\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"The User with the provided id does not exist\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{nameOfUser3}}\",\r\n    \"email\": \"{{emailUser3}}\",\r\n    \"username\": \"{{usernameUser2}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/organizations/{{orgId}}/users/{{$randomUUID}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								"{{orgId}}",
+								"users",
+								"{{$randomUUID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete a User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 204\", function() {\r",
 									"    pm.response.to.have.status(204)\r",
 									"});"
 								],
@@ -3767,55 +2213,33 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/members/{{socioId}}",
+							"raw": "{{baseUrl}}/organizations/{{orgId}}/users/{{userId1}}",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"members",
-								"{{socioId}}"
+								"organizations",
+								"{{orgId}}",
+								"users",
+								"{{userId1}}"
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Eliminar un aeropuerto",
-							"originalRequest": {
-								"method": "DELETE",
-								"header": [],
-								"url": {
-									"raw": "{{baseUrl}}/airports/{{aeropuertoId}}",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airports",
-										"{{aeropuertoId}}"
-									]
-								}
-							},
-							"status": "No Content",
-							"code": 204,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
-					"name": "Eliminar un aeropuerto que no existe",
+					"name": "Delete a non existent user",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"El código de estado es 404\", function() {\r",
+									"pm.test(\"Code is 404\", function() {\r",
 									"    pm.response.to.have.status(404)\r",
 									"});\r",
 									"\r",
-									"pm.test(\"Obtener el mensaje de error esperado\", function() {\r",
-									"   pm.expect(pm.response.json().message).to.eql(\"El socio con el id provisto no existe\");\r",
+									"pm.test(\"Get error\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"The User with the provided id does not exist\");\r",
 									"});\r",
 									""
 								],
@@ -3828,83 +2252,118 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/members/{{$guid}}",
+							"raw": "{{baseUrl}}/organizations/{{orgId}}/users/{{userId1}}",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"members",
-								"{{$guid}}"
+								"organizations",
+								"{{orgId}}",
+								"users",
+								"{{userId1}}"
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Eliminar un aeropuerto que no existe",
-							"originalRequest": {
-								"method": "DELETE",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json",
-										"type": "text"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"statusCode\": 404,\r\n    \"message\": \"El aeropuerto con el id dado no fue encontrado\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/airports/{{$guid}}",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airports",
-										"{{$guid}}"
-									]
-								}
-							},
-							"status": "Not Found",
-							"code": 404,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
-				}
-			]
-		},
-		{
-			"name": "Club-Socio",
-			"item": [
+					"response": []
+				},
 				{
-					"name": "Agregar un socio a un club",
+					"name": "Delete All",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/organizations",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Artifact",
+			"item": [
+				{
+					"name": "Delete All",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/organizations",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Org",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"orgId\", pm.response.json().id);\r",
+									"\r",
 									"pm.test(\"El código de estado es 201\", function() {\r",
 									"    pm.response.to.have.status(201)\r",
 									"});\r",
 									"\r",
 									"pm.test(\"Información presente\", function() {\r",
-									"    pm.expect(pm.response.json().nombre).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().descripcion).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().fechaFundacion).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().imagen).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().name).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().description).to.be.a('string').and.to.not.be.empty;\r",
 									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
-									"});\r",
-									"\r",
-									"pm.test(\"La lista no está vacía\", function() {\r",
-									"    pm.expect(pm.response.json().socios).to.be.an('array').that.is.not.empty;\r",
 									"});"
 								],
 								"type": "text/javascript",
@@ -3915,76 +2374,134 @@
 					"request": {
 						"method": "POST",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{$randomCompanyName}}\",\r\n    \"description\": \"This organization focuses on {{$randomLoremWords}} and its main mission in life is {{$randomLoremWords}}\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
-							"raw": "{{baseUrl}}/clubs/{{clubId2}}/members/{{socioId2}}",
+							"raw": "{{baseUrl}}/organizations",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"clubs",
-								"{{clubId2}}",
-								"members",
-								"{{socioId2}}"
+								"organizations"
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Agregar un aeropuerto a una aerolínea",
-							"originalRequest": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json",
-										"type": "text"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"id\": \"1edc98e8-ed10-47f0-8370-2af1fdaf8807\",\r\n    \"nombre\": \"Latam Airlines\",\r\n    \"descripcion\": \"LATAM Airlines es la mayor aerolínea de América Latina, formada por la fusión de LAN y TAM en 2012. Tiene sede en Santiago de Chile y opera vuelos nacionales e internacionales en América, Europa, Asia y Oceanía. Con hubs en ciudades como São Paulo y Lima, LATAM se destaca por su moderna flota y su enfoque en la sostenibilidad.\",\r\n    \"fechaFundacion\": \"2020-01-01T05:00:00.000Z\",\r\n    \"urlPaginaWeb\": \"https://www.latamairlines.com/co/es\",\r\n    \"aeropuertos\": [\r\n        {\r\n            \"id\": \"1619c9c1-b301-4231-94bf-ea9c172ddb14\",\r\n            \"nombre\": \"El Dorado\",\r\n            \"codigo\": \"BOG\",\r\n            \"pais\": \"Colombia\",\r\n            \"ciudad\": \"Bogotá\"\r\n        }\r\n    ]\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/airlines/{{aerolineaId2}}/airports/{{aeropuertoId2}}",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airlines",
-										"{{aerolineaId2}}",
-										"airports",
-										"{{aeropuertoId2}}"
-									]
-								}
-							},
-							"status": "Created",
-							"code": 201,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
-					"name": "Agregar un socio que no existe a un club",
+					"name": "Get All Orgs",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"El código de estado es 404\", function() {\r",
-									"    pm.response.to.have.status(404)\r",
+									"pm.test(\"Code is 200\", function() {\r",
+									"    pm.response.to.have.status(200);\r",
 									"});\r",
 									"\r",
-									"pm.test(\"Obtener el mensaje de error esperado\", function() {\r",
-									"   pm.expect(pm.response.json().message).to.eql(\"El Socio con el id dado no fue encontrado\");\r",
+									"pm.test(\"Non Empty list\", function() {\r",
+									"    pm.expect(pm.response.json()).to.be.an('array').that.is.not.empty;\r",
+									"    pm.expect(pm.response.json()).to.have.lengthOf(1);\r",
+									"    pm.expect(pm.response.json()[0].id).to.equal(pm.environment.get(\"orgId\"));\r",
 									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/organizations",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Artifact",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"artifactId1\", pm.response.json().id);\r",
+									"pm.environment.set(\"description1\", pm.response.json().email);\r",
+									"\r",
+									"\r",
+									"\r",
+									"pm.test(\"El código de estado es 201\", function() {\r",
+									"    pm.response.to.have.status(201)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Información presente\", function() {\r",
+									"    pm.expect(pm.response.json().name).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().description).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().body).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().organization.id).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().organization.id).to.equal(pm.environment.get(\"orgId\"))\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const bodyObject = {",
+									"    name: \"Ultimate Home Organizer Kit\",",
+									"    description: \"A comprehensive storage solution designed to streamline and beautify every corner of your home, with modular bins, shelves, and customizable labels.\",",
+									"    category: \"Home Organization\",",
+									"    features: [",
+									"        \"Eco-friendly materials\",",
+									"        \"Modular storage bins\",",
+									"        \"Durable shelves\",",
+									"        \"Customizable labels\",",
+									"        \"Versatile design for multiple rooms\"",
+									"    ],",
+									"    price: 49.99,",
+									"    availability: true,",
+									"    dimensions: {",
+									"        width: \"12 inches\",",
+									"        height: \"8 inches\",",
+									"        depth: \"10 inches\"",
+									"    },",
+									"    colorOptions: [\"white\", \"black\", \"gray\"],",
+									"    rating: 4.7,",
+									"    reviews: [",
+									"        {",
+									"            user: \"Sarah J.\",",
+									"            rating: 5,",
+									"            comment: \"Perfect for organizing my craft supplies!\"",
+									"        },",
+									"        {",
+									"            user: \"Mike L.\",",
+									"            rating: 4,",
+									"            comment: \"Sturdy and well-made, though a bit smaller than I expected.\"",
+									"        }",
+									"    ]",
+									"};",
+									"",
+									"// Convert JSON object to a string and set it as an environment variable",
+									"pm.environment.set(\"body1\", JSON.stringify(bodyObject));",
 									""
 								],
 								"type": "text/javascript",
@@ -3995,216 +2512,478 @@
 					"request": {
 						"method": "POST",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{$randomProductName}}\",\r\n    \"description\": \"Introducing the Ultimate Home Organizer Kit, a comprehensive solution designed to streamline and beautify every corner of your home. This set includes modular storage bins, durable shelves, and customizable labels, perfect for decluttering bedrooms, kitchens, and office spaces. Made from eco-friendly materials, each item in this kit is built for versatility and durability. Whether you’re organizing clothes, kitchen items, or crafting supplies, this organizer kit offers a stylish, functional, and sustainable way to bring order to your home!\",\r\n    \"body\": {{body1}}\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
-							"raw": "{{baseUrl}}/clubs/{{clubId2}}/members/{{$guid}}",
+							"raw": "{{baseUrl}}/organizations/{{orgId}}/artifacts",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"clubs",
-								"{{clubId2}}",
-								"members",
-								"{{$guid}}"
+								"organizations",
+								"{{orgId}}",
+								"artifacts"
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Agregar un aeropuerto a una aerolínea que no existe",
-							"originalRequest": {
-								"method": "POST",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json",
-										"type": "text"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"statusCode\": 404,\r\n    \"message\": \"La aerolínea con el id dado no fue encontrada\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/airlines/{{$guid}}/airports/{{aeropuertoId2}}",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airlines",
-										"{{$guid}}",
-										"airports",
-										"{{aeropuertoId2}}"
-									]
-								}
-							},
-							"status": "Not Found",
-							"code": 404,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
-					"name": "Obtener todos los socios de un club",
+					"name": "Get User 1",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"El código de estado es 200\", function() {\r",
+									"pm.test(\"Code is 200\", function() {\r",
 									"    pm.response.to.have.status(200)\r",
 									"});\r",
 									"\r",
-									"pm.test(\"La lista no está vacía\", function() {\r",
-									"    pm.expect(pm.response.json()).to.be.an('array').that.is.not.empty;\r",
-									"});"
+									"pm.test(\"Non empty response\", function() {\r",
+									"    const responseData = pm.response.json();\r",
+									"    pm.expect(responseData.name).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.username).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.id).to.equal(pm.environment.get(\"userId1\"));\r",
+									"});\r",
+									""
 								],
 								"type": "text/javascript",
 								"packages": {}
 							}
 						}
 					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
 					"request": {
 						"method": "GET",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
-							"raw": "{{baseUrl}}/clubs/{{clubId2}}/members",
+							"raw": "{{baseUrl}}/organizations/{{orgId}}/users/{{userId1}}",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"clubs",
-								"{{clubId2}}",
-								"members"
+								"organizations",
+								"{{orgId}}",
+								"users",
+								"{{userId1}}"
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Obtener todos los aeropuertos de una aerolínea",
-							"originalRequest": {
-								"method": "GET",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json",
-										"type": "text"
-									}
-								],
-								"url": {
-									"raw": "{{baseUrl}}/airlines/{{aerolineaId2}}/airports",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airlines",
-										"{{aerolineaId2}}",
-										"airports"
-									]
-								}
-							},
-							"status": "OK",
-							"code": 200,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
-					"name": "Obtener un socio de una club",
+					"name": "Get User 1 Wrong Org Id",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"El código de estado es 200\", function() {\r",
-									"    pm.response.to.have.status(200)\r",
+									"pm.test(\"Code is 404\", function() {\r",
+									"    pm.response.to.have.status(404)\r",
 									"});\r",
 									"\r",
-									"pm.test(\"Información presente\", function() {\r",
-									"    pm.expect(pm.response.json().nombre).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().email).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().fechaNacimiento).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
-									"});"
+									"pm.test(\"Get error message\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"The organization provided does not exist\");\r",
+									"});\r",
+									""
 								],
 								"type": "text/javascript",
 								"packages": {}
 							}
 						}
 					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
 					"request": {
 						"method": "GET",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
-							"raw": "{{baseUrl}}/clubs/{{clubId2}}/members/{{socioId2}}",
+							"raw": "{{baseUrl}}/organizations/{{$randomUUID}}/users/{{userId1}}",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"clubs",
-								"{{clubId2}}",
-								"members",
-								"{{socioId2}}"
+								"organizations",
+								"{{$randomUUID}}",
+								"users",
+								"{{userId1}}"
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Obtener un aeropuerto de una aerolínea",
-							"originalRequest": {
-								"method": "GET",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json",
-										"type": "text"
-									}
-								],
-								"url": {
-									"raw": "{{baseUrl}}/airlines/{{aerolineaId2}}/airports/{{aeropuertoId2}}",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airlines",
-										"{{aerolineaId2}}",
-										"airports",
-										"{{aeropuertoId2}}"
-									]
-								}
-							},
-							"status": "OK",
-							"code": 200,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
-					"name": "Obtener un socio que no está asociado a un club",
+					"name": "Get User 1 bad Org Id",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"El código de estado es 412\", function() {\r",
+									"pm.test(\"Code is 412\", function() {\r",
 									"    pm.response.to.have.status(412)\r",
 									"});\r",
 									"\r",
-									"pm.test(\"Obtener el mensaje de error esperado\", function() {\r",
-									"   pm.expect(pm.response.json().message).to.eql(\"El Socio con el id dado no está asociado a el Club\");\r",
+									"pm.test(\"Get error message\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"The organizationId provided is not valid\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/organizations/no-valid-id/users/{{userId1}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								"no-valid-id",
+								"users",
+								"{{userId1}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create User 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"userId2\", pm.response.json().id);\r",
+									"pm.environment.set(\"emailUser2\", pm.response.json().email);\r",
+									"pm.environment.set(\"usernameUser2\", pm.response.json().username);\r",
+									"pm.environment.set(\"nameOfUser2\", pm.response.json().name);\r",
+									"\r",
+									"\r",
+									"pm.test(\"El código de estado es 201\", function() {\r",
+									"    pm.response.to.have.status(201)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Información presente\", function() {\r",
+									"    pm.expect(pm.response.json().name).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().email).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().username).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().organization.id).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().organization.id).to.equal(pm.environment.get(\"orgId\"))\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{$randomFullName}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"{{$randomUserName}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/organizations/{{orgId}}/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								"{{orgId}}",
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 200\", function() {\r",
+									"    pm.response.to.have.status(200)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Non empty response\", function() {\r",
+									"    const responseData = pm.response.json();\r",
+									"    pm.expect(responseData.name).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.username).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.id).to.equal(pm.environment.get(\"userId2\"));\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/organizations/{{orgId}}/users/{{userId2}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								"{{orgId}}",
+								"users",
+								"{{userId2}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create User 3",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"userId3\", pm.response.json().id);\r",
+									"pm.environment.set(\"emailUser3\", pm.response.json().email);\r",
+									"pm.environment.set(\"usernameUser3\", pm.response.json().username);\r",
+									"pm.environment.set(\"nameOfUser3\", pm.response.json().name);\r",
+									"\r",
+									"pm.test(\"El código de estado es 201\", function() {\r",
+									"    pm.response.to.have.status(201)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Información presente\", function() {\r",
+									"    pm.expect(pm.response.json().name).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().email).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().username).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().organization.id).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().organization.id).to.equal(pm.environment.get(\"orgId\"))\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{$randomFullName}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"{{$randomUserName}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/organizations/{{orgId}}/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								"{{orgId}}",
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User 3",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 200\", function() {\r",
+									"    pm.response.to.have.status(200)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Non empty response\", function() {\r",
+									"    const responseData = pm.response.json();\r",
+									"    pm.expect(responseData.name).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.username).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.id).to.equal(pm.environment.get(\"userId3\"));\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/organizations/{{orgId}}/users/{{userId3}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								"{{orgId}}",
+								"users",
+								"{{userId3}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User that doesn't exist",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 404\", function() {\r",
+									"    pm.response.to.have.status(404)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Get error message\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"The user with the provided id does not exist\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{$randomFullName}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"{{$randomUserName}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/organizations/{{orgId}}/users/{{$randomUUID}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								"{{orgId}}",
+								"users",
+								"{{$randomUUID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Orgs",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 200\", function() {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Non Empty list\", function() {\r",
+									"    pm.expect(pm.response.json()).to.be.an('array').that.is.not.empty;\r",
+									"    pm.expect(pm.response.json()).to.have.lengthOf(1);\r",
+									"    pm.expect(pm.response.json()[0].id).to.equal(pm.environment.get(\"orgId\"));\r",
+									"    pm.expect(pm.response.json()[0].users).to.not.be.empty;\r",
+									"    pm.expect(pm.response.json()[0].users).to.be.an('array').that.has.lengthOf(3);\r",
+									"    pm.expect(pm.response.json()[0].artifacts).to.be.an('array').that.has.lengthOf(0);\r",
 									"});\r",
 									""
 								],
@@ -4217,73 +2996,191 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/clubs/{{clubId2}}/members/{{socioId3}}",
+							"raw": "{{baseUrl}}/organizations",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"clubs",
-								"{{clubId2}}",
-								"members",
-								"{{socioId3}}"
+								"organizations"
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Obtener un aeropuerto que no está asociado a una aerolínea",
-							"originalRequest": {
-								"method": "GET",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json",
-										"type": "text"
-									}
-								],
-								"url": {
-									"raw": "{{baseUrl}}/airlines/{{aerolineaId2}}/airports/{{aeropuertoId3}}",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airlines",
-										"{{aerolineaId2}}",
-										"airports",
-										"{{aeropuertoId3}}"
-									]
-								}
-							},
-							"status": "Precondition Failed",
-							"code": 412,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
-					"name": "Actualizar los socios de un club",
+					"name": "Get All Users in Org",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"El código de estado es 200\", function() {\r",
+									"pm.test(\"Code is 200\", function() {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Non Empty list\", function() {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson).to.be.an('array').that.is.not.empty;\r",
+									"    pm.expect(responseJson).to.have.lengthOf(3);\r",
+									"    pm.expect(responseJson[0].id).to.equal(pm.environment.get(\"userId1\"));\r",
+									"    pm.expect(responseJson[1].id).to.equal(pm.environment.get(\"userId2\"));\r",
+									"    pm.expect(responseJson[2].id).to.equal(pm.environment.get(\"userId3\"));\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{$randomFullName}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"{{$randomUserName}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/organizations/{{orgId}}/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								"{{orgId}}",
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Users in Org that doesn't exist",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 412\", function() {\r",
+									"    pm.response.to.have.status(404)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Get error message\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"The organization provided does not exist\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{$randomFullName}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"{{$randomUserName}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/organizations/{{$randomUUID}}/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								"{{$randomUUID}}",
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Users Bad Org id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 412\", function() {\r",
+									"    pm.response.to.have.status(412)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Get error message\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"The organizationId provided is not valid\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{$randomFullName}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"{{$randomUserName}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/organizations/bad-org-id/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								"bad-org-id",
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update User 1 username",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 200\", function() {\r",
 									"    pm.response.to.have.status(200)\r",
 									"});\r",
 									"\r",
-									"pm.test(\"Información presente\", function() {\r",
-									"    pm.expect(pm.response.json().nombre).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().descripcion).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().fechaFundacion).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().imagen).to.be.a('string').and.to.not.be.empty;\r",
+									"pm.test(\"Info is present\", function() {\r",
+									"    const responseData = pm.response.json();\r",
+									"    pm.expect(pm.response.json().name).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().email).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().username).to.be.a('string').and.to.not.be.empty;\r",
 									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
-									"});\r",
-									"\r",
-									"pm.test(\"La lista no está vacía\", function() {\r",
-									"    pm.expect(pm.response.json().socios).to.be.an('array').that.is.not.empty;\r",
+									"    pm.expect(responseData.id).to.equal(pm.environment.get(\"userId1\"));\r",
+									"    pm.expect(responseData.username).to.equal(\"updated_username\")\r",
 									"});"
 								],
 								"type": "text/javascript",
@@ -4296,7 +3193,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "[\r\n    {\r\n        \"id\": \"{{socioId3}}\"\r\n    }\r\n]",
+							"raw": "{\r\n    \"name\": \"{{nameOfUser1}}\",\r\n    \"email\": \"{{emailUser1}}\",\r\n    \"username\": \"updated_username\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -4304,67 +3201,201 @@
 							}
 						},
 						"url": {
-							"raw": "{{baseUrl}}/clubs/{{clubId2}}/members/",
+							"raw": "{{baseUrl}}/organizations/{{orgId}}/users/{{userId1}}",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"clubs",
-								"{{clubId2}}",
-								"members",
-								""
+								"organizations",
+								"{{orgId}}",
+								"users",
+								"{{userId1}}"
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Actualizar los aeropuertos de una aerolínea",
-							"originalRequest": {
-								"method": "PUT",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"id\": \"1edc98e8-ed10-47f0-8370-2af1fdaf8807\",\r\n    \"nombre\": \"Latam Airlines\",\r\n    \"descripcion\": \"LATAM Airlines es la mayor aerolínea de América Latina, formada por la fusión de LAN y TAM en 2012. Tiene sede en Santiago de Chile y opera vuelos nacionales e internacionales en América, Europa, Asia y Oceanía. Con hubs en ciudades como São Paulo y Lima, LATAM se destaca por su moderna flota y su enfoque en la sostenibilidad.\",\r\n    \"fechaFundacion\": \"2020-01-01T05:00:00.000Z\",\r\n    \"urlPaginaWeb\": \"https://www.latamairlines.com/co/es\",\r\n    \"aeropuertos\": [\r\n        {\r\n            \"id\": \"1619c9c1-b301-4231-94bf-ea9c172ddb14\"\r\n        }\r\n    ]\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/airlines/{{aerolineaId2}}/airports",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airlines",
-										"{{aerolineaId2}}",
-										"airports"
-									]
-								}
-							},
-							"status": "OK",
-							"code": 200,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
-					"name": "Actualizar los socios de un club con un socio que no existe",
+					"name": "Get User 1",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"El código de estado es 404\", function() {\r",
-									"    pm.response.to.have.status(404)\r",
+									"pm.test(\"Code is 200\", function() {\r",
+									"    pm.response.to.have.status(200)\r",
 									"});\r",
 									"\r",
-									"pm.test(\"Obtener el mensaje de error esperado\", function() {\r",
-									"   pm.expect(pm.response.json().message).to.eql(\"El Socio con el id dado no fue encontrado\");\r",
+									"pm.test(\"Non empty response\", function() {\r",
+									"    const responseData = pm.response.json();\r",
+									"    pm.expect(responseData.name).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.username).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.id).to.equal(pm.environment.get(\"userId1\"));\r",
+									"    pm.expect(responseData.username).to.equal(\"updated_username\")\r",
+									"    pm.expect(responseData.name).to.equal(pm.environment.get(\"nameOfUser1\"));\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/organizations/{{orgId}}/users/{{userId1}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								"{{orgId}}",
+								"users",
+								"{{userId1}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update User 2 email",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 200\", function() {\r",
+									"    pm.response.to.have.status(200)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Info is present\", function() {\r",
+									"    const responseData = pm.response.json();\r",
+									"    pm.expect(pm.response.json().name).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().email).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().username).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.id).to.equal(pm.environment.get(\"userId2\"));\r",
+									"    pm.expect(responseData.email).to.equal(\"new_email@hotmail.com\")\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{nameOfUser2}}\",\r\n    \"email\": \"new_email@hotmail.com\",\r\n    \"username\": \"{{usernameUser2}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/organizations/{{orgId}}/users/{{userId2}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								"{{orgId}}",
+								"users",
+								"{{userId2}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 200\", function() {\r",
+									"    pm.response.to.have.status(200)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Non empty response\", function() {\r",
+									"    const responseData = pm.response.json();\r",
+									"    pm.expect(responseData.name).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.username).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.id).to.equal(pm.environment.get(\"userId2\"));\r",
+									"    pm.expect(responseData.username).to.equal(pm.environment.get(\"usernameUser2\"));\r",
+									"    pm.expect(responseData.name).to.equal(pm.environment.get(\"nameOfUser2\"));\r",
+									"    pm.expect(responseData.email).to.equal(\"new_email@hotmail.com\")\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/organizations/{{orgId}}/users/{{userId2}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								"{{orgId}}",
+								"users",
+								"{{userId2}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update User 3 with existing email",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 400\", function() {\r",
+									"    pm.response.to.have.status(400)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Get error message\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"The email provided is already in use\");\r",
 									"});\r",
 									""
 								],
@@ -4378,7 +3409,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "[\r\n    {\r\n        \"id\": \"{{$guid}}\"\r\n    }\r\n]",
+							"raw": "{\r\n    \"name\": \"{{nameOfUser3}}\",\r\n    \"email\": \"new_email@hotmail.com\",\r\n    \"username\": \"{{usernameUser3}}\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -4386,62 +3417,124 @@
 							}
 						},
 						"url": {
-							"raw": "{{baseUrl}}/clubs/{{clubId2}}/members/",
+							"raw": "{{baseUrl}}/organizations/{{orgId}}/users/{{userId3}}",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"clubs",
-								"{{clubId2}}",
-								"members",
-								""
+								"organizations",
+								"{{orgId}}",
+								"users",
+								"{{userId3}}"
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Actualizar los aeropuertos de una aerolínea con aeropuertos que no existen",
-							"originalRequest": {
-								"method": "PUT",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"statusCode\": 404,\r\n    \"message\": \"El aeropuerto con el id dado no fue encontrado\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/airlines/{{aerolineaId2}}/airports",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airlines",
-										"{{aerolineaId2}}",
-										"airports"
-									]
-								}
-							},
-							"status": "Not Found",
-							"code": 404,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
-					"name": "Eliminar un socio de un club",
+					"name": "Update User 3 with existing username",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"El código de estado es 204\", function() {\r",
+									"pm.test(\"Code is 400\", function() {\r",
+									"    pm.response.to.have.status(400)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Get error message\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"The username provided is already in use\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{nameOfUser3}}\",\r\n    \"email\": \"{{emailUser3}}\",\r\n    \"username\": \"{{usernameUser2}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/organizations/{{orgId}}/users/{{userId3}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								"{{orgId}}",
+								"users",
+								"{{userId3}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update User that doesn't exist",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 404\", function() {\r",
+									"    pm.response.to.have.status(404)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Get error message\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"The User with the provided id does not exist\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{nameOfUser3}}\",\r\n    \"email\": \"{{emailUser3}}\",\r\n    \"username\": \"{{usernameUser2}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/organizations/{{orgId}}/users/{{$randomUUID}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								"{{orgId}}",
+								"users",
+								"{{$randomUUID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete a User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 204\", function() {\r",
 									"    pm.response.to.have.status(204)\r",
 									"});"
 								],
@@ -4454,59 +3547,33 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/clubs/{{clubId2}}/members/{{socioId3}}",
+							"raw": "{{baseUrl}}/organizations/{{orgId}}/users/{{userId1}}",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"clubs",
-								"{{clubId2}}",
-								"members",
-								"{{socioId3}}"
+								"organizations",
+								"{{orgId}}",
+								"users",
+								"{{userId1}}"
 							]
 						}
 					},
-					"response": [
-						{
-							"name": "Eliminar un aeropuerto de una aerolínea",
-							"originalRequest": {
-								"method": "DELETE",
-								"header": [],
-								"url": {
-									"raw": "{{baseUrl}}/airlines/{{aerolineaId2}}/airports/{{aeropuertoId2}}",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airlines",
-										"{{aerolineaId2}}",
-										"airports",
-										"{{aeropuertoId2}}"
-									]
-								}
-							},
-							"status": "No Content",
-							"code": 204,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
-						}
-					]
+					"response": []
 				},
 				{
-					"name": "Eliminar un socio que no está asociado al club",
+					"name": "Delete a non existent user",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"El código de estado es 412\", function() {\r",
-									"    pm.response.to.have.status(412)\r",
+									"pm.test(\"Code is 404\", function() {\r",
+									"    pm.response.to.have.status(404)\r",
 									"});\r",
 									"\r",
-									"pm.test(\"Obtener el mensaje de error esperado\", function() {\r",
-									"   pm.expect(pm.response.json().message).to.eql(\"El Socio con el id dado no está asociado a el Club\");\r",
+									"pm.test(\"Get error\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"The User with the provided id does not exist\");\r",
 									"});\r",
 									""
 								],
@@ -4519,60 +3586,57 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/clubs/{{clubId2}}/members/{{socioId3}}",
+							"raw": "{{baseUrl}}/organizations/{{orgId}}/users/{{userId1}}",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"clubs",
-								"{{clubId2}}",
-								"members",
-								"{{socioId3}}"
+								"organizations",
+								"{{orgId}}",
+								"users",
+								"{{userId1}}"
 							]
 						}
 					},
-					"response": [
+					"response": []
+				},
+				{
+					"name": "Delete All",
+					"event": [
 						{
-							"name": "Eliminar un aeropuerto que no está asociado a una aerolínea",
-							"originalRequest": {
-								"method": "DELETE",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json",
-										"type": "text"
-									}
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
 								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"statusCode\": 412,\r\n    \"message\": \"El aeropuerto con el id dado no está asociado a la aerolínea\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/airlines/{{aerolineaId2}}/airports/{{aeropuertoId3}}",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"airlines",
-										"{{aerolineaId2}}",
-										"airports",
-										"{{aeropuertoId3}}"
-									]
-								}
-							},
-							"status": "Precondition Failed",
-							"code": 412,
-							"_postman_previewlanguage": "Text",
-							"header": [],
-							"cookie": [],
-							"body": ""
+								"type": "text/javascript",
+								"packages": {}
+							}
 						}
-					]
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/organizations",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		}
