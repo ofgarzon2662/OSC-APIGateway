@@ -6,7 +6,6 @@ import { OrganizationModule } from './organization/organization.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from './user/user.entity';
 import { OrganizationEntity } from './organization/organization.entity';
-import { OrganizationUserModule } from './organization-user/organization-user.module';
 import { ArtifactEntity } from './artifact/artifact.entity';
 import { ArtifactModule } from './artifact/artifact.module';
 
@@ -27,7 +26,6 @@ import { ArtifactModule } from './artifact/artifact.module';
       synchronize: true,
       keepConnectionAlive: true,
     }),
-    OrganizationUserModule,
     ArtifactModule,
   ],
   controllers: [AppController],

@@ -16,24 +16,29 @@ import { plainToInstance } from 'class-transformer';
 import { ArtifactDto } from './artifact.dto';
 import { BusinessErrorsInterceptor } from '../shared/interceptors/business-errors.interceptors';
 
-@Controller('artifacts')
+@Controller('organizations/:organizationId/artifacts')
 @UseInterceptors(BusinessErrorsInterceptor)
 export class ArtifactController {
   constructor(private readonly artifactService: ArtifactService) {}
 
-  // Obtener todos los artifacts
+  // Get All artifacts
   @Get()
-  async findAll(): Promise<ArtifactEntity[]> {
-    return this.artifactService.findAll();
+  async findAll(
+    @Param('organizationId') organizationId: string,
+  ): Promise<ArtifactEntity[]> {
+    return this.artifactService.findAll(organizationId);
   }
 
-  // Obtener un artifact por id
+  // Get One Artifact
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<ArtifactEntity> {
-    return this.artifactService.findOne(id);
+  async findOne(
+    @Param('organizationId') organizationId: string,
+    @Param('id') id: string,
+  ): Promise<ArtifactEntity> {
+    return this.artifactService.findOne(organizationId, id);
   }
 
-  // Crear un artifact
+  // Create One artifact
   @Post()
   async create(
     @Param('organizationId') organizationId: string,
@@ -46,7 +51,7 @@ export class ArtifactController {
     return await this.artifactService.create(artifact, organizationId);
   }
 
-  // Actualizar un artifact
+  // Update an artifact
 
   @Put(':artifactId')
   async update(

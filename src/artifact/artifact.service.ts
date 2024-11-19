@@ -6,8 +6,8 @@ import {
   BusinessError,
   BusinessLogicException,
 } from '../shared/errors/business-errors';
-import { OrganizationEntity } from '../organization/organization.entity';
 import validator from 'validator';
+import { OrganizationEntity } from '../organization/organization.entity';
 
 @Injectable()
 export class ArtifactService {
@@ -19,19 +19,44 @@ export class ArtifactService {
   ) {}
 
   // Get All Artifacts
-  async findAll(): Promise<ArtifactEntity[]> {
-    return await this.artifactRepository.find({ relations: ['organization'] });
+  async findAll(organizationId: string): Promise<ArtifactEntity[]> {
+    this.validateOrganizationId(organizationId);
+
+    // Check if the organization exists
+    const organization = await this.organizationRepository.findOne({
+      where: { id: organizationId },
+    });
+    if (!organization) {
+      throw new BusinessLogicException(
+        'The organization provided does not exist',
+        BusinessError.NOT_FOUND,
+      );
+    }
+    return await this.artifactRepository.find({
+      where: { organization },
+      relations: ['organization'],
+    });
   }
 
   // Get One Artifact
-  async findOne(id: string): Promise<ArtifactEntity> {
-    if (!validator.isUUID(id))
+  async findOne(orgId: string, artifactId: string): Promise<ArtifactEntity> {
+    this.validateOrganizationId(orgId);
+    this.validateArtifactId(artifactId);
+
+    // Check if the organization exists
+    const organization = await this.organizationRepository.findOne({
+      where: { id: orgId },
+    });
+    if (!organization) {
       throw new BusinessLogicException(
-        'The artifact Id provided is not valid',
-        BusinessError.PRECONDITION_FAILED,
+        'The organization provided does not exist',
+        BusinessError.NOT_FOUND,
       );
+    }
+
+    // Check that the artifact is part of the organization
     const artifact: ArtifactEntity = await this.artifactRepository.findOne({
-      where: { id },
+      where: { id: artifactId, organization },
       relations: ['organization'],
     });
     if (!artifact)
@@ -48,128 +73,138 @@ export class ArtifactService {
     artifact: Partial<ArtifactEntity>,
     organizationId: string,
   ): Promise<ArtifactEntity> {
-    // The organizationId should be a valid UUID
-    if (!validator.isUUID(organizationId))
-      throw new BusinessLogicException(
-        'The organizationId provided is not valid',
-        BusinessError.PRECONDITION_FAILED,
-      );
-    if (!artifact.name) {
-      throw new BusinessLogicException(
-        'The name of the artifact is required',
-        BusinessError.PRECONDITION_FAILED,
-      );
-    }
-    // Unique Name
-    const existingArtifact: ArtifactEntity =
-      await this.artifactRepository.findOne({
-        where: { name: artifact.name },
-      });
+    this.validateOrganizationId(organizationId);
 
-    if (existingArtifact) {
-      throw new BusinessLogicException(
-        'The artifact name provided is already in use',
-        BusinessError.BAD_REQUEST,
-      );
-    }
-    if (!artifact.description || artifact.description.length < 200) {
-      throw new BusinessLogicException(
-        'The description of the artifact is required and should be at least 200 characters long',
-        BusinessError.PRECONDITION_FAILED,
-      );
-    }
-    try {
-      JSON.parse(artifact.body);
-    } catch {
-      throw new BusinessLogicException(
-        // Add the error message to the response
-        'The body of the artifact should be a valid JSON object',
-        BusinessError.PRECONDITION_FAILED,
-      );
-    }
     // Check if the organization exists and assign it
     const organization = await this.organizationRepository.findOne({
       where: { id: organizationId },
     });
-
     if (!organization) {
       throw new BusinessLogicException(
         'The organization provided does not exist',
         BusinessError.PRECONDITION_FAILED,
       );
     }
-    // Create and save the artifact
-    const newArtifact = this.artifactRepository.create({
-      name: artifact.name,
-      description: artifact.description,
-      body: artifact.body,
-      timeStamp: new Date(),
-      organization,
-    });
 
+    // Ensure description is at least 200 characters long
+    if (!artifact.description || artifact.description.length < 200) {
+      throw new BusinessLogicException(
+        'The description of the artifact is required and should be at least 200 characters long',
+        BusinessError.PRECONDITION_FAILED,
+      );
+    }
+
+    // Parse `body` JSON string if necessary
+    if (typeof artifact.body === 'string') {
+      try {
+        artifact.body = JSON.parse(artifact.body); // Parse only if it's a string
+      } catch {
+        throw new BusinessLogicException(
+          'The body of the artifact should be a valid JSON object',
+          BusinessError.PRECONDITION_FAILED,
+        );
+      }
+    }
+
+    // Validate name uniqueness within organization
+    const existingArtifact = await this.artifactRepository.findOne({
+      where: { name: artifact.name, organization },
+    });
+    if (existingArtifact) {
+      throw new BusinessLogicException(
+        'The artifact name provided is already in use within this organization',
+        BusinessError.BAD_REQUEST,
+      );
+    }
+
+    // Create and save the Artifact
+    const newArtifact = this.artifactRepository.create({
+      ...artifact,
+      organization,
+      timeStamp: new Date(),
+    });
     return await this.artifactRepository.save(newArtifact);
   }
 
-  // Update one Artifact
+  // Update an Artifact
   async update(
     id: string,
     artifact: Partial<ArtifactEntity>,
   ): Promise<ArtifactEntity> {
-    if (!validator.isUUID(id)) {
-      throw new BusinessLogicException(
-        'The artifact Id provided is not valid',
-        BusinessError.PRECONDITION_FAILED,
-      );
-    }
+    this.validateArtifactId(id);
 
-    const existingArtifact = await this.artifactRepository.findOne({
+    const artifactToUpdate = await this.artifactRepository.findOne({
       where: { id },
     });
-
-    if (!existingArtifact) {
+    if (!artifactToUpdate) {
       throw new BusinessLogicException(
         'The artifact with the provided id does not exist',
         BusinessError.NOT_FOUND,
       );
     }
 
-    if (artifact.name) existingArtifact.name = artifact.name;
-
-    if (artifact.description) {
-      if (artifact.description.length < 200) {
+    // Check for uniqueness of name if it's being updated
+    if (artifact.name && artifact.name !== artifactToUpdate.name) {
+      const existingArtifact = await this.artifactRepository.findOne({
+        where: {
+          name: artifact.name,
+          organization: artifactToUpdate.organization,
+        },
+      });
+      if (existingArtifact) {
         throw new BusinessLogicException(
-          'The new description of the artifact should be at least 200 characters long',
-          BusinessError.PRECONDITION_FAILED,
+          'The artifact name provided is already in use within this organization',
+          BusinessError.BAD_REQUEST,
         );
       }
-      existingArtifact.description = artifact.description;
     }
 
-    if (artifact.body) existingArtifact.body = artifact.body;
-
-    return this.artifactRepository.save(existingArtifact);
-  }
-
-  // Delete one Artifact
-  async delete(id: string): Promise<void> {
-    if (!validator.isUUID(id)) {
+    // Verify that the description is at least 200 characters long
+    if (artifact.description && artifact.description.length < 200) {
       throw new BusinessLogicException(
-        'The artifact Id provided is not valid',
-        BusinessError.PRECONDITION_FAILED,
+        'The description must be at least 200 characters long',
+        BusinessError.BAD_REQUEST,
       );
     }
 
-    const existingArtifact = await this.artifactRepository.findOne({
+    // Update and save the artifact
+    Object.assign(artifactToUpdate, artifact);
+    return await this.artifactRepository.save(artifactToUpdate);
+  }
+
+  // Delete an Artifact
+  async delete(id: string): Promise<void> {
+    this.validateArtifactId(id);
+
+    const artifact = await this.artifactRepository.findOne({
       where: { id },
     });
-
-    if (!existingArtifact) {
+    if (!artifact) {
       throw new BusinessLogicException(
         'The artifact with the provided id does not exist',
         BusinessError.NOT_FOUND,
       );
     }
 
-    await this.artifactRepository.delete(existingArtifact);
+    await this.artifactRepository.remove(artifact);
+  }
+
+  // Utility validation functions
+  private validateOrganizationId(organizationId: string): void {
+    if (!organizationId || !validator.isUUID(organizationId)) {
+      throw new BusinessLogicException(
+        'The organizationId provided is not valid',
+        BusinessError.PRECONDITION_FAILED,
+      );
+    }
+  }
+
+  private validateArtifactId(artifactId: string): void {
+    if (!artifactId || !validator.isUUID(artifactId)) {
+      throw new BusinessLogicException(
+        'The artifactId provided is not valid',
+        BusinessError.PRECONDITION_FAILED,
+      );
+    }
   }
 }

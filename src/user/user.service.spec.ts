@@ -58,15 +58,44 @@ describe('UserService', () => {
 
   // Find all users
   it('findAll should return all users', async () => {
-    const users: UserEntity[] = await service.findAll();
+    const users: UserEntity[] = await service.findAll(org.id);
     expect(users).toBeDefined();
     expect(users).not.toBeNull();
     expect(users).toHaveLength(userList.length);
   });
+
+  it('findAll should return no Users for invalid OrgId', async () => {
+    await expect(() =>
+      service.findAll('invalid-org-id'),
+    ).rejects.toHaveProperty(
+      'message',
+      'The organizationId provided is not valid',
+    );
+  });
+
+  it('findAll should return no Users for no OrgId', async () => {
+    await expect(() => service.findAll('')).rejects.toHaveProperty(
+      'message',
+      'The organizationId provided is missing',
+    );
+  });
+
+  it('findAll should return error for non existing Org', async () => {
+    await expect(() =>
+      service.findAll(faker.string.uuid()),
+    ).rejects.toHaveProperty(
+      'message',
+      'The organization provided does not exist',
+    );
+  });
+
   // Get One User
   it('findOne should return one user', async () => {
     const randomIndex = Math.floor(Math.random() * userList.length);
-    const user: UserEntity = await service.findOne(userList[randomIndex].id);
+    const user: UserEntity = await service.findOne(
+      org.id,
+      userList[randomIndex].id,
+    );
     expect(user).toBeDefined();
     expect(user).not.toBeNull();
     expect(user).toMatchObject({
@@ -79,12 +108,40 @@ describe('UserService', () => {
   // Get non existent user
   it('findOne should throw an exception for a non existent user', async () => {
     await expect(() =>
-      service.findOne('non-existent-id'),
+      service.findOne(org.id, 'non-existent-id'),
+    ).rejects.toHaveProperty('message', 'The userId provided is not valid');
+  });
+
+  // Get a User with an invalid organization
+  it('findOne should throw an exception for an invalid organization', async () => {
+    await expect(() =>
+      service.findOne('invalid-organization-id', faker.string.uuid()),
+    ).rejects.toHaveProperty(
+      'message',
+      'The organizationId provided is not valid',
+    );
+  });
+
+  // Get a User with a non existent organization
+  it('findOne should throw an exception for a non existent organization', async () => {
+    await expect(() =>
+      service.findOne(faker.string.uuid(), faker.string.uuid()),
+    ).rejects.toHaveProperty(
+      'message',
+      'The organization provided does not exist',
+    );
+  });
+
+  // Get a User - Non existent User
+  it('findOne should throw an exception for a non existent user', async () => {
+    await expect(() =>
+      service.findOne(org.id, faker.string.uuid()),
     ).rejects.toHaveProperty(
       'message',
       'The user with the provided id does not exist',
     );
   });
+
   // Create a User
   it('create should create a user', async () => {
     const user: Partial<UserEntity> = {
@@ -97,6 +154,18 @@ describe('UserService', () => {
     expect(createdUser).not.toBeNull();
     expect(createdUser).toHaveProperty('id');
     expect(createdUser).toMatchObject(user);
+  });
+  // Create a User with non existent organization
+  it('create should throw an exception for a non existent organization', async () => {
+    const user: Partial<UserEntity> = {
+      name: faker.person.fullName(),
+      username: faker.internet.username(),
+      email: faker.internet.email(),
+    };
+    await expect(() => service.create(user, '')).rejects.toHaveProperty(
+      'message',
+      'The organizationId provided is missing',
+    );
   });
   // Create a User with invalid email
   it('create should throw an exception for an invalid email', async () => {
@@ -167,63 +236,65 @@ describe('UserService', () => {
     );
   });
 
-  // Update a User
-  it('update should update a user', async () => {
-    const randomIndex = Math.floor(Math.random() * userList.length);
-    const user: Partial<UserEntity> = {
+  // Update user
+  it('update should modify user data', async () => {
+    const updatedData: Partial<UserEntity> = {
       name: faker.person.fullName(),
       username: faker.internet.username(),
       email: faker.internet.email(),
     };
     const updatedUser: UserEntity = await service.update(
-      userList[randomIndex].id,
-      user as UserEntity,
+      userList[0].id,
+      updatedData as UserEntity,
     );
-    expect(updatedUser).toBeDefined();
-    expect(updatedUser).not.toBeNull();
-    expect(updatedUser).toMatchObject(user);
+    expect(updatedUser).toMatchObject(updatedData);
   });
 
-  // Update a User with invalid email
-  it('update should throw an exception for an invalid email', async () => {
-    const randomIndex = Math.floor(Math.random() * userList.length);
-    const user: Partial<UserEntity> = {
-      name: faker.person.fullName(),
-      username: faker.internet.username(),
+  it('update should throw an error for invalid email', async () => {
+    const updatedData: Partial<UserEntity> = {
       email: 'invalid-email',
     };
-    await expect(() =>
-      service.update(userList[randomIndex].id, user as UserEntity),
+    await expect(
+      service.update(userList[0].id, updatedData as UserEntity),
     ).rejects.toHaveProperty('message', 'The email provided is not valid');
   });
-  // Update a non existent user
-  it('update should throw an exception for a non existent user', async () => {
-    const user: Partial<UserEntity> = {
+
+  it('update should throw an error for non-existent user', async () => {
+    const updatedData: Partial<UserEntity> = {
       name: faker.person.fullName(),
-      username: faker.internet.username(),
-      email: faker.internet.email(),
     };
-    await expect(() =>
-      service.update('non-existent-id', user as UserEntity),
+    await expect(
+      service.update(faker.string.uuid(), updatedData as UserEntity),
     ).rejects.toHaveProperty(
       'message',
       'The User with the provided id does not exist',
     );
   });
 
-  // Update a User with an existing email
-  it('update should throw an exception for an existing email', async () => {
-    const randomIndex = Math.floor(Math.random() * userList.length);
-    const user: Partial<UserEntity> = {
-      name: faker.person.fullName(),
-      username: faker.internet.username(),
-      email: userList[randomIndex].email,
+  // Update a user with an existing email
+  it('update should throw an exception for an email already in use by another user', async () => {
+    const [userToUpdate, existingUser] = userList;
+    const updatedData: Partial<UserEntity> = {
+      email: existingUser.email,
     };
-    await expect(() =>
-      service.update(userList[randomIndex].id, user as UserEntity),
+
+    await expect(
+      service.update(userToUpdate.id, updatedData as UserEntity),
+    ).rejects.toHaveProperty('message', 'The email provided is already in use');
+  });
+
+  // Update a user with an existing username
+  it('update should throw an exception for a username already in use by another user', async () => {
+    const [userToUpdate, existingUser] = userList;
+    const updatedData: Partial<UserEntity> = {
+      username: existingUser.username,
+    };
+
+    await expect(
+      service.update(userToUpdate.id, updatedData as UserEntity),
     ).rejects.toHaveProperty(
       'message',
-      'The email or username provided is already in use',
+      'The username provided is already in use',
     );
   });
 
@@ -232,10 +303,10 @@ describe('UserService', () => {
     const randomIndex = Math.floor(Math.random() * userList.length);
     const id = userList[randomIndex].id;
     await service.delete(id);
-    const users: UserEntity[] = await service.findAll();
+    const users: UserEntity[] = await service.findAll(org.id);
     expect(users).toHaveLength(userList.length - 1);
     // Check that the user was deleted
-    await expect(() => service.findOne(id)).rejects.toHaveProperty(
+    await expect(() => service.findOne(org.id, id)).rejects.toHaveProperty(
       'message',
       'The user with the provided id does not exist',
     );

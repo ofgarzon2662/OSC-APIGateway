@@ -1,4 +1,4 @@
-import { IsDate, IsNotEmpty, IsString } from 'class-validator';
+import { IsDate, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class ArtifactDto {
   @IsString()
@@ -9,11 +9,10 @@ export class ArtifactDto {
   @IsNotEmpty()
   description: string;
 
-  @IsString()
   @IsNotEmpty()
   body: any;
 
-  @IsString()
   @IsDate()
+  @IsOptional()
   timeStamp: Date;
 }
