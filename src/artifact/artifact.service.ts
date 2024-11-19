@@ -159,6 +159,14 @@ export class ArtifactService {
       }
     }
 
+    // Verify that the description is at least 200 characters long
+    if (artifact.description && artifact.description.length < 200) {
+      throw new BusinessLogicException(
+        'The description must be at least 200 characters long',
+        BusinessError.BAD_REQUEST,
+      );
+    }
+
     // Update and save the artifact
     Object.assign(artifactToUpdate, artifact);
     return await this.artifactRepository.save(artifactToUpdate);

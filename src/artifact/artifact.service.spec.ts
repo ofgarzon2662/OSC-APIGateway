@@ -268,6 +268,19 @@ describe('ArtifactService', () => {
     );
   });
 
+  // Update an artifact with a description shorter than 200 characters
+  it('update should throw an error if description is less than 200 characters', async () => {
+    const artifactId = artifactList[0].id; // Use an existing artifact's ID
+    const updateData: Partial<ArtifactEntity> = {
+      description: 'Too short', // Description less than 200 characters
+    };
+
+    await expect(service.update(artifactId, updateData)).rejects.toHaveProperty(
+      'message',
+      'The description must be at least 200 characters long',
+    );
+  });
+
   // Delete an artifact with a valid ID
   it('delete should successfully delete an existing artifact', async () => {
     const artifactId = artifactList[0].id;
