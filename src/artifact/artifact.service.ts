@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ArtifactEntity } from './artifact.entity';
@@ -46,6 +47,11 @@ export class ArtifactService {
         BusinessError.NOT_FOUND,
       );
     }
+    this.contract = await this.appService.getContract();
+    const result = await this.contract.submitTransaction('GetAllArtifacts');
+    const decodedResult = this.utf8Decoder.decode(result);
+    console.log('Blockchain response:', decodedResult);
+    
     return await this.artifactRepository.find({
       where: { organization },
       relations: ['organization'],
@@ -133,10 +139,11 @@ export class ArtifactService {
 
     // Generate UUID for the new artifact
     const artifactId = uuidv4();
+    this.contract = await this.appService.getContract();
 
     // Try to submit the transaction to blockchain first
     try {
-      await this.getContract().submitTransaction(
+      await this.contract.submitTransaction(
         'CreateArtifact',
         artifactId,
         artifact.name,

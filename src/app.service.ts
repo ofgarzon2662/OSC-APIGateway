@@ -167,10 +167,7 @@ export class AppService implements OnModuleInit {
 
     // Get the smart contract from the network.
     this.contract = this.network.getContract(this.chaincodeName);
-    console.log(
-      'Contract initialized FIRST',
-      this.network.getContract(this.chaincodeName),
-    );
+    console.log('Contract methods:', Object.getOwnPropertyNames(this.contract));
     this.isInitialized = true;
     console.log('Gateway connection successful');
     console.log('Contract methods:', Object.keys(this.contract));
@@ -191,7 +188,6 @@ export class AppService implements OnModuleInit {
   public async getContract(): Promise<Contract> {
     if (!this.isInitialized) {
       console.log('Waiting for contract to be initialized...');
-      // Espera hasta que isInitialized sea true
       await this.waitForInitialization();
     }
 
