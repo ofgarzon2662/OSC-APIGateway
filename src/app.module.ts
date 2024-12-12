@@ -30,5 +30,6 @@ import { ArtifactModule } from './artifact/artifact.module';
   ],
   controllers: [AppController],
   providers: [AppService],
+  exports: [AppService],
 })
 export class AppModule {}

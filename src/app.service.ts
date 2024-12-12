@@ -44,6 +44,7 @@ export class AppService implements OnModuleInit {
         __dirname,
         '..',
         '..',
+        'fork_of_fabric_samples',
         'fabric-samples',
         'test-network',
         'organizations',
@@ -173,12 +174,6 @@ export class AppService implements OnModuleInit {
     this.isInitialized = true;
     console.log('Gateway connection successful');
     console.log('Contract methods:', Object.keys(this.contract));
-    this.contract.submitTransaction('InitLedger');
-
-    const resultBytes = await this.contract.evaluateTransaction('GetAllAssets');
-    const resultJson = this.utf8Decoder.decode(resultBytes);
-    const result: unknown = JSON.parse(resultJson);
-    console.log('*** Result:', result);
   }
 
   async onModuleDestroy(): Promise<void> {

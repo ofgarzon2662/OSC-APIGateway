@@ -6,6 +6,7 @@ import { ArtifactService } from './artifact.service';
 import { ArtifactEntity } from './artifact.entity';
 import { OrganizationEntity } from '../organization/organization.entity';
 import { faker } from '@faker-js/faker';
+import { AppService } from '../app.service';
 
 describe('ArtifactService', () => {
   let service: ArtifactService;
@@ -13,11 +14,27 @@ describe('ArtifactService', () => {
   let organizationRepository: Repository<OrganizationEntity>;
   let artifactList: ArtifactEntity[];
   let org: OrganizationEntity;
+  let mockContract: any;
+  let mockAppService: Partial<AppService>;
 
   beforeEach(async () => {
+    mockContract = {
+      submitTransaction: jest.fn(),
+    };
+
+    mockAppService = {
+      getContract: jest.fn().mockReturnValue(mockContract),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       imports: [...TypeOrmTestingConfig()],
-      providers: [ArtifactService],
+      providers: [
+        ArtifactService,
+        {
+          provide: AppService,
+          useValue: mockAppService,
+        },
+      ],
     }).compile();
 
     service = module.get<ArtifactService>(ArtifactService);
@@ -117,24 +134,57 @@ describe('ArtifactService', () => {
   });
 
   // Create an artifact
-  it('create should create an artifact', async () => {
+  it('create should create an artifact when blockchain transaction succeeds', async () => {
     const randomBody = generateRandomBody();
     const artifact: Partial<ArtifactEntity> = {
       name: faker.commerce.productName(),
       description: faker.lorem.sentence(200),
       body: randomBody,
     };
+
+    mockContract.submitTransaction.mockResolvedValueOnce(undefined);
+
     const createdArtifact: ArtifactEntity = await service.create(
       artifact,
       org.id,
     );
+
+    expect(mockContract.submitTransaction).toHaveBeenCalledWith(
+      'CreateArtifact',
+      expect.any(String),
+      artifact.name,
+      artifact.description,
+      JSON.stringify(artifact.body),
+    );
+
     expect(createdArtifact).toBeDefined();
     expect(createdArtifact).not.toBeNull();
     expect(createdArtifact).toHaveProperty('id');
     expect(createdArtifact).toMatchObject(artifact);
-    // List of artifacts should have one more element
+
     const artifacts: ArtifactEntity[] = await service.findAll(org.id);
     expect(artifacts).toHaveLength(artifactList.length + 1);
+  });
+
+  it('create should throw an exception when blockchain transaction fails', async () => {
+    const randomBody = generateRandomBody();
+    const artifact: Partial<ArtifactEntity> = {
+      name: faker.commerce.productName(),
+      description: faker.lorem.sentence(200),
+      body: randomBody,
+    };
+
+    mockContract.submitTransaction.mockRejectedValueOnce(
+      new Error('Blockchain transaction failed'),
+    );
+
+    await expect(service.create(artifact, org.id)).rejects.toHaveProperty(
+      'message',
+      'Failed to create artifact in blockchain: Blockchain transaction failed',
+    );
+
+    const artifacts: ArtifactEntity[] = await service.findAll(org.id);
+    expect(artifacts).toHaveLength(artifactList.length);
   });
 
   // Create an artifact with an invalid organization

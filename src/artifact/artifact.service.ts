@@ -8,15 +8,29 @@ import {
 } from '../shared/errors/business-errors';
 import validator from 'validator';
 import { OrganizationEntity } from '../organization/organization.entity';
+import { AppService } from '../app.service';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class ArtifactService {
+  private contract: any;
+  private readonly utf8Decoder: TextDecoder;
   constructor(
     @InjectRepository(ArtifactEntity)
     private readonly artifactRepository: Repository<ArtifactEntity>,
     @InjectRepository(OrganizationEntity)
     private readonly organizationRepository: Repository<OrganizationEntity>,
-  ) {}
+    private readonly appService: AppService,
+  ) {
+    this.utf8Decoder = new TextDecoder();
+  }
+
+  private getContract() {
+    if (!this.contract) {
+      this.contract = this.appService.getContract();
+    }
+    return this.contract;
+  }
 
   // Get All Artifacts
   async findAll(organizationId: string): Promise<ArtifactEntity[]> {
@@ -117,9 +131,29 @@ export class ArtifactService {
       );
     }
 
-    // Create and save the Artifact
+    // Generate UUID for the new artifact
+    const artifactId = uuidv4();
+
+    // Try to submit the transaction to blockchain first
+    try {
+      await this.getContract().submitTransaction(
+        'CreateArtifact',
+        artifactId,
+        artifact.name,
+        artifact.description,
+        JSON.stringify(artifact.body),
+      );
+    } catch (error) {
+      throw new BusinessLogicException(
+        `Failed to create artifact in blockchain: ${error.message}`,
+        BusinessError.BLOCKCHAIN_ERROR,
+      );
+    }
+
+    // If blockchain transaction succeeded, create and save the Artifact in local DB
     const newArtifact = this.artifactRepository.create({
       ...artifact,
+      id: artifactId,
       organization,
       timeStamp: new Date(),
     });
