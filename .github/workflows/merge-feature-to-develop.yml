@@ -42,6 +42,7 @@ jobs:
       - name: Extract and Validate Coverage
         run: |
           COVERAGE=$(awk '/All files/ {print $3}' test-output.txt | tr -d '%')
+          echo "This is the Coverage: $COVERAGE"
       
           echo "Extracted Coverage: $COVERAGE%"
           if [ "$COVERAGE" -lt 85 ]; then
