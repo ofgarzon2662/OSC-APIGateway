@@ -42,8 +42,9 @@ jobs:
       - name: Extract and Validate Coverage
         run: |
           COVERAGE=$(grep -oP '\d+(?=%)' test-output.txt)
-
-          echo "Extracted Coverage: $COVERAGE%"
+          echo "Extracted Coverage: $COVERAGE"
+          echo "Raw test output:"
+          cat test-output.txt
           if [ "$COVERAGE" -lt 85 ]; then
             echo "Coverage is below 85%! Aborting merge."
             exit 1
