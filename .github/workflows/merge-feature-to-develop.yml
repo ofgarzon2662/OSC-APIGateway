@@ -39,16 +39,22 @@ jobs:
       - name: Run Jest tests with coverage
         run: npm run test:cov | tee test-output.txt
 
-      - name: Extract and Validate Coverage
+      - name: Extract and Validate Service Coverage
         run: |
-          COVERAGE=$(awk '/All files/ {print $3}' test-output.txt | tr -d '%')
-          echo "This is the Coverage: $COVERAGE"
+          # Extract line coverage for all service files
+          COVERAGE_LIST=$(grep "service.ts" test-output.txt | awk '{print $5}' | tr -d '%')
+          echo "Extracted Coverage for Services:"
+          echo "$COVERAGE_LIST"
       
-          echo "Extracted Coverage: $COVERAGE%"
-          if [ "$COVERAGE" -lt 85 ]; then
-            echo "Coverage is below 85%! Aborting merge."
-            exit 1
-          fi
+          # Loop through each extracted coverage value
+          for COVERAGE in $COVERAGE_LIST; do
+            if [ "$COVERAGE" -lt 85 ]; then
+              echo "❌ A service file has coverage below 85%! Aborting merge."
+              exit 1
+            fi
+          done
+      
+          echo "✅ All service files have sufficient coverage!"
 
       - name: Coverage Passed
         run: echo "✅ Test coverage is sufficient! Proceeding with merge."
