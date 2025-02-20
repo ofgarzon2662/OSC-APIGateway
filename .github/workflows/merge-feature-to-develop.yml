@@ -41,7 +41,7 @@ jobs:
 
       - name: Extract and Validate Coverage
         run: |
-          COVERAGE=$(grep -Po '(?<=All files\s*\|\s*)\d+(?=%)' test-output.txt)
+          COVERAGE=$(grep -oP '\d+(?=%)' test-output.txt)
 
           echo "Extracted Coverage: $COVERAGE%"
           if [ "$COVERAGE" -lt 85 ]; then
