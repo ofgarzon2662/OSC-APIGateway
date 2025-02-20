@@ -65,12 +65,3 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           source-branch: ${{ github.ref }}
           target-branch: develop
-
-      - name: Push Develop Branch (Trigger Sonar)
-        run: |
-          git fetch origin develop
-          git checkout develop
-          git push origin develop
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        
