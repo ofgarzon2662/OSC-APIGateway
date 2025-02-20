@@ -3,8 +3,12 @@ on:
   push:
     branches:
       - master
+      - develop  # Agregamos develop para que también se analice en cada push
   pull_request:
+    branches:
+      - master  # Asegura que los PRs a master sean analizados
     types: [opened, synchronize, reopened]
+
 jobs:
   sonarcloud:
     name: SonarCloud
@@ -16,7 +20,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'  # ajusta según la versión que uses
+          node-version: '18'  # Ajusta según la versión que uses
 
       - name: Install dependencies
         run: npm install
@@ -29,4 +33,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          
+        with:
+          args: >
+            -Dsonar.branch.name=${{ github.ref_name }}
