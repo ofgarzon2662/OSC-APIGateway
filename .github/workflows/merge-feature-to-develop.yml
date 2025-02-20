@@ -65,3 +65,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           source-branch: ${{ github.ref }}
           target-branch: develop
+
+      - name: Trigger SonarCloud Analysis on Develop
+        run: |
+          git checkout develop
+          git pull origin develop
+          sonar-scanner -Dsonar.branch.name=develop
+          env:
+            SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        
