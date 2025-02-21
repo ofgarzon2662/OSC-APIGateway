@@ -57,11 +57,4 @@ jobs:
           echo "✅ All service files have sufficient coverage!"
 
       - name: Coverage Passed
-        run: echo "✅ Test coverage is sufficient! Proceeding with merge."
-
-      - name: Merge feature branch into Develop
-        uses: tukasz/direct-merge-action@master
-        with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          source-branch: ${{ github.ref }}
-          target-branch: develop
+        run: echo "✅ Test coverage is sufficient! You can create a PR now!"
