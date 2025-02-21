@@ -320,4 +320,39 @@ describe('UserService', () => {
       'The User with the provided id does not exist',
     );
   });
+
+  // Delete all users
+  it('deleteAll should remove all users from an organization', async () => {
+    await service.deleteAll(org.id);
+    const users: UserEntity[] = await service.findAll(org.id);
+    expect(users).toHaveLength(0);
+  });
+
+  // Delete all users with invalid organization ID
+  it('deleteAll should throw an exception for an invalid organization ID', async () => {
+    await expect(() =>
+      service.deleteAll('invalid-organization-id'),
+    ).rejects.toHaveProperty(
+      'message',
+      'The organizationId provided is not valid',
+    );
+  });
+
+  // Delete all users with missing organization ID
+  it('deleteAll should throw an exception for a missing organization ID', async () => {
+    await expect(() => service.deleteAll('')).rejects.toHaveProperty(
+      'message',
+      'The organizationId provided is missing',
+    );
+  });
+
+  // Delete all users with a non-existent organization
+  it('deleteAll should throw an exception for a non-existent organization', async () => {
+    await expect(() =>
+      service.deleteAll(faker.string.uuid()),
+    ).rejects.toHaveProperty(
+      'message',
+      'The organization provided does not exist',
+    );
+  });
 });

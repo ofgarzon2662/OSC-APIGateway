@@ -220,26 +220,6 @@ export class UserService {
       );
     }
 
-    if (!validator.isUUID(organizationId)) {
-      throw new BusinessLogicException(
-        'The organizationId provided is not valid',
-        BusinessError.PRECONDITION_FAILED,
-      );
-    }
-
-    // Check if the organization exists
-    const organization = await this.organizationRepository.findOne({
-      where: { id: organizationId },
-    });
-
-    if (!organization) {
-      throw new BusinessLogicException(
-        'The organization provided does not exist',
-        BusinessError.NOT_FOUND,
-      );
-    }
-
-    // Find all users in the organization
     const users = await this.userRepository.find({
       where: { organization: { id: organizationId } },
     });
