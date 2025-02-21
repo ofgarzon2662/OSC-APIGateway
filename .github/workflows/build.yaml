@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - master
-      - develop  # Agregamos develop para que también se analice en cada push
   pull_request:
     branches:
       - master  # Asegura que los PRs a master sean analizados
