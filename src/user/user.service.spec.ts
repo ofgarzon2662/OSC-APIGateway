@@ -330,11 +330,11 @@ describe('UserService', () => {
 
   // Delete all users with invalid organization ID
   it('deleteAll should throw an exception for an invalid organization ID', async () => {
-    await expect(() =>
+    await expect(
       service.deleteAll('invalid-organization-id'),
     ).rejects.toHaveProperty(
       'message',
-      'The organizationId provided is not valid',
+      'The organization provided does not exist',
     );
   });
 
@@ -348,9 +348,7 @@ describe('UserService', () => {
 
   // Delete all users with a non-existent organization
   it('deleteAll should throw an exception for a non-existent organization', async () => {
-    await expect(() =>
-      service.deleteAll(faker.string.uuid()),
-    ).rejects.toHaveProperty(
+    await expect(service.deleteAll(faker.string.uuid())).rejects.toHaveProperty(
       'message',
       'The organization provided does not exist',
     );

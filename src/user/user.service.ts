@@ -210,13 +210,23 @@ export class UserService {
     await this.userRepository.remove(user);
   }
 
-  // Delete all users
   async deleteAll(organizationId: string): Promise<void> {
     // Validate organization ID
     if (!organizationId) {
       throw new BusinessLogicException(
         'The organizationId provided is missing',
         BusinessError.PRECONDITION_FAILED,
+      );
+    }
+
+    const organization = await this.organizationRepository.findOne({
+      where: { id: organizationId },
+    });
+
+    if (!organization) {
+      throw new BusinessLogicException(
+        'The organization provided does not exist',
+        BusinessError.NOT_FOUND,
       );
     }
 
