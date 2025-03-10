@@ -6,69 +6,20 @@ import { ArtifactEntity } from '../artifact/artifact.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { AddArtifactToOrganizationDto } from './dto/add-artifact-to-organization.dto';
 import { UpdateArtifactInOrganizationDto } from './dto/update-artifact-in-organization.dto';
-
-// Mock data
-const mockOrganizationId = '00000000-0000-0000-0000-000000000001';
-const mockArtifactId = '00000000-0000-0000-0000-000000000002';
-const mockInvalidId = 'invalid-id';
-
-const mockOrganization: OrganizationEntity = {
-  id: mockOrganizationId,
-  name: 'Test Organization',
-  description: 'Test Description',
-  users: [],
-  artifacts: [],
-};
-
-const mockArtifact: ArtifactEntity = {
-  id: mockArtifactId,
-  name: 'Test Artifact',
-  description:
-    'This is a test artifact description that is at least 200 characters long. This is a test artifact description that is at least 200 characters long. This is a test artifact description that is at least 200 characters long. This is a test artifact description that is at least 200 characters long.',
-  body: { content: 'Test Body' },
-  timeStamp: new Date(),
-  organization: mockOrganization,
-};
-
-// Create a custom error class for testing
-class BusinessLogicExceptionMock extends Error {
-  constructor() {
-    super('Business Logic Exception');
-    this.name = 'BusinessLogicException';
-  }
-}
+import { TypeOrmTestingConfig } from '../shared/testing-utils/typeorm-testing-config';
+import { faker } from '@faker-js/faker';
 
 describe('OrganizationArtifactService', () => {
   let service: OrganizationArtifactService;
   let organizationRepository: Repository<OrganizationEntity>;
   let artifactRepository: Repository<ArtifactEntity>;
+  let organization: OrganizationEntity;
+  let artifacts: ArtifactEntity[];
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        OrganizationArtifactService,
-        {
-          provide: getRepositoryToken(OrganizationEntity),
-          useValue: {
-            findOne: jest.fn(),
-            find: jest.fn(),
-            save: jest.fn(),
-            create: jest.fn(),
-            remove: jest.fn(),
-          },
-        },
-        {
-          provide: getRepositoryToken(ArtifactEntity),
-          useValue: {
-            findOne: jest.fn(),
-            find: jest.fn(),
-            save: jest.fn(),
-            create: jest.fn(),
-            remove: jest.fn(),
-            findByIds: jest.fn(),
-          },
-        },
-      ],
+      imports: [...TypeOrmTestingConfig()],
+      providers: [OrganizationArtifactService],
     }).compile();
 
     service = module.get<OrganizationArtifactService>(
@@ -80,563 +31,411 @@ describe('OrganizationArtifactService', () => {
     artifactRepository = module.get<Repository<ArtifactEntity>>(
       getRepositoryToken(ArtifactEntity),
     );
-
-    // Mock the validateOrganizationId and validateArtifactId methods to throw BusinessLogicExceptionMock
-    jest
-      .spyOn(service as any, 'validateOrganizationId')
-      .mockImplementation((id) => {
-        if (id === mockInvalidId) {
-          throw new BusinessLogicExceptionMock();
-        }
-      });
-
-    jest
-      .spyOn(service as any, 'validateArtifactId')
-      .mockImplementation((id) => {
-        if (id === mockInvalidId) {
-          throw new BusinessLogicExceptionMock();
-        }
-      });
+    await seedDatabase();
   });
+
+  const seedDatabase = async () => {
+    await organizationRepository.clear();
+    await artifactRepository.clear();
+
+    // Create organization
+    organization = await organizationRepository.save({
+      name: faker.company.name(),
+      description: faker.company.catchPhrase(),
+    });
+
+    // Create artifacts
+    artifacts = [];
+    for (let i = 0; i < 5; i++) {
+      const artifact = await artifactRepository.save({
+        name: faker.commerce.productName(),
+        description: faker.lorem.paragraphs(3), // Ensure it's long enough (>200 chars)
+        body: { content: faker.lorem.paragraph() },
+        timeStamp: new Date(),
+        organization: organization,
+      });
+      artifacts.push(artifact);
+    }
+  };
 
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
 
-  // Test findArtifactsByOrganization
   describe('findArtifactsByOrganization', () => {
-    it('should return an array of organization-artifact DTOs', async () => {
-      // Arrange
-      const mockArtifacts = [mockArtifact];
-      mockOrganization.artifacts = mockArtifacts;
-      jest
-        .spyOn(organizationRepository, 'findOne')
-        .mockResolvedValue(mockOrganization);
-
-      // Act
-      const result =
-        await service.findArtifactsByOrganization(mockOrganizationId);
-
-      // Assert
+    it('should return all artifacts for an organization', async () => {
+      const result = await service.findArtifactsByOrganization(organization.id);
       expect(result).toBeDefined();
-      expect(result.length).toBe(1);
-      expect(result[0].organizationId).toBe(mockOrganizationId);
-      expect(result[0].artifactId).toBe(mockArtifactId);
-      expect(organizationRepository.findOne).toHaveBeenCalledWith({
-        where: { id: mockOrganizationId },
-        relations: ['artifacts'],
-      });
+      expect(result.length).toBe(artifacts.length);
+      expect(result[0].organizationId).toBe(organization.id);
     });
 
     it('should throw an exception if organization is not found', async () => {
-      // Arrange
-      jest.spyOn(organizationRepository, 'findOne').mockResolvedValue(null);
-
-      // Mock the service method to throw an exception
-      jest
-        .spyOn(service, 'findArtifactsByOrganization')
-        .mockImplementation(async () => {
-          throw new BusinessLogicExceptionMock();
-        });
-
-      // Act & Assert
+      const invalidId = faker.string.uuid();
       await expect(
-        service.findArtifactsByOrganization(mockOrganizationId),
-      ).rejects.toThrow();
+        service.findArtifactsByOrganization(invalidId),
+      ).rejects.toHaveProperty(
+        'message',
+        'The organization with the given id was not found',
+      );
     });
 
     it('should throw an exception if organizationId is invalid', async () => {
-      // Act & Assert
       await expect(
-        service.findArtifactsByOrganization(mockInvalidId),
-      ).rejects.toThrow();
+        service.findArtifactsByOrganization('invalid-id'),
+      ).rejects.toHaveProperty('message', 'The organizationId is not valid');
     });
   });
 
-  // Test findOneArtifactByOrganization
   describe('findOneArtifactByOrganization', () => {
-    it('should return an organization-artifact DTO', async () => {
-      // Arrange
-      jest
-        .spyOn(organizationRepository, 'findOne')
-        .mockResolvedValue(mockOrganization);
-      jest.spyOn(artifactRepository, 'findOne').mockResolvedValue(mockArtifact);
-
-      // Act
+    it('should return an artifact by id for an organization', async () => {
+      const artifact = artifacts[0];
       const result = await service.findOneArtifactByOrganization(
-        mockOrganizationId,
-        mockArtifactId,
+        organization.id,
+        artifact.id,
       );
-
-      // Assert
       expect(result).toBeDefined();
-      expect(result.organizationId).toBe(mockOrganizationId);
-      expect(result.artifactId).toBe(mockArtifactId);
-      expect(organizationRepository.findOne).toHaveBeenCalledWith({
-        where: { id: mockOrganizationId },
-      });
-      expect(artifactRepository.findOne).toHaveBeenCalledWith({
-        where: { id: mockArtifactId, organization: { id: mockOrganizationId } },
-        relations: ['organization'],
-      });
+      expect(result.organizationId).toBe(organization.id);
+      expect(result.artifactId).toBe(artifact.id);
     });
 
     it('should throw an exception if organization is not found', async () => {
-      // Arrange
-      jest.spyOn(organizationRepository, 'findOne').mockResolvedValue(null);
-
-      // Mock the service method to throw an exception
-      jest
-        .spyOn(service, 'findOneArtifactByOrganization')
-        .mockImplementation(async () => {
-          throw new BusinessLogicExceptionMock();
-        });
-
-      // Act & Assert
+      const invalidOrgId = faker.string.uuid();
+      const artifact = artifacts[0];
       await expect(
-        service.findOneArtifactByOrganization(
-          mockOrganizationId,
-          mockArtifactId,
-        ),
-      ).rejects.toThrow();
+        service.findOneArtifactByOrganization(invalidOrgId, artifact.id),
+      ).rejects.toHaveProperty(
+        'message',
+        'The organization with the given id was not found',
+      );
     });
 
     it('should throw an exception if artifact is not found', async () => {
-      // Arrange
-      jest
-        .spyOn(organizationRepository, 'findOne')
-        .mockResolvedValue(mockOrganization);
-      jest.spyOn(artifactRepository, 'findOne').mockResolvedValue(null);
-
-      // Mock the service method to throw an exception
-      jest
-        .spyOn(service, 'findOneArtifactByOrganization')
-        .mockImplementation(async () => {
-          throw new BusinessLogicExceptionMock();
-        });
-
-      // Act & Assert
+      const invalidArtifactId = faker.string.uuid();
       await expect(
         service.findOneArtifactByOrganization(
-          mockOrganizationId,
-          mockArtifactId,
+          organization.id,
+          invalidArtifactId,
         ),
-      ).rejects.toThrow();
+      ).rejects.toHaveProperty(
+        'message',
+        'The artifact with the given id was not found in the organization',
+      );
     });
 
     it('should throw an exception if organizationId is invalid', async () => {
-      // Act & Assert
+      const artifact = artifacts[0];
       await expect(
-        service.findOneArtifactByOrganization(mockInvalidId, mockArtifactId),
-      ).rejects.toThrow();
+        service.findOneArtifactByOrganization('invalid-id', artifact.id),
+      ).rejects.toHaveProperty('message', 'The organizationId is not valid');
     });
 
     it('should throw an exception if artifactId is invalid', async () => {
-      // Act & Assert
       await expect(
-        service.findOneArtifactByOrganization(
-          mockOrganizationId,
-          mockInvalidId,
-        ),
-      ).rejects.toThrow();
+        service.findOneArtifactByOrganization(organization.id, 'invalid-id'),
+      ).rejects.toHaveProperty('message', 'The artifactId is not valid');
     });
   });
 
-  // Test addArtifactToOrganization
   describe('addArtifactToOrganization', () => {
     it('should add an artifact to an organization', async () => {
-      // Arrange
+      // Create a new artifact not associated with any organization
+      const newArtifact = await artifactRepository.save({
+        name: faker.commerce.productName(),
+        description: faker.lorem.paragraphs(3),
+        body: { content: faker.lorem.paragraph() },
+        timeStamp: new Date(),
+      });
+
       const dto: AddArtifactToOrganizationDto = {
-        organizationId: mockOrganizationId,
-        artifactId: mockArtifactId,
-        description:
-          'Updated description that is at least 200 characters long. Updated description that is at least 200 characters long. Updated description that is at least 200 characters long. Updated description that is at least 200 characters long.',
+        organizationId: organization.id,
+        artifactId: newArtifact.id,
+        description: faker.lorem.paragraphs(3),
       };
 
-      jest
-        .spyOn(organizationRepository, 'findOne')
-        .mockResolvedValue(mockOrganization);
-      jest.spyOn(artifactRepository, 'findOne').mockResolvedValue(mockArtifact);
-      jest.spyOn(artifactRepository, 'save').mockResolvedValue(mockArtifact);
-
-      // Act
       const result = await service.addArtifactToOrganization(dto);
-
-      // Assert
       expect(result).toBeDefined();
-      expect(result.organizationId).toBe(mockOrganizationId);
-      expect(result.artifactId).toBe(mockArtifactId);
-      expect(organizationRepository.findOne).toHaveBeenCalledWith({
-        where: { id: mockOrganizationId },
+      expect(result.organizationId).toBe(organization.id);
+      expect(result.artifactId).toBe(newArtifact.id);
+
+      // Verify the artifact is now associated with the organization
+      const updatedArtifact = await artifactRepository.findOne({
+        where: { id: newArtifact.id },
+        relations: ['organization'],
       });
-      expect(artifactRepository.findOne).toHaveBeenCalledWith({
-        where: { id: mockArtifactId },
-      });
-      expect(artifactRepository.save).toHaveBeenCalled();
+      expect(updatedArtifact.organization).toBeDefined();
+      expect(updatedArtifact.organization.id).toBe(organization.id);
     });
 
     it('should throw an exception if organization is not found', async () => {
-      // Arrange
+      const artifact = artifacts[0];
+      const invalidOrgId = faker.string.uuid();
       const dto: AddArtifactToOrganizationDto = {
-        organizationId: mockOrganizationId,
-        artifactId: mockArtifactId,
+        organizationId: invalidOrgId,
+        artifactId: artifact.id,
       };
 
-      jest.spyOn(organizationRepository, 'findOne').mockResolvedValue(null);
-
-      // Mock the service method to throw an exception
-      jest
-        .spyOn(service, 'addArtifactToOrganization')
-        .mockImplementation(async () => {
-          throw new BusinessLogicExceptionMock();
-        });
-
-      // Act & Assert
-      await expect(service.addArtifactToOrganization(dto)).rejects.toThrow();
+      await expect(
+        service.addArtifactToOrganization(dto),
+      ).rejects.toHaveProperty(
+        'message',
+        'The organization with the given id was not found',
+      );
     });
 
     it('should throw an exception if artifact is not found', async () => {
-      // Arrange
+      const invalidArtifactId = faker.string.uuid();
       const dto: AddArtifactToOrganizationDto = {
-        organizationId: mockOrganizationId,
-        artifactId: mockArtifactId,
+        organizationId: organization.id,
+        artifactId: invalidArtifactId,
       };
 
-      jest
-        .spyOn(organizationRepository, 'findOne')
-        .mockResolvedValue(mockOrganization);
-      jest.spyOn(artifactRepository, 'findOne').mockResolvedValue(null);
-
-      // Mock the service method to throw an exception
-      jest
-        .spyOn(service, 'addArtifactToOrganization')
-        .mockImplementation(async () => {
-          throw new BusinessLogicExceptionMock();
-        });
-
-      // Act & Assert
-      await expect(service.addArtifactToOrganization(dto)).rejects.toThrow();
+      await expect(
+        service.addArtifactToOrganization(dto),
+      ).rejects.toHaveProperty(
+        'message',
+        'The artifact with the given id was not found',
+      );
     });
 
     it('should throw an exception if organizationId is invalid', async () => {
-      // Arrange
+      const artifact = artifacts[0];
       const dto: AddArtifactToOrganizationDto = {
-        organizationId: mockInvalidId,
-        artifactId: mockArtifactId,
+        organizationId: 'invalid-id',
+        artifactId: artifact.id,
       };
 
-      // Act & Assert
-      await expect(service.addArtifactToOrganization(dto)).rejects.toThrow();
+      await expect(
+        service.addArtifactToOrganization(dto),
+      ).rejects.toHaveProperty('message', 'The organizationId is not valid');
     });
 
     it('should throw an exception if artifactId is invalid', async () => {
-      // Arrange
       const dto: AddArtifactToOrganizationDto = {
-        organizationId: mockOrganizationId,
-        artifactId: mockInvalidId,
+        organizationId: organization.id,
+        artifactId: 'invalid-id',
       };
 
-      // Act & Assert
-      await expect(service.addArtifactToOrganization(dto)).rejects.toThrow();
+      await expect(
+        service.addArtifactToOrganization(dto),
+      ).rejects.toHaveProperty('message', 'The artifactId is not valid');
     });
   });
 
-  // Test updateArtifactInOrganization
   describe('updateArtifactInOrganization', () => {
     it('should update an artifact in an organization', async () => {
-      // Arrange
+      const artifact = artifacts[0];
+      const newName = faker.commerce.productName();
+      const newDescription = faker.lorem.paragraphs(3);
+
       const dto: UpdateArtifactInOrganizationDto = {
-        description:
-          'Updated description that is at least 200 characters long. Updated description that is at least 200 characters long. Updated description that is at least 200 characters long. Updated description that is at least 200 characters long.',
-        name: 'Updated Artifact Name',
+        name: newName,
+        description: newDescription,
       };
 
-      jest
-        .spyOn(organizationRepository, 'findOne')
-        .mockResolvedValue(mockOrganization);
-      jest
-        .spyOn(artifactRepository, 'findOne')
-        .mockImplementation((options: any) => {
-          if (options.where && options.where.name === dto.name) {
-            return Promise.resolve(null); // No duplicate name
-          }
-          return Promise.resolve(mockArtifact);
-        });
-      jest.spyOn(artifactRepository, 'save').mockResolvedValue({
-        ...mockArtifact,
-        name: dto.name,
-        description: dto.description,
-      });
-
-      // Act
       const result = await service.updateArtifactInOrganization(
-        mockOrganizationId,
-        mockArtifactId,
+        organization.id,
+        artifact.id,
         dto,
       );
-
-      // Assert
       expect(result).toBeDefined();
-      expect(result.organizationId).toBe(mockOrganizationId);
-      expect(result.artifactId).toBe(mockArtifactId);
-      expect(result.artifactName).toBe(dto.name);
-      expect(result.description).toBe(dto.description);
-      expect(organizationRepository.findOne).toHaveBeenCalledWith({
-        where: { id: mockOrganizationId },
+      expect(result.artifactName).toBe(newName);
+      expect(result.description).toBe(newDescription);
+
+      // Verify the artifact was updated in the database
+      const updatedArtifact = await artifactRepository.findOne({
+        where: { id: artifact.id },
       });
-      expect(artifactRepository.findOne).toHaveBeenCalledWith({
-        where: { id: mockArtifactId, organization: { id: mockOrganizationId } },
-        relations: ['organization'],
-      });
-      expect(artifactRepository.save).toHaveBeenCalled();
+      expect(updatedArtifact.name).toBe(newName);
+      expect(updatedArtifact.description).toBe(newDescription);
+    });
+
+    // Write test that It should throw an exception if the organization is not found
+    it('should throw an exception if organization is not found', async () => {
+      const invalidOrgId = faker.string.uuid();
+      const artifact = artifacts[0];
+      const dto: UpdateArtifactInOrganizationDto = {
+        name: faker.commerce.productName(),
+      };
+
+      await expect(
+        service.updateArtifactInOrganization(invalidOrgId, artifact.id, dto),
+      ).rejects.toHaveProperty(
+        'message',
+        'The organization with the given id was not found',
+      );
     });
 
     it('should throw an exception if organization is not found', async () => {
-      // Arrange
+      const invalidOrgId = faker.string.uuid();
+
+      // Crear un artefacto no asociado a ninguna organización
+      const standaloneArtifact = await artifactRepository.save({
+        name: faker.commerce.productName(),
+        description: faker.lorem.paragraphs(3),
+        body: { content: faker.lorem.paragraph() },
+        timeStamp: new Date(),
+      });
+
       const dto: UpdateArtifactInOrganizationDto = {
-        description:
-          'Updated description that is at least 200 characters long. Updated description that is at least 200 characters long. Updated description that is at least 200 characters long. Updated description that is at least 200 characters long.',
+        name: faker.commerce.productName(),
       };
 
-      jest.spyOn(artifactRepository, 'findOne').mockResolvedValue(mockArtifact);
-      jest.spyOn(organizationRepository, 'findOne').mockResolvedValue(null);
-
-      // Mock the service method to throw an exception
-      jest
-        .spyOn(service, 'updateArtifactInOrganization')
-        .mockImplementation(async () => {
-          throw new BusinessLogicExceptionMock();
-        });
-
-      // Act & Assert
       await expect(
         service.updateArtifactInOrganization(
-          mockOrganizationId,
-          mockArtifactId,
+          invalidOrgId,
+          standaloneArtifact.id,
           dto,
         ),
-      ).rejects.toThrow();
+      ).rejects.toHaveProperty(
+        'message',
+        'The organization with the given id was not found',
+      );
     });
 
     it('should throw an exception if artifact is not found', async () => {
-      // Arrange
+      const invalidArtifactId = faker.string.uuid();
       const dto: UpdateArtifactInOrganizationDto = {
-        description:
-          'Updated description that is at least 200 characters long. Updated description that is at least 200 characters long. Updated description that is at least 200 characters long. Updated description that is at least 200 characters long.',
+        name: faker.commerce.productName(),
       };
 
-      jest.spyOn(artifactRepository, 'findOne').mockResolvedValue(null);
-
-      // Mock the service method to throw an exception
-      jest
-        .spyOn(service, 'updateArtifactInOrganization')
-        .mockImplementation(async () => {
-          throw new BusinessLogicExceptionMock();
-        });
-
-      // Act & Assert
       await expect(
         service.updateArtifactInOrganization(
-          mockOrganizationId,
-          mockArtifactId,
+          organization.id,
+          invalidArtifactId,
           dto,
         ),
-      ).rejects.toThrow();
+      ).rejects.toHaveProperty(
+        'message',
+        'The artifact with the given id was not found in the organization',
+      );
     });
 
     it('should throw an exception if description is too short', async () => {
-      // Arrange
+      const artifact = artifacts[0];
       const dto: UpdateArtifactInOrganizationDto = {
-        description: 'Too short',
+        description: 'Too short', // Less than 200 characters
       };
 
-      jest
-        .spyOn(organizationRepository, 'findOne')
-        .mockResolvedValue(mockOrganization);
-      jest.spyOn(artifactRepository, 'findOne').mockResolvedValue(mockArtifact);
-
-      // Mock the service method to throw an exception
-      jest
-        .spyOn(service, 'updateArtifactInOrganization')
-        .mockImplementation(async () => {
-          throw new BusinessLogicExceptionMock();
-        });
-
-      // Act & Assert
       await expect(
-        service.updateArtifactInOrganization(
-          mockOrganizationId,
-          mockArtifactId,
-          dto,
-        ),
-      ).rejects.toThrow();
+        service.updateArtifactInOrganization(organization.id, artifact.id, dto),
+      ).rejects.toHaveProperty(
+        'message',
+        'The description must be at least 200 characters long',
+      );
     });
 
     it('should throw an exception if name is already in use', async () => {
-      // Skip this test for now - we'll mark it as passing
-      expect(true).toBe(true);
-    });
+      // Create two artifacts with different names
+      const artifact1 = artifacts[0];
+      const artifact2 = artifacts[1];
 
-    it('should throw an exception if description is too short (line 183)', async () => {
-      // Skip this test for now - we'll mark it as passing
-      expect(true).toBe(true);
+      // Try to update artifact2 with artifact1's name
+      const dto: UpdateArtifactInOrganizationDto = {
+        name: artifact1.name,
+      };
+
+      await expect(
+        service.updateArtifactInOrganization(
+          organization.id,
+          artifact2.id,
+          dto,
+        ),
+      ).rejects.toHaveProperty(
+        'message',
+        'The artifact name is already in use within this organization',
+      );
     });
 
     it('should throw an exception if organizationId is invalid', async () => {
-      // Arrange
+      const artifact = artifacts[0];
       const dto: UpdateArtifactInOrganizationDto = {
-        description:
-          'Updated description that is at least 200 characters long. Updated description that is at least 200 characters long. Updated description that is at least 200 characters long. Updated description that is at least 200 characters long.',
+        name: faker.commerce.productName(),
       };
 
-      // Act & Assert
       await expect(
-        service.updateArtifactInOrganization(
-          mockInvalidId,
-          mockArtifactId,
-          dto,
-        ),
-      ).rejects.toThrow();
+        service.updateArtifactInOrganization('invalid-id', artifact.id, dto),
+      ).rejects.toHaveProperty('message', 'The organizationId is not valid');
     });
 
     it('should throw an exception if artifactId is invalid', async () => {
-      // Arrange
       const dto: UpdateArtifactInOrganizationDto = {
-        description:
-          'Updated description that is at least 200 characters long. Updated description that is at least 200 characters long. Updated description that is at least 200 characters long. Updated description that is at least 200 characters long.',
+        name: faker.commerce.productName(),
       };
 
-      // Act & Assert
       await expect(
         service.updateArtifactInOrganization(
-          mockOrganizationId,
-          mockInvalidId,
+          organization.id,
+          'invalid-id',
           dto,
         ),
-      ).rejects.toThrow();
+      ).rejects.toHaveProperty('message', 'The artifactId is not valid');
     });
   });
 
-  // Test removeArtifactFromOrganization
   describe('removeArtifactFromOrganization', () => {
     it('should remove an artifact from an organization', async () => {
-      // Arrange
-      jest.spyOn(artifactRepository, 'findOne').mockResolvedValue(mockArtifact);
-      jest
-        .spyOn(artifactRepository, 'save')
-        .mockResolvedValue({ ...mockArtifact, organization: null });
+      const artifact = artifacts[0];
 
-      // Act
       await service.removeArtifactFromOrganization(
-        mockArtifactId,
-        mockOrganizationId,
+        artifact.id,
+        organization.id,
       );
 
-      // Assert
-      expect(artifactRepository.findOne).toHaveBeenCalledWith({
-        where: { id: mockArtifactId, organization: { id: mockOrganizationId } },
+      // Verify the artifact is no longer associated with the organization
+      const updatedArtifact = await artifactRepository.findOne({
+        where: { id: artifact.id },
         relations: ['organization'],
       });
-      expect(artifactRepository.save).toHaveBeenCalled();
+      expect(updatedArtifact.organization).toBeNull();
     });
 
     it('should throw an exception if artifact is not found', async () => {
-      // Arrange
-      jest.spyOn(artifactRepository, 'findOne').mockResolvedValue(null);
+      const invalidArtifactId = faker.string.uuid();
 
-      // Mock the service method to throw an exception
-      jest
-        .spyOn(service, 'removeArtifactFromOrganization')
-        .mockImplementation(async () => {
-          throw new BusinessLogicExceptionMock();
-        });
-
-      // Act & Assert
       await expect(
         service.removeArtifactFromOrganization(
-          mockArtifactId,
-          mockOrganizationId,
+          invalidArtifactId,
+          organization.id,
         ),
-      ).rejects.toThrow();
+      ).rejects.toHaveProperty(
+        'message',
+        'The artifact is not associated with the given organization',
+      );
+    });
+
+    it('should throw an exception if artifact is not associated with organization', async () => {
+      // Create an artifact not associated with any organization
+      const unassociatedArtifact = await artifactRepository.save({
+        name: faker.commerce.productName(),
+        description: faker.lorem.paragraphs(3),
+        body: { content: faker.lorem.paragraph() },
+        timeStamp: new Date(),
+      });
+
+      await expect(
+        service.removeArtifactFromOrganization(
+          unassociatedArtifact.id,
+          organization.id,
+        ),
+      ).rejects.toHaveProperty(
+        'message',
+        'The artifact is not associated with the given organization',
+      );
     });
 
     it('should throw an exception if organizationId is invalid', async () => {
-      // Act & Assert
+      const artifact = artifacts[0];
+
       await expect(
-        service.removeArtifactFromOrganization(mockArtifactId, mockInvalidId),
-      ).rejects.toThrow();
+        service.removeArtifactFromOrganization(artifact.id, 'invalid-id'),
+      ).rejects.toHaveProperty('message', 'The organizationId is not valid');
     });
 
     it('should throw an exception if artifactId is invalid', async () => {
-      // Act & Assert
       await expect(
-        service.removeArtifactFromOrganization(
-          mockInvalidId,
-          mockOrganizationId,
-        ),
-      ).rejects.toThrow();
-    });
-
-    it('should throw an exception if artifact is not associated with organization (line 250)', async () => {
-      // Skip this test for now - we'll mark it as passing
-      expect(true).toBe(true);
-    });
-  });
-
-  // Test validateOrganizationId and validateArtifactId (lines 263-276)
-  describe('validation methods', () => {
-    it('should validate organization ID correctly (lines 263-270)', () => {
-      // Create a new instance of the service with mock implementation
-      const localService = new OrganizationArtifactService(
-        organizationRepository as any,
-        artifactRepository as any,
-      );
-
-      // Override the validateOrganizationId method for testing
-      (localService as any).validateOrganizationId = function (id: string) {
-        // Use a simplified regex that will accept our mock ID
-        const uuidRegex = /^[0-9a-f-]+$/i;
-        if (!uuidRegex.test(id)) {
-          throw new Error('The organizationId is not valid');
-        }
-      };
-
-      // Test with valid UUID
-      expect(() => {
-        (localService as any).validateOrganizationId(mockOrganizationId);
-      }).not.toThrow();
-
-      // Test with invalid UUID format
-      expect(() => {
-        (localService as any).validateOrganizationId('invalid*uuid');
-      }).toThrow();
-    });
-
-    it('should validate artifact ID correctly (lines 271-276)', () => {
-      // Create a new instance of the service with mock implementation
-      const localService = new OrganizationArtifactService(
-        organizationRepository as any,
-        artifactRepository as any,
-      );
-
-      // Override the validateArtifactId method for testing
-      (localService as any).validateArtifactId = function (id: string) {
-        // Use a simplified regex that will accept our mock ID
-        const uuidRegex = /^[0-9a-f-]+$/i;
-        if (!uuidRegex.test(id)) {
-          throw new Error('The artifactId is not valid');
-        }
-      };
-
-      // Test with valid UUID
-      expect(() => {
-        (localService as any).validateArtifactId(mockArtifactId);
-      }).not.toThrow();
-
-      // Test with invalid UUID format
-      expect(() => {
-        (localService as any).validateArtifactId('invalid*uuid');
-      }).toThrow();
+        service.removeArtifactFromOrganization('invalid-id', organization.id),
+      ).rejects.toHaveProperty('message', 'The artifactId is not valid');
     });
   });
 });

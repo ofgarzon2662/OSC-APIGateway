@@ -161,6 +161,18 @@ export class OrganizationArtifactService {
     this.validateOrganizationId(organizationId);
     this.validateArtifactId(artifactId);
 
+    // Verificar que la organización existe
+    const organization = await this.organizationRepository.findOne({
+      where: { id: organizationId },
+    });
+
+    if (!organization) {
+      throw new BusinessLogicException(
+        'The organization with the given id was not found',
+        BusinessError.NOT_FOUND,
+      );
+    }
+
     // Verificar que el artefacto existe y pertenece a la organización
     const artifact = await this.artifactRepository.findOne({
       where: { id: artifactId, organization: { id: organizationId } },
@@ -174,17 +186,6 @@ export class OrganizationArtifactService {
       );
     }
 
-    // Verificar que la organización existe
-    const organization = await this.organizationRepository.findOne({
-      where: { id: organizationId },
-    });
-
-    if (!organization) {
-      throw new BusinessLogicException(
-        'The organization with the given id was not found',
-        BusinessError.NOT_FOUND,
-      );
-    }
 
     // Actualizar los campos si se proporcionan
     if (dto.description) {
