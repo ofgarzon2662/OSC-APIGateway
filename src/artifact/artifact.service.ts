@@ -7,33 +7,35 @@ import {
   BusinessLogicException,
 } from '../shared/errors/business-errors';
 import validator from 'validator';
-import { OrganizationEntity } from '../organization/organization.entity';
+import { OrganizationArtifactService } from '../organization-artifact/organization-artifact.service';
+import { In } from 'typeorm';
 
 @Injectable()
 export class ArtifactService {
   constructor(
     @InjectRepository(ArtifactEntity)
     private readonly artifactRepository: Repository<ArtifactEntity>,
-    @InjectRepository(OrganizationEntity)
-    private readonly organizationRepository: Repository<OrganizationEntity>,
+    private readonly organizationArtifactService: OrganizationArtifactService,
   ) {}
 
   // Get All Artifacts
   async findAll(organizationId: string): Promise<ArtifactEntity[]> {
-    this.validateOrganizationId(organizationId);
-
-    // Check if the organization exists
-    const organization = await this.organizationRepository.findOne({
-      where: { id: organizationId },
-    });
-    if (!organization) {
-      throw new BusinessLogicException(
-        'The organization provided does not exist',
-        BusinessError.NOT_FOUND,
-      );
+    this.validateArtifactId(organizationId);
+    
+    // Utilizamos el servicio de relaciones para obtener los artefactos de una organización
+    const relationDtos = await this.organizationArtifactService.findArtifactsByOrganization(organizationId);
+    
+    // Convertimos los DTOs a entidades
+    const artifactIds = relationDtos.map(dto => dto.artifactId);
+    
+    if (artifactIds.length === 0) {
+      return [];
     }
+    
+    // TypeORM v0.2.x usa findByIds con dos argumentos, pero en versiones más recientes
+    // se debe usar findBy con un objeto que contenga un operador 'in'
     return await this.artifactRepository.find({
-      where: { organization },
+      where: { id: In(artifactIds) },
       relations: ['organization'],
     });
   }
@@ -43,27 +45,27 @@ export class ArtifactService {
     this.validateOrganizationId(orgId);
     this.validateArtifactId(artifactId);
 
-    // Check if the organization exists
-    const organization = await this.organizationRepository.findOne({
-      where: { id: orgId },
-    });
-    if (!organization) {
+    // Verificamos que el artefacto pertenezca a la organización usando el servicio de relaciones
+    try {
+      await this.organizationArtifactService.findOneArtifactByOrganization(orgId, artifactId);
+    } catch (error) {
       throw new BusinessLogicException(
-        'The organization provided does not exist',
+        'The artifact with the provided id does not exist in the organization',
         BusinessError.NOT_FOUND,
       );
     }
 
-    // Check that the artifact is part of the organization
-    const artifact: ArtifactEntity = await this.artifactRepository.findOne({
-      where: { id: artifactId, organization },
+    const artifact = await this.artifactRepository.findOne({
+      where: { id: artifactId },
       relations: ['organization'],
     });
-    if (!artifact)
+
+    if (!artifact || artifact.organization.id !== orgId) {
       throw new BusinessLogicException(
-        'The artifact with the provided id does not exist',
+        'The artifact with the provided id does not exist in the organization',
         BusinessError.NOT_FOUND,
       );
+    }
 
     return artifact;
   }
@@ -74,17 +76,6 @@ export class ArtifactService {
     organizationId: string,
   ): Promise<ArtifactEntity> {
     this.validateOrganizationId(organizationId);
-
-    // Check if the organization exists and assign it
-    const organization = await this.organizationRepository.findOne({
-      where: { id: organizationId },
-    });
-    if (!organization) {
-      throw new BusinessLogicException(
-        'The organization provided does not exist',
-        BusinessError.PRECONDITION_FAILED,
-      );
-    }
 
     // Ensure description is at least 200 characters long
     if (!artifact.description || artifact.description.length < 200) {
@@ -107,23 +98,36 @@ export class ArtifactService {
     }
 
     // Validate name uniqueness within organization
-    const existingArtifact = await this.artifactRepository.findOne({
-      where: { name: artifact.name, organization },
-    });
-    if (existingArtifact) {
+    const existingArtifacts = await this.findAll(organizationId);
+    const nameExists = existingArtifacts.some(a => a.name === artifact.name);
+    
+    if (nameExists) {
       throw new BusinessLogicException(
         'The artifact name provided is already in use within this organization',
         BusinessError.BAD_REQUEST,
       );
     }
 
-    // Create and save the Artifact
+    // Create the Artifact without organization first
     const newArtifact = this.artifactRepository.create({
       ...artifact,
-      organization,
       timeStamp: new Date(),
     });
-    return await this.artifactRepository.save(newArtifact);
+    
+    const savedArtifact = await this.artifactRepository.save(newArtifact);
+    
+    // Now associate it with the organization using the relationship service
+    await this.organizationArtifactService.addArtifactToOrganization({
+      artifactId: savedArtifact.id,
+      organizationId,
+      description: artifact.description,
+    });
+    
+    // Reload the artifact with the organization relationship
+    return await this.artifactRepository.findOne({
+      where: { id: savedArtifact.id },
+      relations: ['organization'],
+    });
   }
 
   // Update an Artifact
@@ -135,7 +139,9 @@ export class ArtifactService {
 
     const artifactToUpdate = await this.artifactRepository.findOne({
       where: { id },
+      relations: ['organization'],
     });
+    
     if (!artifactToUpdate) {
       throw new BusinessLogicException(
         'The artifact with the provided id does not exist',
@@ -145,13 +151,10 @@ export class ArtifactService {
 
     // Check for uniqueness of name if it's being updated
     if (artifact.name && artifact.name !== artifactToUpdate.name) {
-      const existingArtifact = await this.artifactRepository.findOne({
-        where: {
-          name: artifact.name,
-          organization: artifactToUpdate.organization,
-        },
-      });
-      if (existingArtifact) {
+      const existingArtifacts = await this.findAll(artifactToUpdate.organization.id);
+      const nameExists = existingArtifacts.some(a => a.name === artifact.name && a.id !== id);
+      
+      if (nameExists) {
         throw new BusinessLogicException(
           'The artifact name provided is already in use within this organization',
           BusinessError.BAD_REQUEST,
@@ -178,7 +181,9 @@ export class ArtifactService {
 
     const artifact = await this.artifactRepository.findOne({
       where: { id },
+      relations: ['organization'],
     });
+    
     if (!artifact) {
       throw new BusinessLogicException(
         'The artifact with the provided id does not exist',
@@ -186,6 +191,15 @@ export class ArtifactService {
       );
     }
 
+    // Primero eliminamos la relación con la organización
+    if (artifact.organization) {
+      await this.organizationArtifactService.removeArtifactFromOrganization(
+        id, 
+        artifact.organization.id
+      );
+    }
+
+    // Luego eliminamos el artefacto
     await this.artifactRepository.remove(artifact);
   }
 
