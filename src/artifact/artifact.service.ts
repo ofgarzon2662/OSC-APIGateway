@@ -7,75 +7,44 @@ import {
   BusinessLogicException,
 } from '../shared/errors/business-errors';
 import validator from 'validator';
-import { OrganizationArtifactService } from '../organization-artifact/organization-artifact.service';
-import { In } from 'typeorm';
 
 @Injectable()
 export class ArtifactService {
   constructor(
     @InjectRepository(ArtifactEntity)
     private readonly artifactRepository: Repository<ArtifactEntity>,
-    private readonly organizationArtifactService: OrganizationArtifactService,
   ) {}
 
   // Get All Artifacts
-  async findAll(organizationId: string): Promise<ArtifactEntity[]> {
-    this.validateArtifactId(organizationId);
-    
-    // Utilizamos el servicio de relaciones para obtener los artefactos de una organización
-    const relationDtos = await this.organizationArtifactService.findArtifactsByOrganization(organizationId);
-    
-    // Convertimos los DTOs a entidades
-    const artifactIds = relationDtos.map(dto => dto.artifactId);
-    
-    if (artifactIds.length === 0) {
-      return [];
-    }
-    
-    // TypeORM v0.2.x usa findByIds con dos argumentos, pero en versiones más recientes
-    // se debe usar findBy con un objeto que contenga un operador 'in'
-    return await this.artifactRepository.find({
-      where: { id: In(artifactIds) },
-      relations: ['organization'],
-    });
+  async findAll(): Promise<ArtifactEntity[]> {
+    return await this.artifactRepository.find( { relations: ['organization'] } );
   }
 
   // Get One Artifact
-  async findOne(orgId: string, artifactId: string): Promise<ArtifactEntity> {
-    this.validateOrganizationId(orgId);
+  async findOne(artifactId: string): Promise<ArtifactEntity> {
     this.validateArtifactId(artifactId);
-
-    // Verificamos que el artefacto pertenezca a la organización usando el servicio de relaciones
-    try {
-      await this.organizationArtifactService.findOneArtifactByOrganization(orgId, artifactId);
-    } catch (error) {
+    const artifact = await this.artifactRepository.findOne({ where: { id: artifactId }, relations: ['organization'] });
+    if (!artifact) {
       throw new BusinessLogicException(
-        'The artifact with the provided id does not exist in the organization',
+        'The artifact with the provided id does not exist',
         BusinessError.NOT_FOUND,
       );
     }
-
-    const artifact = await this.artifactRepository.findOne({
-      where: { id: artifactId },
-      relations: ['organization'],
-    });
-
-    if (!artifact || artifact.organization.id !== orgId) {
-      throw new BusinessLogicException(
-        'The artifact with the provided id does not exist in the organization',
-        BusinessError.NOT_FOUND,
-      );
-    }
-
     return artifact;
   }
 
   // Create one Artifact
   async create(
-    artifact: Partial<ArtifactEntity>,
-    organizationId: string,
+    artifact: Partial<ArtifactEntity>
   ): Promise<ArtifactEntity> {
-    this.validateOrganizationId(organizationId);
+    
+    // Validate title: not empty, at least 3 characters, only alphanumeric and hyphens
+    if (!artifact.title || artifact.title.length < 3 || !/^[a-zA-Z0-9-]+$/.test(artifact.title)) {
+      throw new BusinessLogicException(
+        'The title of the artifact is required, must be at least 3 characters long, and can only contain alphanumeric characters and hyphens',
+        BusinessError.PRECONDITION_FAILED,
+      );
+    }
 
     // Ensure description is at least 200 characters long
     if (!artifact.description || artifact.description.length < 200) {
@@ -95,39 +64,55 @@ export class ArtifactService {
           BusinessError.PRECONDITION_FAILED,
         );
       }
-    }
-
-    // Validate name uniqueness within organization
-    const existingArtifacts = await this.findAll(organizationId);
-    const nameExists = existingArtifacts.some(a => a.name === artifact.name);
-    
-    if (nameExists) {
+    } else if (!artifact.body || typeof artifact.body !== 'object') {
       throw new BusinessLogicException(
-        'The artifact name provided is already in use within this organization',
-        BusinessError.BAD_REQUEST,
+        'The body of the artifact is required and should be a valid JSON object',
+        BusinessError.PRECONDITION_FAILED,
       );
     }
+
+    // Validate keywords array (max 200 characters total)
+    if (artifact.keywords) {
+      const totalKeywordsLength = artifact.keywords.join('').length;
+      if (totalKeywordsLength > 200) {
+        throw new BusinessLogicException(
+          'The keywords array can have at most 200 characters in total',
+          BusinessError.PRECONDITION_FAILED,
+        );
+      }
+    }
+
+    // Validate links array (max 1000 characters total and each link is valid)
+    if (artifact.links) {
+      const totalLinksLength = artifact.links.join('').length;
+      if (totalLinksLength > 1000) {
+        throw new BusinessLogicException(
+          'The links array can have at most 1000 characters in total',
+          BusinessError.PRECONDITION_FAILED,
+        );
+      }
+      
+      // Validate each link
+      for (const link of artifact.links) {
+        if (!validator.isURL(link)) {
+          throw new BusinessLogicException(
+            'Each link in the links array must be a valid URL',
+            BusinessError.PRECONDITION_FAILED,
+          );
+        }
+      }
+    }
+
 
     // Create the Artifact without organization first
     const newArtifact = this.artifactRepository.create({
       ...artifact,
-      timeStamp: new Date(),
+      submittedAt: new Date(),
     });
     
     const savedArtifact = await this.artifactRepository.save(newArtifact);
     
-    // Now associate it with the organization using the relationship service
-    await this.organizationArtifactService.addArtifactToOrganization({
-      artifactId: savedArtifact.id,
-      organizationId,
-      description: artifact.description,
-    });
-    
-    // Reload the artifact with the organization relationship
-    return await this.artifactRepository.findOne({
-      where: { id: savedArtifact.id },
-      relations: ['organization'],
-    });
+    return savedArtifact;
   }
 
   // Update an Artifact
@@ -149,29 +134,85 @@ export class ArtifactService {
       );
     }
 
-    // Check for uniqueness of name if it's being updated
-    if (artifact.name && artifact.name !== artifactToUpdate.name) {
-      const existingArtifacts = await this.findAll(artifactToUpdate.organization.id);
-      const nameExists = existingArtifacts.some(a => a.name === artifact.name && a.id !== id);
-      
-      if (nameExists) {
-        throw new BusinessLogicException(
-          'The artifact name provided is already in use within this organization',
-          BusinessError.BAD_REQUEST,
-        );
-      }
-    }
+    // Create a new object with only the allowed fields
+    const allowedUpdates: Partial<ArtifactEntity> = {};
 
-    // Verify that the description is at least 200 characters long
-    if (artifact.description && artifact.description.length < 200) {
+    // Only allow updating description, body, keywords, and links
+    if ('title' in artifact || 'contributor' in artifact || 'submittedAt' in artifact || 'organization' in artifact) {
       throw new BusinessLogicException(
-        'The description must be at least 200 characters long',
+        'Only description, body, keywords, and links can be updated',
         BusinessError.BAD_REQUEST,
       );
     }
 
-    // Update and save the artifact
-    Object.assign(artifactToUpdate, artifact);
+    // Verify that the description is at least 200 characters long
+    if (artifact.description) {
+      if (artifact.description.length < 200) {
+        throw new BusinessLogicException(
+          'The description must be at least 200 characters long',
+          BusinessError.BAD_REQUEST,
+        );
+      }
+      allowedUpdates.description = artifact.description;
+    }
+    
+    // Validate body if it's being updated
+    if (artifact.body) {
+      if (typeof artifact.body === 'string') {
+        try {
+          allowedUpdates.body = JSON.parse(artifact.body);
+        } catch {
+          throw new BusinessLogicException(
+            'The body of the artifact should be a valid JSON object',
+            BusinessError.BAD_REQUEST,
+          );
+        }
+      } else if (typeof artifact.body !== 'object') {
+        throw new BusinessLogicException(
+          'The body of the artifact should be a valid JSON object',
+          BusinessError.BAD_REQUEST,
+        );
+      } else {
+        allowedUpdates.body = artifact.body;
+      }
+    }
+    
+    // Validate keywords if they're being updated
+    if (artifact.keywords) {
+      const totalKeywordsLength = artifact.keywords.join('').length;
+      if (totalKeywordsLength > 200) {
+        throw new BusinessLogicException(
+          'The keywords array can have at most 200 characters in total',
+          BusinessError.BAD_REQUEST,
+        );
+      }
+      allowedUpdates.keywords = artifact.keywords;
+    }
+    
+    // Validate links if they're being updated
+    if (artifact.links) {
+      const totalLinksLength = artifact.links.join('').length;
+      if (totalLinksLength > 1000) {
+        throw new BusinessLogicException(
+          'The links array can have at most 1000 characters in total',
+          BusinessError.BAD_REQUEST,
+        );
+      }
+      
+      // Validate each link
+      for (const link of artifact.links) {
+        if (!validator.isURL(link)) {
+          throw new BusinessLogicException(
+            'Each link in the links array must be a valid URL',
+            BusinessError.BAD_REQUEST,
+          );
+        }
+      }
+      allowedUpdates.links = artifact.links;
+    }
+
+    // Update and save the artifact with only the allowed fields
+    Object.assign(artifactToUpdate, allowedUpdates);
     return await this.artifactRepository.save(artifactToUpdate);
   }
 
@@ -191,28 +232,11 @@ export class ArtifactService {
       );
     }
 
-    // Primero eliminamos la relación con la organización
-    if (artifact.organization) {
-      await this.organizationArtifactService.removeArtifactFromOrganization(
-        id, 
-        artifact.organization.id
-      );
-    }
-
-    // Luego eliminamos el artefacto
+    // Delete the artifact directly
     await this.artifactRepository.remove(artifact);
   }
 
   // Utility validation functions
-  private validateOrganizationId(organizationId: string): void {
-    if (!organizationId || !validator.isUUID(organizationId)) {
-      throw new BusinessLogicException(
-        'The organizationId provided is not valid',
-        BusinessError.PRECONDITION_FAILED,
-      );
-    }
-  }
-
   private validateArtifactId(artifactId: string): void {
     if (!artifactId || !validator.isUUID(artifactId)) {
       throw new BusinessLogicException(

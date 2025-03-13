@@ -4,15 +4,46 @@ import { Repository } from 'typeorm';
 import { TypeOrmTestingConfig } from '../shared/testing-utils/typeorm-testing-config';
 import { ArtifactService } from './artifact.service';
 import { ArtifactEntity } from './artifact.entity';
-import { OrganizationEntity } from '../organization/organization.entity';
 import { faker } from '@faker-js/faker';
 
 describe('ArtifactService', () => {
   let service: ArtifactService;
   let artifactRepository: Repository<ArtifactEntity>;
-  let organizationRepository: Repository<OrganizationEntity>;
   let artifactList: ArtifactEntity[];
-  let org: OrganizationEntity;
+
+  // Helper function to generate a random JSON object for the body
+  const generateRandomBody = () => {
+    return {
+      content: faker.lorem.paragraphs(3),
+      metadata: {
+        author: faker.person.fullName(),
+        createdAt: faker.date.past().toISOString(),
+        tags: [faker.word.sample(), faker.word.sample(), faker.word.sample()],
+      },
+      sections: [
+        {
+          title: faker.lorem.sentence(),
+          content: faker.lorem.paragraphs(2),
+        },
+        {
+          title: faker.lorem.sentence(),
+          content: faker.lorem.paragraphs(2),
+        },
+      ],
+    };
+  };
+
+  // Helper function to generate a valid artifact
+  const generateValidArtifact = (): Partial<ArtifactEntity> => {
+    return {
+      title: faker.commerce.productName().replace(/[^a-zA-Z0-9-]/g, '-'),
+      contributor: faker.person.fullName(),
+      description: faker.lorem.paragraphs(5), // Ensure it's long enough
+      body: generateRandomBody(),
+      keywords: [faker.word.sample(), faker.word.sample(), faker.word.sample()],
+      links: [faker.internet.url(), faker.internet.url()],
+    };
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -24,33 +55,21 @@ describe('ArtifactService', () => {
     artifactRepository = module.get<Repository<ArtifactEntity>>(
       getRepositoryToken(ArtifactEntity),
     );
-    organizationRepository = module.get<Repository<OrganizationEntity>>(
-      getRepositoryToken(OrganizationEntity),
-    );
     await seedDatabase();
   });
 
   const seedDatabase = async () => {
-    await organizationRepository.clear();
     await artifactRepository.clear();
     artifactList = [];
-    org = await organizationRepository.save({
-      name: faker.company.name(),
-      description: faker.company.catchPhrase(),
-    });
-    const artifactsAmount = 50;
-
-    for (let i = 0; i < artifactsAmount; i++) {
-      const randomBody = generateRandomBody();
-      const artifact: ArtifactEntity = await artifactRepository.save({
-        name: faker.commerce.productName(),
-        description: faker.lorem.sentence(200),
-        body: randomBody,
-        timeStamp: faker.date.past(),
-        organization: org,
+    
+    // Create 5 artifacts for testing
+    for (let i = 0; i < 5; i++) {
+      const artifact = generateValidArtifact();
+      const savedArtifact = await artifactRepository.save({
+        ...artifact,
+        submittedAt: new Date(),
       });
-
-      artifactList.push(artifact);
+      artifactList.push(savedArtifact);
     }
   };
 
@@ -58,272 +77,357 @@ describe('ArtifactService', () => {
     expect(service).toBeDefined();
   });
 
-  // Find all artifacts
-  it('findAll should return all artifacts', async () => {
-    const artifacts: ArtifactEntity[] = await service.findAll(org.id);
-    expect(artifacts).toBeDefined();
-    expect(artifacts).not.toBeNull();
-    expect(artifacts).toHaveLength(artifactList.length);
-  });
-
-  // Find all artifacts with an invalid organization
-  it('findAll should throw an exception for an invalid organization', async () => {
-    await expect(() =>
-      service.findAll(faker.string.uuid()),
-    ).rejects.toHaveProperty(
-      'message',
-      'The organization provided does not exist',
-    );
-  });
-
-  // Find one artifact
-  it('findOne should return one artifact', async () => {
-    const artifact: ArtifactEntity = await service.findOne(
-      org.id,
-      artifactList[0].id,
-    );
-    expect(artifact).toBeDefined();
-    expect(artifact).not.toBeNull();
-    expect(artifact.id).toEqual(artifactList[0].id);
-  });
-
-  // Get one artifact with an invalid id
-  it('findOne should throw an error with an invalid id', async () => {
-    await expect(service.findOne(org.id, 'invalid-id')).rejects.toHaveProperty(
-      'message',
-      'The artifactId provided is not valid',
-    );
-  });
-
-  // Get non existent artifact
-  it('findOne should throw an exception for a non existent artifact', async () => {
-    const fakeUuid = faker.string.uuid();
-    await expect(() =>
-      service.findOne(org.id, fakeUuid),
-    ).rejects.toHaveProperty(
-      'message',
-      'The artifact with the provided id does not exist',
-    );
-  });
-
-  // Get one artifact with an invalid organization
-  it('findOne should throw an exception for an invalid organization', async () => {
-    await expect(() =>
-      service.findOne(faker.string.uuid(), artifactList[0].id),
-    ).rejects.toHaveProperty(
-      'message',
-      'The organization provided does not exist',
-    );
-  });
-
-  // Create an artifact
-  it('create should create an artifact', async () => {
-    const randomBody = generateRandomBody();
-    const artifact: Partial<ArtifactEntity> = {
-      name: faker.commerce.productName(),
-      description: faker.lorem.sentence(200),
-      body: randomBody,
-    };
-    const createdArtifact: ArtifactEntity = await service.create(
-      artifact,
-      org.id,
-    );
-    expect(createdArtifact).toBeDefined();
-    expect(createdArtifact).not.toBeNull();
-    expect(createdArtifact).toHaveProperty('id');
-    expect(createdArtifact).toMatchObject(artifact);
-    // List of artifacts should have one more element
-    const artifacts: ArtifactEntity[] = await service.findAll(org.id);
-    expect(artifacts).toHaveLength(artifactList.length + 1);
-  });
-
-  // Create an artifact with an invalid organization
-  it('create should throw an exception for an invalid organization', async () => {
-    const randomBody = generateRandomBody();
-    const artifact: Partial<ArtifactEntity> = {
-      name: faker.commerce.productName(),
-      description: faker.lorem.sentence(200),
-      body: randomBody,
-    };
-    await expect(() =>
-      service.create(artifact, faker.string.uuid()),
-    ).rejects.toHaveProperty(
-      'message',
-      'The organization provided does not exist',
-    );
-  });
-
-  // Create an artifact with an invalid body
-  it('create should throw an exception for an invalid body', async () => {
-    const artifact: Partial<ArtifactEntity> = {
-      name: faker.commerce.productName(),
-      description: faker.lorem.sentence(200),
-      body: 'invalid-json',
-    };
-    await expect(() => service.create(artifact, org.id)).rejects.toHaveProperty(
-      'message',
-      'The body of the artifact should be a valid JSON object',
-    );
-  });
-
-  // Create an artifact with an invalid description
-  it('create should throw an exception for an invalid description', async () => {
-    const randomBody = generateRandomBody();
-    const artifact: Partial<ArtifactEntity> = {
-      name: faker.commerce.productName(),
-      description: 'short-description',
-      body: randomBody,
-    };
-    await expect(() => service.create(artifact, org.id)).rejects.toHaveProperty(
-      'message',
-      'The description of the artifact is required and should be at least 200 characters long',
-    );
-  });
-
-  // Create an artifact with a name that already exists
-  it('create should throw an exception for an already existing name', async () => {
-    const randomBody = generateRandomBody();
-    const artifact: Partial<ArtifactEntity> = {
-      name: artifactList[0].name,
-      description: faker.lorem.sentence(200),
-      body: randomBody,
-    };
-    await expect(() => service.create(artifact, org.id)).rejects.toHaveProperty(
-      'message',
-      'The artifact name provided is already in use within this organization',
-    );
-  });
-
-  // Update an artifact with valid data
-  it('update should successfully update an artifact with valid data', async () => {
-    const artifactId = artifactList[0].id;
-    const updateData: Partial<ArtifactEntity> = {
-      name: faker.commerce.productName(),
-      description: faker.lorem.sentence(200),
-      body: generateRandomBody(),
-    };
-    const updatedArtifact = await service.update(artifactId, updateData);
-    expect(updatedArtifact).toBeDefined();
-    expect(updatedArtifact).toMatchObject(updateData);
-    expect(updatedArtifact.id).toEqual(artifactId);
-  });
-
-  // Update an artifact with an invalid ID
-  it('update should throw an error with an invalid ID', async () => {
-    const invalidId = 'invalid-id';
-    const updateData: Partial<ArtifactEntity> = {
-      name: faker.commerce.productName(),
-      description: faker.lorem.sentence(200),
-      body: generateRandomBody(),
-    };
-    await expect(service.update(invalidId, updateData)).rejects.toHaveProperty(
-      'message',
-      'The artifactId provided is not valid',
-    );
-  });
-
-  // Update a non-existent artifact
-  it('update should throw an exception for a non-existent artifact', async () => {
-    const nonExistentId = faker.string.uuid();
-    const updateData: Partial<ArtifactEntity> = {
-      name: faker.commerce.productName(),
-      description: faker.lorem.sentence(200),
-      body: generateRandomBody(),
-    };
-    await expect(
-      service.update(nonExistentId, updateData),
-    ).rejects.toHaveProperty(
-      'message',
-      'The artifact with the provided id does not exist',
-    );
-  });
-
-  // Update an artifact with an existing name
-  it('update should throw an exception for an already existing name', async () => {
-    const artifactId = artifactList[0].id;
-    const updateData: Partial<ArtifactEntity> = {
-      name: artifactList[1].name,
-      description: faker.lorem.sentence(200),
-      body: generateRandomBody(),
-    };
-    await expect(service.update(artifactId, updateData)).rejects.toHaveProperty(
-      'message',
-      'The artifact name provided is already in use within this organization',
-    );
-  });
-
-  // Create an artifact with an invalid Org ID
-  it('create should throw an exception for an invalid organization', async () => {
-    const randomBody = generateRandomBody();
-    const artifact: Partial<ArtifactEntity> = {
-      name: faker.commerce.productName(),
-      description: faker.lorem.sentence(200),
-      body: randomBody,
-    };
-    await expect(() =>
-      service.create(artifact, 'invalid-id'),
-    ).rejects.toHaveProperty(
-      'message',
-      'The organizationId provided is not valid',
-    );
-  });
-
-  // Update an artifact with a description shorter than 200 characters
-  it('update should throw an error if description is less than 200 characters', async () => {
-    const artifactId = artifactList[0].id; // Use an existing artifact's ID
-    const updateData: Partial<ArtifactEntity> = {
-      description: 'Too short', // Description less than 200 characters
-    };
-
-    await expect(service.update(artifactId, updateData)).rejects.toHaveProperty(
-      'message',
-      'The description must be at least 200 characters long',
-    );
-  });
-
-  // Delete an artifact with a valid ID
-  it('delete should successfully delete an existing artifact', async () => {
-    const artifactId = artifactList[0].id;
-
-    await service.delete(artifactId);
-
-    // Check if the artifact has been removed
-    const deletedArtifact = await artifactRepository.findOne({
-      where: { id: artifactId },
+  // FIND ALL TESTS
+  describe('findAll', () => {
+    it('should return all artifacts', async () => {
+      const artifacts = await service.findAll();
+      expect(artifacts).toBeDefined();
+      expect(artifacts).not.toBeNull();
+      expect(artifacts).toHaveLength(artifactList.length);
     });
-    expect(deletedArtifact).toBeNull();
   });
 
-  // Delete an artifact with an invalid ID
-  it('delete should throw an error with an invalid artifact id', async () => {
-    const invalidId = 'invalid-id';
-
-    await expect(service.delete(invalidId)).rejects.toHaveProperty(
-      'message',
-      'The artifactId provided is not valid',
-    );
-  });
-
-  // Delete a non-existent artifact
-  it('delete should throw an exception for a non-existent artifact id', async () => {
-    const nonExistentId = faker.string.uuid();
-
-    await expect(service.delete(nonExistentId)).rejects.toHaveProperty(
-      'message',
-      'The artifact with the provided id does not exist',
-    );
-  });
-
-  // Helper function to generate a random body for an artifact
-  const generateRandomBody = () => {
-    return JSON.stringify({
-      title: faker.lorem.words(5),
-      content: faker.lorem.sentences(5),
-      metadata: {
-        author: faker.person.fullName(),
-        createdAt: faker.date.past().toISOString(),
-        tags: [faker.lorem.word(), faker.lorem.word(), faker.lorem.word()],
-      },
+  // FIND ONE TESTS
+  describe('findOne', () => {
+    it('should return one artifact by id', async () => {
+      const storedArtifact = artifactList[0];
+      const artifact = await service.findOne(storedArtifact.id);
+      expect(artifact).toBeDefined();
+      expect(artifact.id).toEqual(storedArtifact.id);
     });
-  };
+
+    it('should throw an exception for an invalid UUID', async () => {
+      await expect(() => service.findOne('invalid-id')).rejects.toHaveProperty(
+        'message',
+        'The artifactId provided is not valid'
+      );
+    });
+
+    it('should throw an exception for a non-existent artifact', async () => {
+      await expect(() => service.findOne(faker.string.uuid())).rejects.toHaveProperty(
+        'message',
+        'The artifact with the provided id does not exist'
+      );
+    });
+  });
+
+  // CREATE TESTS
+  describe('create', () => {
+    it('should create a new artifact with valid data', async () => {
+      const newArtifact = generateValidArtifact();
+      const result = await service.create(newArtifact);
+      
+      expect(result).toBeDefined();
+      expect(result.id).toBeDefined();
+      expect(result.title).toEqual(newArtifact.title);
+      expect(result.description).toEqual(newArtifact.description);
+      expect(result.submittedAt).toBeDefined();
+      
+      // Verify it was added to the database
+      const storedArtifact = await artifactRepository.findOne({ where: { id: result.id } });
+      expect(storedArtifact).toBeDefined();
+    });
+
+    it('should throw an exception for a title that is too short', async () => {
+      const invalidArtifact = generateValidArtifact();
+      invalidArtifact.title = 'ab'; // Less than 3 characters
+      
+      await expect(() => service.create(invalidArtifact)).rejects.toHaveProperty(
+        'message',
+        'The title of the artifact is required, must be at least 3 characters long, and can only contain alphanumeric characters and hyphens'
+      );
+    });
+
+    it('should throw an exception for a title with invalid characters', async () => {
+      const invalidArtifact = generateValidArtifact();
+      invalidArtifact.title = 'Invalid Title!'; // Contains spaces and special characters
+      
+      await expect(() => service.create(invalidArtifact)).rejects.toHaveProperty(
+        'message',
+        'The title of the artifact is required, must be at least 3 characters long, and can only contain alphanumeric characters and hyphens'
+      );
+    });
+
+    it('should throw an exception for a description that is too short', async () => {
+      const invalidArtifact = generateValidArtifact();
+      invalidArtifact.description = 'Short description'; // Less than 200 characters
+      
+      await expect(() => service.create(invalidArtifact)).rejects.toHaveProperty(
+        'message',
+        'The description of the artifact is required and should be at least 200 characters long'
+      );
+    });
+
+    it('should throw an exception for an invalid body (string)', async () => {
+      const invalidArtifact = generateValidArtifact();
+      invalidArtifact.body = 'This is not a JSON object';
+      
+      await expect(() => service.create(invalidArtifact)).rejects.toHaveProperty(
+        'message',
+        'The body of the artifact should be a valid JSON object'
+      );
+    });
+
+    it('should throw an exception for missing body', async () => {
+      const invalidArtifact = generateValidArtifact();
+      delete invalidArtifact.body;
+      
+      await expect(() => service.create(invalidArtifact)).rejects.toHaveProperty(
+        'message',
+        'The body of the artifact is required and should be a valid JSON object'
+      );
+    });
+
+    it('should throw an exception for keywords exceeding total length', async () => {
+      const invalidArtifact = generateValidArtifact();
+      // Create very long keywords that exceed 200 characters in total
+      invalidArtifact.keywords = [
+        faker.string.sample(100),
+        faker.string.sample(101),
+      ];
+      
+      await expect(() => service.create(invalidArtifact)).rejects.toHaveProperty(
+        'message',
+        'The keywords array can have at most 200 characters in total'
+      );
+    });
+
+    it('should throw an exception for links exceeding total length', async () => {
+      const invalidArtifact = generateValidArtifact();
+      // Create very long links that exceed 1000 characters in total
+      invalidArtifact.links = [
+        'https://example.com/' + faker.string.sample(500),
+        'https://example.com/' + faker.string.sample(501),
+      ];
+      
+      await expect(() => service.create(invalidArtifact)).rejects.toHaveProperty(
+        'message',
+        'The links array can have at most 1000 characters in total'
+      );
+    });
+
+    it('should throw an exception for invalid URLs in links', async () => {
+      const invalidArtifact = generateValidArtifact();
+      invalidArtifact.links = ['not-a-valid-url', 'also-not-valid'];
+      
+      await expect(() => service.create(invalidArtifact)).rejects.toHaveProperty(
+        'message',
+        'Each link in the links array must be a valid URL'
+      );
+    });
+
+    it('should parse a JSON string body correctly', async () => {
+      const newArtifact = generateValidArtifact();
+      const bodyObject = newArtifact.body;
+      newArtifact.body = JSON.stringify(bodyObject);
+      
+      const result = await service.create(newArtifact);
+      expect(result).toBeDefined();
+      expect(typeof result.body).toBe('object');
+      expect(result.body).toEqual(bodyObject);
+    });
+  });
+
+  // UPDATE TESTS
+  describe('update', () => {
+    it('should update only the description of an artifact', async () => {
+      const artifactToUpdate = artifactList[0];
+      const newDescription = faker.lorem.paragraphs(5); // Ensure it's long enough
+      
+      const result = await service.update(artifactToUpdate.id, {
+        description: newDescription,
+      });
+      
+      expect(result).toBeDefined();
+      expect(result.description).toEqual(newDescription);
+      expect(result.title).toEqual(artifactToUpdate.title); // Should remain unchanged
+    });
+
+    it('should update only the body of an artifact', async () => {
+      const artifactToUpdate = artifactList[0];
+      const newBody = generateRandomBody();
+      
+      const result = await service.update(artifactToUpdate.id, {
+        body: newBody,
+      });
+      
+      expect(result).toBeDefined();
+      expect(result.body).toEqual(newBody);
+    });
+
+    it('should update only the keywords of an artifact', async () => {
+      const artifactToUpdate = artifactList[0];
+      const newKeywords = ['new', 'keywords', 'list'];
+      
+      const result = await service.update(artifactToUpdate.id, {
+        keywords: newKeywords,
+      });
+      
+      expect(result).toBeDefined();
+      expect(result.keywords).toEqual(newKeywords);
+    });
+
+    it('should update only the links of an artifact', async () => {
+      const artifactToUpdate = artifactList[0];
+      const newLinks = [faker.internet.url(), faker.internet.url()];
+      
+      const result = await service.update(artifactToUpdate.id, {
+        links: newLinks,
+      });
+      
+      expect(result).toBeDefined();
+      expect(result.links).toEqual(newLinks);
+    });
+
+    it('should update multiple allowed fields at once', async () => {
+      const artifactToUpdate = artifactList[0];
+      const updateData = {
+        description: faker.lorem.paragraphs(5),
+        body: generateRandomBody(),
+        keywords: ['updated', 'keywords'],
+        links: [faker.internet.url()],
+      };
+      
+      const result = await service.update(artifactToUpdate.id, updateData);
+      
+      expect(result).toBeDefined();
+      expect(result.description).toEqual(updateData.description);
+      expect(result.body).toEqual(updateData.body);
+      expect(result.keywords).toEqual(updateData.keywords);
+      expect(result.links).toEqual(updateData.links);
+    });
+
+    it('should throw an exception when trying to update title', async () => {
+      const artifactToUpdate = artifactList[0];
+      
+      await expect(() => service.update(artifactToUpdate.id, {
+        title: 'new-title',
+      })).rejects.toHaveProperty(
+        'message',
+        'Only description, body, keywords, and links can be updated'
+      );
+    });
+
+    it('should throw an exception when trying to update contributor', async () => {
+      const artifactToUpdate = artifactList[0];
+      
+      await expect(() => service.update(artifactToUpdate.id, {
+        contributor: 'New Contributor',
+      })).rejects.toHaveProperty(
+        'message',
+        'Only description, body, keywords, and links can be updated'
+      );
+    });
+
+    it('should throw an exception when trying to update submittedAt', async () => {
+      const artifactToUpdate = artifactList[0];
+      
+      await expect(() => service.update(artifactToUpdate.id, {
+        submittedAt: new Date(),
+      })).rejects.toHaveProperty(
+        'message',
+        'Only description, body, keywords, and links can be updated'
+      );
+    });
+
+    it('should throw an exception for a description that is too short', async () => {
+      const artifactToUpdate = artifactList[0];
+      
+      await expect(() => service.update(artifactToUpdate.id, {
+        description: 'Too short',
+      })).rejects.toHaveProperty(
+        'message',
+        'The description must be at least 200 characters long'
+      );
+    });
+
+    it('should throw an exception for an invalid body', async () => {
+      const artifactToUpdate = artifactList[0];
+      
+      await expect(() => service.update(artifactToUpdate.id, {
+        body: 123, // Not an object or valid JSON string
+      })).rejects.toHaveProperty(
+        'message',
+        'The body of the artifact should be a valid JSON object'
+      );
+    });
+
+    it('should throw an exception for keywords exceeding total length', async () => {
+      const artifactToUpdate = artifactList[0];
+      
+      await expect(() => service.update(artifactToUpdate.id, {
+        keywords: [faker.string.sample(201)], // Exceeds 200 characters
+      })).rejects.toHaveProperty(
+        'message',
+        'The keywords array can have at most 200 characters in total'
+      );
+    });
+
+    it('should throw an exception for links exceeding total length', async () => {
+      const artifactToUpdate = artifactList[0];
+      
+      await expect(() => service.update(artifactToUpdate.id, {
+        links: [faker.string.sample(1001)], // Exceeds 1000 characters
+      })).rejects.toHaveProperty(
+        'message',
+        'The links array can have at most 1000 characters in total'
+      );
+    });
+
+    it('should throw an exception for invalid URLs in links', async () => {
+      const artifactToUpdate = artifactList[0];
+      
+      await expect(() => service.update(artifactToUpdate.id, {
+        links: ['not-a-valid-url'],
+      })).rejects.toHaveProperty(
+        'message',
+        'Each link in the links array must be a valid URL'
+      );
+    });
+
+    it('should throw an exception for a non-existent artifact', async () => {
+      await expect(() => service.update(faker.string.uuid(), {
+        description: faker.lorem.paragraphs(5),
+      })).rejects.toHaveProperty(
+        'message',
+        'The artifact with the provided id does not exist'
+      );
+    });
+
+    it('should throw an exception for an invalid artifact ID', async () => {
+      await expect(() => service.update('invalid-id', {
+        description: faker.lorem.paragraphs(5),
+      })).rejects.toHaveProperty(
+        'message',
+        'The artifactId provided is not valid'
+      );
+    });
+  });
+
+  // DELETE TESTS
+  describe('delete', () => {
+    it('should delete an existing artifact', async () => {
+      const artifact = artifactList[0];
+      
+      await service.delete(artifact.id);
+      
+      // Verify it was deleted
+      const deletedArtifact = await artifactRepository.findOne({ where: { id: artifact.id } });
+      expect(deletedArtifact).toBeNull();
+    });
+
+    it('should throw an exception for a non-existent artifact', async () => {
+      await expect(() => service.delete(faker.string.uuid())).rejects.toHaveProperty(
+        'message',
+        'The artifact with the provided id does not exist'
+      );
+    });
+
+    it('should throw an exception for an invalid artifact ID', async () => {
+      await expect(() => service.delete('invalid-id')).rejects.toHaveProperty(
+        'message',
+        'The artifactId provided is not valid'
+      );
+    });
+  });
 });
