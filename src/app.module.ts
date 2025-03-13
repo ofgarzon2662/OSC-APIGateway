@@ -9,6 +9,7 @@ import { OrganizationEntity } from './organization/organization.entity';
 import { ArtifactEntity } from './artifact/artifact.entity';
 import { ArtifactModule } from './artifact/artifact.module';
 import { OrganizationArtifactModule } from './organization-artifact/organization-artifact.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { OrganizationArtifactModule } from './organization-artifact/organization
       synchronize: true,
       keepConnectionAlive: true,
     }),
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
