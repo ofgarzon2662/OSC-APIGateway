@@ -23,7 +23,7 @@ export class OrganizationArtifactService {
 
   async findArtifactsByOrganization(
     organizationId: string,
-  ): Promise<OrganizationArtifactDto[]> {
+  ): Promise<ArtifactEntity[]> {
     // Validar organizationId
     this.validateOrganizationId(organizationId);
 
@@ -39,24 +39,13 @@ export class OrganizationArtifactService {
         BusinessError.NOT_FOUND,
       );
     }
-
-    // Transformar a DTO
-    return organization.artifacts.map((artifact) => {
-      const dto = new OrganizationArtifactDto();
-      dto.organizationId = organization.id;
-      dto.organizationName = organization.name;
-      dto.artifactId = artifact.id;
-      dto.artifactName = artifact.name;
-      dto.description = artifact.description;
-      dto.timeStamp = artifact.timeStamp;
-      return plainToInstance(OrganizationArtifactDto, dto);
-    });
+    return organization.artifacts
   }
 
   async findOneArtifactByOrganization(
     organizationId: string,
     artifactId: string,
-  ): Promise<OrganizationArtifactDto> {
+  ): Promise<ArtifactEntity> {
     // Validar IDs
     this.validateOrganizationId(organizationId);
     this.validateArtifactId(artifactId);
@@ -75,7 +64,7 @@ export class OrganizationArtifactService {
 
     // Buscar el artefacto dentro de la organización
     const artifact = await this.artifactRepository.findOne({
-      where: { id: artifactId, organization: { id: organizationId } },
+      where: { id: artifactId },
       relations: ['organization'],
     });
 
@@ -85,16 +74,7 @@ export class OrganizationArtifactService {
         BusinessError.NOT_FOUND,
       );
     }
-
-    // Transformar a DTO
-    const dto = new OrganizationArtifactDto();
-    dto.organizationId = organization.id;
-    dto.organizationName = organization.name;
-    dto.artifactId = artifact.id;
-    dto.artifactName = artifact.name;
-    dto.description = artifact.description;
-    dto.timeStamp = artifact.timeStamp;
-    return plainToInstance(OrganizationArtifactDto, dto);
+    return artifact;
   }
 
   async addArtifactToOrganization(
@@ -146,9 +126,9 @@ export class OrganizationArtifactService {
     responseDto.organizationId = organization.id;
     responseDto.organizationName = organization.name;
     responseDto.artifactId = artifact.id;
-    responseDto.artifactName = artifact.name;
+    responseDto.artifactName = artifact.title;
     responseDto.description = artifact.description;
-    responseDto.timeStamp = artifact.timeStamp;
+    responseDto.timeStamp = artifact.submittedAt;
     return plainToInstance(OrganizationArtifactDto, responseDto);
   }
 
@@ -203,7 +183,7 @@ export class OrganizationArtifactService {
       // Verificar que el nombre no está en uso por otro artefacto
       const existingArtifact = await this.artifactRepository.findOne({
         where: {
-          name: dto.name,
+          title: dto.name,
           organization: { id: organizationId },
           id: Not(artifactId), // Excluir el artefacto actual
         },
@@ -216,7 +196,7 @@ export class OrganizationArtifactService {
         );
       }
 
-      artifact.name = dto.name;
+      artifact.title = dto.name;
     }
 
     // Guardar los cambios
@@ -227,9 +207,9 @@ export class OrganizationArtifactService {
     responseDto.organizationId = organization.id;
     responseDto.organizationName = organization.name;
     responseDto.artifactId = artifact.id;
-    responseDto.artifactName = artifact.name;
+    responseDto.artifactName = artifact.title;
     responseDto.description = artifact.description;
-    responseDto.timeStamp = artifact.timeStamp;
+    responseDto.timeStamp = artifact.submittedAt;
     return plainToInstance(OrganizationArtifactDto, responseDto);
   }
 

@@ -17,13 +17,16 @@ export class ArtifactService {
 
   // Get All Artifacts
   async findAll(): Promise<ArtifactEntity[]> {
-    return await this.artifactRepository.find( { relations: ['organization'] } );
+    return await this.artifactRepository.find({ relations: ['organization'] });
   }
 
   // Get One Artifact
   async findOne(artifactId: string): Promise<ArtifactEntity> {
     this.validateArtifactId(artifactId);
-    const artifact = await this.artifactRepository.findOne({ where: { id: artifactId }, relations: ['organization'] });
+    const artifact = await this.artifactRepository.findOne({
+      where: { id: artifactId },
+      relations: ['organization'],
+    });
     if (!artifact) {
       throw new BusinessLogicException(
         'The artifact with the provided id does not exist',
@@ -34,12 +37,13 @@ export class ArtifactService {
   }
 
   // Create one Artifact
-  async create(
-    artifact: Partial<ArtifactEntity>
-  ): Promise<ArtifactEntity> {
-    
+  async create(artifact: Partial<ArtifactEntity>): Promise<ArtifactEntity> {
     // Validate title: not empty, at least 3 characters, only alphanumeric and hyphens
-    if (!artifact.title || artifact.title.length < 3 || !/^[a-zA-Z0-9-]+$/.test(artifact.title)) {
+    if (
+      !artifact.title ||
+      artifact.title.length < 3 ||
+      !/^[a-zA-Z0-9-]+$/.test(artifact.title)
+    ) {
       throw new BusinessLogicException(
         'The title of the artifact is required, must be at least 3 characters long, and can only contain alphanumeric characters and hyphens',
         BusinessError.PRECONDITION_FAILED,
@@ -91,7 +95,7 @@ export class ArtifactService {
           BusinessError.PRECONDITION_FAILED,
         );
       }
-      
+
       // Validate each link
       for (const link of artifact.links) {
         if (!validator.isURL(link)) {
@@ -103,15 +107,14 @@ export class ArtifactService {
       }
     }
 
-
     // Create the Artifact without organization first
     const newArtifact = this.artifactRepository.create({
       ...artifact,
       submittedAt: new Date(),
     });
-    
+
     const savedArtifact = await this.artifactRepository.save(newArtifact);
-    
+
     return savedArtifact;
   }
 
@@ -126,7 +129,7 @@ export class ArtifactService {
       where: { id },
       relations: ['organization'],
     });
-    
+
     if (!artifactToUpdate) {
       throw new BusinessLogicException(
         'The artifact with the provided id does not exist',
@@ -138,7 +141,12 @@ export class ArtifactService {
     const allowedUpdates: Partial<ArtifactEntity> = {};
 
     // Only allow updating description, body, keywords, and links
-    if ('title' in artifact || 'contributor' in artifact || 'submittedAt' in artifact || 'organization' in artifact) {
+    if (
+      'title' in artifact ||
+      'contributor' in artifact ||
+      'submittedAt' in artifact ||
+      'organization' in artifact
+    ) {
       throw new BusinessLogicException(
         'Only description, body, keywords, and links can be updated',
         BusinessError.BAD_REQUEST,
@@ -155,7 +163,7 @@ export class ArtifactService {
       }
       allowedUpdates.description = artifact.description;
     }
-    
+
     // Validate body if it's being updated
     if (artifact.body) {
       if (typeof artifact.body === 'string') {
@@ -176,7 +184,7 @@ export class ArtifactService {
         allowedUpdates.body = artifact.body;
       }
     }
-    
+
     // Validate keywords if they're being updated
     if (artifact.keywords) {
       const totalKeywordsLength = artifact.keywords.join('').length;
@@ -188,7 +196,7 @@ export class ArtifactService {
       }
       allowedUpdates.keywords = artifact.keywords;
     }
-    
+
     // Validate links if they're being updated
     if (artifact.links) {
       const totalLinksLength = artifact.links.join('').length;
@@ -198,7 +206,7 @@ export class ArtifactService {
           BusinessError.BAD_REQUEST,
         );
       }
-      
+
       // Validate each link
       for (const link of artifact.links) {
         if (!validator.isURL(link)) {
@@ -224,7 +232,7 @@ export class ArtifactService {
       where: { id },
       relations: ['organization'],
     });
-    
+
     if (!artifact) {
       throw new BusinessLogicException(
         'The artifact with the provided id does not exist',

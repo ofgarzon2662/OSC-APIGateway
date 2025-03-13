@@ -14,6 +14,7 @@ import { AddArtifactToOrganizationDto } from './dto/add-artifact-to-organization
 import { OrganizationArtifactDto } from './dto/organization-artifact.dto';
 import { BusinessErrorsInterceptor } from '../shared/interceptors/business-errors.interceptors';
 import { UpdateArtifactInOrganizationDto } from './dto/update-artifact-in-organization.dto';
+import { ArtifactEntity } from 'src/artifact/artifact.entity';
 
 @Controller('organizations-artifacts')
 @UseInterceptors(BusinessErrorsInterceptor)
@@ -25,7 +26,7 @@ export class OrganizationArtifactController {
   @Get('organizations/:organizationId/artifacts')
   async findArtifactsByOrganization(
     @Param('organizationId') organizationId: string,
-  ): Promise<OrganizationArtifactDto[]> {
+  ): Promise<ArtifactEntity[]> {
     return this.organizationArtifactService.findArtifactsByOrganization(
       organizationId,
     );
@@ -35,7 +36,7 @@ export class OrganizationArtifactController {
   async findOneArtifactByOrganization(
     @Param('organizationId') organizationId: string,
     @Param('artifactId') artifactId: string,
-  ): Promise<OrganizationArtifactDto> {
+  ): Promise<ArtifactEntity> {
     return this.organizationArtifactService.findOneArtifactByOrganization(
       organizationId,
       artifactId,
