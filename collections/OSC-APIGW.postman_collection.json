@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "bb648290-d705-4221-9c13-b04f58060e1b",
+		"_postman_id": "2abff31c-4e5f-4639-9252-fa4c0ed0d12e",
 		"name": "OSC-APIGW",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "22997977"
+		"_exporter_id": "29465325"
 	},
 	"item": [
 		{
@@ -1058,6 +1058,100 @@
 					"response": []
 				},
 				{
+					"name": "Log in as Admin 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"token_ADMIN1\", pm.response.json().token);\r",
+									"\r",
+									"pm.test(\"El código de estado es 201\", function() {\r",
+									"    pm.response.to.have.status(201)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Información presente\", function() {\r",
+									"    pm.expect(pm.response.json().token).to.be.a('string').and.to.not.be.empty;\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n   \"username\": \"{{ADMIN1_USERNAME}}\",\r\n   \"password\": \"{{ADMIN1_PASSWORD}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Log in as Admin 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"token_ADMIN2\", pm.response.json().token);\r",
+									"\r",
+									"pm.test(\"El código de estado es 201\", function() {\r",
+									"    pm.response.to.have.status(201)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Información presente\", function() {\r",
+									"    pm.expect(pm.response.json().token).to.be.a('string').and.to.not.be.empty;\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n   \"username\": \"{{ADMIN2_USERNAME}}\",\r\n   \"password\": \"{{ADMIN2_PASSWORD}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Create Org",
 					"event": [
 						{
@@ -1242,15 +1336,19 @@
 							}
 						},
 						"url": {
-							"raw": "{{baseUrl}}/organizations/{{orgId}}/users/{{userId1}}",
+							"raw": "{{baseUrl}}/users/?username=superadmin",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"organizations",
-								"{{orgId}}",
 								"users",
-								"{{userId1}}"
+								""
+							],
+							"query": [
+								{
+									"key": "username",
+									"value": "superadmin"
+								}
 							]
 						}
 					},
