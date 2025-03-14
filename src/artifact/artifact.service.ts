@@ -132,7 +132,7 @@ export class ArtifactService {
     } else if (!body || typeof body !== 'object') {
       const message = errorType === BusinessError.PRECONDITION_FAILED
         ? 'The body of the artifact is required and should be a valid JSON object'
-        : 'The body must be a valid JSON object';
+        : 'The body of the artifact should be a valid JSON object';
         
       throw new BusinessLogicException(
         message,
