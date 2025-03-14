@@ -10,9 +10,13 @@ import { ArtifactEntity } from './artifact/artifact.entity';
 import { ArtifactModule } from './artifact/artifact.module';
 import { OrganizationArtifactModule } from './organization-artifact/organization-artifact.module';
 import { AuthModule } from './auth/auth.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     UserModule,
     OrganizationModule,
     ArtifactModule,

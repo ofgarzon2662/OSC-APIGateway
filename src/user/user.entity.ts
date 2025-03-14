@@ -1,3 +1,4 @@
+import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
 import { OrganizationEntity } from '../organization/organization.entity';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
@@ -7,12 +8,18 @@ export class UserEntity {
   id: string;
 
   @Column()
+  @IsNotEmpty()
+  @IsString()
   name: string;
 
   @Column()
+  @IsNotEmpty()
+  @IsString()
   username: string;
 
   @Column()
+  @IsEmail()
+  @IsNotEmpty()
   email: string;
 
   @ManyToOne(
