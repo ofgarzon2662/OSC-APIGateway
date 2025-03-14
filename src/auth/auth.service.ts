@@ -6,12 +6,14 @@ import { Repository } from 'typeorm';
 import { UserEntity } from '../user/user.entity';
 import { BusinessError, BusinessLogicException } from '../shared/errors/business-errors';
 import { PasswordService } from './password.service';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class AuthService { 
   constructor(
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
     private readonly passwordService: PasswordService
   ) {}
