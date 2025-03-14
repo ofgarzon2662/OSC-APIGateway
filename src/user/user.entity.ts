@@ -27,6 +27,9 @@ export class UserEntity {
   @IsString()
   password: string;
 
+  @Column('simple-array', { nullable: true })
+  roles: string[];
+
   @ManyToOne(
     () => OrganizationEntity,
     (organization: OrganizationEntity) => organization.users,

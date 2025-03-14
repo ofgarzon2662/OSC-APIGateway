@@ -23,7 +23,7 @@ export class UserService {
       this.loadUsersFromEnv();
    }
 
-   private loadUsersFromEnv(): void {
+   private async loadUsersFromEnv(): Promise<void> {
       // Load Admin User 1
       const admin1Username = this.configService.get<string>('ADMIN1_USERNAME');
       const admin1Password = this.configService.get<string>('ADMIN1_PASSWORD');
@@ -32,6 +32,9 @@ export class UserService {
       
       if (admin1Username && admin1Password) {
          this.users.push(new User(1, admin1Username, admin1Password, admin1Roles));
+         
+         // Save admin1 to database if it doesn't exist
+         await this.saveAdminUserToDb(admin1Username, admin1Password, admin1Roles);
       }
 
       // Load Admin User 2
@@ -42,6 +45,9 @@ export class UserService {
       
       if (admin2Username && admin2Password) {
          this.users.push(new User(2, admin2Username, admin2Password, admin2Roles));
+         
+         // Save admin2 to database if it doesn't exist
+         await this.saveAdminUserToDb(admin2Username, admin2Password, admin2Roles);
       }
 
       // Fallback to default users if no env variables are set
@@ -51,21 +57,69 @@ export class UserService {
             new User(1, "admin", "admin", ["admin"]),
             new User(2, "user", "admin", ["admin"]),
          ];
+         
+         // Save default users to database
+         await this.saveAdminUserToDb("admin", "admin", ["admin"]);
+         await this.saveAdminUserToDb("user", "admin", ["admin"]);
+      }
+   }
+   
+   private async saveAdminUserToDb(username: string, password: string, roles: string[]): Promise<void> {
+      try {
+         // Check if user already exists
+         const existingUser = await this.userRepository.findOne({
+            where: [
+               { username: username },
+               { email: username + '@admin.com' }, // Generate a default email
+            ],
+         });
+         
+         if (!existingUser) {
+            // Hash the password
+            const hashedPassword = await this.passwordService.hashPassword(password);
+            
+            // Create the user entity
+            const userEntity = this.userRepository.create({
+               name: username,
+               username: username,
+               email: username + '@admin.com', // Generate a default email
+               password: hashedPassword,
+               roles: roles, // Save the roles to the database
+            });
+            
+            // Save the user to the database
+            await this.userRepository.save(userEntity);
+            console.log(`Admin user ${username} saved to database`);
+         } else {
+            console.log(`Admin user ${username} already exists in database`);
+         }
+      } catch (error) {
+         console.error(`Error saving admin user ${username} to database:`, error);
       }
    }
 
    // Find a user by username or email
-   async findOne(username: string): Promise<UserGetDto> {
+   async findOne(username: string): Promise<any> {
       const foundUser = await this.userRepository.findOne({
          where: [
             { username: username },
-            { email: username },
+            { email: username },            
          ],
       });
       if (!foundUser) {
          throw new BusinessLogicException('User not found', BusinessError.NOT_FOUND);
       }
-      return plainToClass(UserGetDto, foundUser, { excludeExtraneousValues: true });
+      
+
+      // Convert the entity to a User object with all necessary fields
+      return {
+         id: foundUser.id,
+         name: foundUser.name,
+         username: foundUser.username,
+         email: foundUser.email,
+         password: foundUser.password, // Include password for authentication
+         roles: foundUser.roles || [] // Include roles for authorization
+      };
    }
 
    //Instead of returning a UserEntity, return a UserGetDto

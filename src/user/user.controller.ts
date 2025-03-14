@@ -10,8 +10,6 @@ import { UserService } from './user.service';
 import { UserCreateDto } from './userCreate.dto';
 
 @Controller('users')
-@UseInterceptors(BusinessErrorsInterceptor)
-@UseGuards(JwtAuthGuard, RolesGuard)
 export class UserController {
   constructor(private readonly authService: AuthService, private readonly userService: UserService) {}
   
