@@ -7,7 +7,7 @@ import { UserEntity } from '../user/user.entity';
 import { BusinessError, BusinessLogicException } from '../shared/errors/business-errors';
 import { PasswordService } from './password.service';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserService } from 'src/user/user.service';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class AuthService { 
@@ -42,7 +42,7 @@ export class AuthService {
     }
   }
 
-  
+
 
 
   async login(req: any) {

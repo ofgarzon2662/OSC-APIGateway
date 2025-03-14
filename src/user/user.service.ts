@@ -89,7 +89,6 @@ export class UserService {
             
             // Save the user to the database
             await this.userRepository.save(userEntity);
-            console.log(`Admin user ${username} saved to database`);
          } else {
             console.log(`Admin user ${username} already exists in database`);
          }

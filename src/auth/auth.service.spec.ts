@@ -8,7 +8,13 @@ import { UserEntity } from '../user/user.entity';
 import { PasswordService } from './password.service';
 import { TypeOrmTestingConfig } from '../shared/testing-utils/typeorm-testing-config';
 import { faker } from '@faker-js/faker';
-import { InjectRepository } from '@nestjs/typeorm';
+import { UserService } from '../user/user.service';
+
+// Mock para UserService
+class MockUserService {
+  findOneForAuth = jest.fn();
+  findOne = jest.fn();
+}
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -16,6 +22,7 @@ describe('AuthService', () => {
   let configService: ConfigService;
   let userRepository: Repository<UserEntity>;
   let passwordService: PasswordService;
+  let userService: MockUserService;
   let userList: UserEntity[];
 
   // Mock JWT service
@@ -38,18 +45,7 @@ describe('AuthService', () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [...TypeOrmTestingConfig()],
       providers: [
-        {
-          provide: AuthService,
-          useFactory: (jwtService, configService, userRepository, passwordService) => {
-            return new AuthService(jwtService, configService, userRepository, passwordService);
-          },
-          inject: [
-            JwtService,
-            ConfigService,
-            getRepositoryToken(UserEntity),
-            PasswordService,
-          ],
-        },
+        AuthService,
         PasswordService,
         {
           provide: JwtService,
@@ -59,6 +55,10 @@ describe('AuthService', () => {
           provide: ConfigService,
           useValue: mockConfigService,
         },
+        {
+          provide: UserService,
+          useClass: MockUserService,
+        },
       ],
     }).compile();
 
@@ -67,6 +67,7 @@ describe('AuthService', () => {
     configService = module.get<ConfigService>(ConfigService);
     userRepository = module.get<Repository<UserEntity>>(getRepositoryToken(UserEntity));
     passwordService = module.get<PasswordService>(PasswordService);
+    userService = module.get<MockUserService>(UserService);
 
     await seedDatabase();
   });
@@ -85,6 +86,7 @@ describe('AuthService', () => {
         username: faker.internet.username() + faker.number.int(10000), // Ensure username is unique and long enough
         email: faker.internet.email(),
         password: hashedPassword,
+        roles: ['user'], // Add roles field
       };
       
       const savedUser = await userRepository.save(user);
@@ -100,19 +102,48 @@ describe('AuthService', () => {
   });
 
   describe('validateUser', () => {
-    it('should return true when credentials are valid', async () => {
-      const user = userList[0];
-      const result = await service.validateUser(user.username, user['plainPassword']);
-      expect(result).toBe(true);
+    it('should return user object when credentials are valid', async () => {
+      // Configurar el mock de UserService para devolver un usuario
+      const mockUser = {
+        id: 'user-id',
+        username: 'testuser',
+        password: 'hashedPassword',
+        roles: ['user']
+      };
+      
+      userService.findOne.mockResolvedValue(mockUser);
+      
+      // Spy en el método comparePasswords
+      jest.spyOn(passwordService, 'comparePasswords').mockResolvedValue(true);
+      
+      // Llamar al método a probar
+      const result = await service.validateUser('testuser', 'password');
+      
+      // Verificar que se llamó a findOne con los argumentos correctos
+      expect(userService.findOne).toHaveBeenCalledWith('testuser');
+      
+      // Verificar el resultado
+      expect(result).toEqual({
+        id: 'user-id',
+        username: 'testuser',
+        roles: ['user']
+      });
     });
 
     it('should throw an exception when user is not found', async () => {
+      userService.findOne.mockRejectedValue(new Error('User not found'));
       await expect(() => service.validateUser('nonexistent', 'password')).rejects.toHaveProperty('message', 'Invalid credentials');
     });
 
     it('should throw an exception when password is incorrect', async () => {
-      const user = userList[0];
-      await expect(() => service.validateUser(user.username, 'wrongPassword')).rejects.toHaveProperty('message', 'Invalid credentials');
+      userService.findOne.mockResolvedValue({
+        id: 'user-id',
+        username: 'testuser',
+        password: 'hashedPassword',
+        roles: ['user']
+      });
+      jest.spyOn(passwordService, 'comparePasswords').mockResolvedValue(false);
+      await expect(() => service.validateUser('testuser', 'wrongPassword')).rejects.toHaveProperty('message', 'Invalid credentials');
     });
   });
 
