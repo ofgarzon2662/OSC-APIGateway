@@ -10,9 +10,9 @@ export class UserService {
    private users: User[] = [];
    
    constructor(
-    private configService: ConfigService,
+    private readonly configService: ConfigService,
     @InjectRepository(UserEntity)
-    private userRepository: Repository<UserEntity>
+    private readonly userRepository: Repository<UserEntity>
    ) {
       this.loadUsersFromEnv();
    }
