@@ -30,4 +30,8 @@ export class UserController {
     return this.userService.findAll();
   }
 
+  @Get(':username')
+  findOne(@Param('username') username: string) {
+    return this.userService.findOne(username);
+  }
 }
