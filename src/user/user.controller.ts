@@ -7,7 +7,7 @@ import { RolesGuard } from 'src/auth/roles/roles.guards';
 import { Role } from 'src/shared/enums/role.enums';
 import { Roles } from 'src/shared/decorators/roles.decorators';
 import { UserService } from './user.service';
-import { UserDto } from './user.dto';
+import { UserCreateDto } from './userCreate.dto';
 
 @Controller('users')
 @UseInterceptors(BusinessErrorsInterceptor)
@@ -23,7 +23,7 @@ export class UserController {
 
   @Post('register')
   @Roles(Role.ADMIN, Role.PI)
-  create(@Body() user: UserDto) {
+  create(@Body() user: UserCreateDto) {
     return this.userService.create(user);
   }
 

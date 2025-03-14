@@ -22,6 +22,11 @@ export class UserEntity {
   @IsNotEmpty()
   email: string;
 
+  @Column()
+  @IsNotEmpty()
+  @IsString()
+  password: string;
+
   @ManyToOne(
     () => OrganizationEntity,
     (organization: OrganizationEntity) => organization.users,

@@ -1,15 +1,22 @@
 import { Injectable } from '@nestjs/common';
-import { User } from './user';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from './user.entity';
 import { Repository } from 'typeorm/repository/Repository';
+import { PasswordService } from '../auth/password.service';
+import { UserCreateDto } from './userCreate.dto';
+import { BusinessError } from '../shared/errors/business-errors';
+import { BusinessLogicException } from '../shared/errors/business-errors';
+import { UserGetDto } from './userGet.dto';
+import { plainToClass } from 'class-transformer';
+import { User } from './user';
 
 @Injectable()
 export class UserService {
    private users: User[] = [];
    
    constructor(
+    private readonly passwordService: PasswordService,
     private readonly configService: ConfigService,
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>
@@ -48,16 +55,63 @@ export class UserService {
       }
    }
 
-   async findOne(username: string): Promise<User | undefined> {
-      return this.users.find(user => user.username === username);
+   // Find a user by username or email
+   async findOne(username: string): Promise<UserGetDto> {
+      const foundUser = await this.userRepository.findOne({
+         where: [
+            { username: username },
+            { email: username },
+         ],
+      });
+      if (!foundUser) {
+         throw new BusinessLogicException('User not found', BusinessError.NOT_FOUND);
+      }
+      return plainToClass(UserGetDto, foundUser, { excludeExtraneousValues: true });
    }
 
-   async create(user: Partial<UserEntity>): Promise<UserEntity> {
-      const newUser = this.userRepository.create(user);
-      return this.userRepository.save(newUser);
+   //Instead of returning a UserEntity, return a UserGetDto
+   async create(user: UserCreateDto): Promise<UserGetDto> {
+      
+      // Add conditions to check if usename or email already exists
+      const existingUser = await this.userRepository.findOne({
+         where: [
+            { username: user.username },
+            { email: user.email },
+         ],
+      });
+      if (existingUser) {
+         throw new BusinessLogicException(
+            'Username or email already exists', 
+            BusinessError.PRECONDITION_FAILED);
+      }
+      // Add conditions to check if that user.password is at least 8 characters long
+      if (user.password.length < 8) {
+         throw new BusinessLogicException(
+            'Password must be at least 8 characters long', 
+            BusinessError.PRECONDITION_FAILED);
+      }
+      // username must be unique and 8 characters long
+      if (user.username.length < 8) {
+         throw new BusinessLogicException(
+            'Username must be at least 8 characters long', 
+            BusinessError.PRECONDITION_FAILED);
+      }
+      // Hash the password
+      const hashedPassword = await this.passwordService.hashPassword(user.password);
+      // Create the new user
+      const newUser = this.userRepository.create({
+         name: user.name,
+         username: user.username,
+         email: user.email,
+         password: hashedPassword,
+      });
+      const savedUser = await this.userRepository.save(newUser);
+      return plainToClass(UserGetDto, savedUser, { excludeExtraneousValues: true });
    }
 
-   async findAll(): Promise<UserEntity[]> {
-      return this.userRepository.find();
+   async findAll(): Promise<UserGetDto[]> {
+      const users = await this.userRepository.find();
+      return users.map(user => plainToClass(UserGetDto, user, { excludeExtraneousValues: true }));
    }
 }
+
