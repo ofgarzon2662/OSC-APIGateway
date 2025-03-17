@@ -20,10 +20,14 @@ export class UserService {
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>
    ) {
-      this.loadUsersFromEnv();
+
    }
 
-   private async loadUsersFromEnv(): Promise<void> {
+   async onModuleInit() {
+      await this.loadUsersFromEnv();
+    }
+
+   async loadUsersFromEnv() {
       // Load Admin User 1
       const admin1Username = this.configService.get<string>('ADMIN1_USERNAME');
       const admin1Password = this.configService.get<string>('ADMIN1_PASSWORD');
@@ -121,6 +125,21 @@ export class UserService {
       };
    }
 
+   // Get One User by username: Gives a GiveUserDto
+   async getOne(username: string): Promise<UserGetDto> {
+      const user = await this.userRepository.findOne({
+         // username or email
+         where: [
+            { username: username },
+            { email: username },
+         ],
+      });
+
+      if (!user) {
+         throw new BusinessLogicException('User not found', BusinessError.NOT_FOUND);
+      }
+      return plainToClass(UserGetDto, user, { excludeExtraneousValues: true });
+   }
    //Instead of returning a UserEntity, return a UserGetDto
    async create(user: UserCreateDto): Promise<UserGetDto> {
       

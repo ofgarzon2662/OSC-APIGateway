@@ -1,15 +1,15 @@
 import { Controller, Post, Get, Param, Delete, Req, UseGuards, UseInterceptors, Body } from '@nestjs/common';
 import { LocalAuthGuard } from '../auth/guards/local-auth/local-auth.guard';
 import { AuthService } from '../auth/auth.service';
-import { BusinessErrorsInterceptor } from 'src/shared/interceptors/business-errors.interceptors';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth/jwt-auth.guard';
-import { RolesGuard } from 'src/auth/roles/roles.guards';
 import { Role } from 'src/shared/enums/role.enums';
 import { Roles } from 'src/shared/decorators/roles.decorators';
 import { UserService } from './user.service';
 import { UserCreateDto } from './userCreate.dto';
+import { BusinessErrorsInterceptor } from 'src/shared/interceptors/business-errors.interceptors';
 
 @Controller('users')
+@UseInterceptors(BusinessErrorsInterceptor)
 export class UserController {
   constructor(private readonly authService: AuthService, private readonly userService: UserService) {}
   
@@ -25,13 +25,15 @@ export class UserController {
     return this.userService.create(user);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get()
   findAll() {
     return this.userService.findAll();
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get(':username')
   findOne(@Param('username') username: string) {
-    return this.userService.findOne(username);
+    return this.userService.getOne(username);
   }
 }

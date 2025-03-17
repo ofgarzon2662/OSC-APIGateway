@@ -9,6 +9,7 @@ import { UserCreateDto } from './userCreate.dto';
 import { BusinessError, BusinessLogicException } from '../shared/errors/business-errors';
 import { ConfigService } from '@nestjs/config';
 import { PasswordService } from '../auth/password.service';
+import { UserGetDto } from './userGet.dto';
 
 describe('UserService', () => {
   let service: UserService;
@@ -30,6 +31,11 @@ describe('UserService', () => {
       };
       return config[key] || defaultValue;
     }),
+  };
+
+  // Mock config service sin usuarios definidos
+  const mockEmptyConfigService = {
+    get: jest.fn().mockReturnValue(undefined),
   };
 
   beforeEach(async () => {
@@ -76,20 +82,135 @@ describe('UserService', () => {
   });
 
   describe('loadUsersFromEnv', () => {
-    it('should load users from environment variables', () => {
-      // This is already called in the constructor, so we can just check the result
-      const admin1 = service['users'].find(user => user.username === 'admin');
-      const admin2 = service['users'].find(user => user.username === 'superadmin');
+    it('should save admin users to the database', async () => {
+      // Asegurarnos de que no hay usuarios admin en la base de datos
+      await repository.delete({ username: 'admin' });
+      await repository.delete({ username: 'superadmin' });
+      
+      // Llamar al método directamente
+      await service.loadUsersFromEnv();
+      
+      // Verificar directamente en la base de datos que los usuarios se han guardado
+      const adminUser = await repository.findOne({ where: { username: 'admin' } });
+      const superadminUser = await repository.findOne({ where: { username: 'superadmin' } });
+      
+      // Verificar que existen
+      expect(adminUser).toBeDefined();
+      expect(superadminUser).toBeDefined();
+      
+      // Verificar propiedades del usuario admin
+      expect(adminUser.name).toBe('admin');
+      expect(adminUser.email).toBe('admin@admin.com');
+      expect(adminUser.roles).toEqual(['admin']);
+      
+      // Verificar propiedades del usuario superadmin
+      expect(superadminUser.name).toBe('superadmin');
+      expect(superadminUser.email).toBe('superadmin@admin.com');
+      expect(superadminUser.roles).toEqual(['admin', 'pi']);
+    });
+    
+    // Test para cubrir el caso en que ya existen los usuarios admin
+    it('should handle case when admin users already exist', async () => {
+      // Crear un usuario admin manualmente
+      const adminUser = {
+        name: 'admin',
+        username: 'admin',
+        email: 'admin@admin.com',
+        password: await passwordService.hashPassword('existingPassword'),
+        roles: ['admin']
+      };
+      await repository.save(adminUser);
+      
+      // Llamar al método
+      await service.loadUsersFromEnv();
+      
+      // Verificar que el usuario sigue existiendo (no se ha borrado ni modificado)
+      const existingUser = await repository.findOne({ where: { username: 'admin' } });
+      expect(existingUser).toBeDefined();
+      expect(existingUser.password).toBe(adminUser.password); // Verificar que la contraseña no cambió
+    });
+    
+    // Test para cubrir el caso de error al guardar usuario
+    it('should handle database errors gracefully', async () => {
+      // Crear un mock de repositorio que lance error al llamar a findOne
+      const mockRepository = {
+        findOne: () => { throw new Error('Database connection error'); },
+        save: jest.fn(),
+        create: jest.fn(),
+        delete: jest.fn(),
+        find: jest.fn(),
+        count: jest.fn(),
+      };
+      
+      // Crear una instancia de servicio con el mock
+      const moduleRef = await Test.createTestingModule({
+        providers: [
+          UserService,
+          PasswordService,
+          {
+            provide: ConfigService,
+            useValue: mockConfigService,
+          },
+          {
+            provide: getRepositoryToken(UserEntity),
+            useValue: mockRepository,
+          }
+        ],
+      }).compile();
+      
+      const serviceWithMockedRepo = moduleRef.get<UserService>(UserService);
+      
+      // Verificar que no lanza error
+      await expect(serviceWithMockedRepo.loadUsersFromEnv()).resolves.not.toThrow();
+    });
+    
+    // Test para cubrir el caso en que no hay variables de entorno definidas
+    it('should use default users when no environment variables are defined', async () => {
+      // Crear un servicio con un ConfigService vacío
+      const moduleRef = await Test.createTestingModule({
+        imports: [...TypeOrmTestingConfig()],
+        providers: [
+          UserService,
+          PasswordService,
+          {
+            provide: ConfigService,
+            useValue: mockEmptyConfigService,
+          }
+        ],
+      }).compile();
+      
+      const serviceWithEmptyConfig = moduleRef.get<UserService>(UserService);
+      const repo = moduleRef.get<Repository<UserEntity>>(getRepositoryToken(UserEntity));
+      
+      // Limpiar la base de datos
+      await repo.clear();
+      
+      // Llamar al método
+      await serviceWithEmptyConfig.loadUsersFromEnv();
+      
+      // Verificar que se guardaron los usuarios por defecto
+      const adminUser = await repo.findOne({ where: { username: 'admin' } });
+      const userUser = await repo.findOne({ where: { username: 'user' } });
+      
+      expect(adminUser).toBeDefined();
+      expect(userUser).toBeDefined();
+    });
+  });
 
-      expect(admin1).toBeDefined();
-      expect(admin1?.username).toBe('admin');
-      expect(admin1?.password).toBe('securePassword123');
-      expect(admin1?.roles).toEqual(['admin']);
-
-      expect(admin2).toBeDefined();
-      expect(admin2?.username).toBe('superadmin');
-      expect(admin2?.password).toBe('superSecurePassword456');
-      expect(admin2?.roles).toEqual(['admin', 'pi']);
+  describe('getOne', () => {
+    it('should return a user DTO by username', async () => {
+      const storedUser = userList[0];
+      const result = await service.getOne(storedUser.username);
+      
+      expect(result).toBeDefined();
+      expect(result.username).toEqual(storedUser.username);
+      expect(result).toBeInstanceOf(UserGetDto);
+      // Verificar que el objeto no contiene la propiedad password
+      expect((result as any).password).toBeUndefined();
+    });
+    
+    it('should throw an exception for a non-existent user', async () => {
+      await expect(() => service.getOne('nonexistent')).rejects.toHaveProperty('message', 'User not found');
     });
   });
 
