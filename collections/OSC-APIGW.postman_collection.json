@@ -1,7 +1,7 @@
 {
 	"info": {
-		"_postman_id": "2abff31c-4e5f-4639-9252-fa4c0ed0d12e",
-		"name": "OSC-APIGW",
+		"_postman_id": "f1035a55-dce9-47fc-b6ac-99cd57026744",
+		"name": "OSC-APIGW Copy",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "29465325"
 	},
@@ -1152,70 +1152,90 @@
 					"response": []
 				},
 				{
-					"name": "Create Org",
+					"name": "ADMIN 1 Creates a PI",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.environment.set(\"orgId\", pm.response.json().id);\r",
-									"\r",
-									"pm.test(\"El código de estado es 201\", function() {\r",
-									"    pm.response.to.have.status(201)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Información presente\", function() {\r",
-									"    pm.expect(pm.response.json().name).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().description).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
-									"});"
+									"// Capturar los datos enviados en la solicitud",
+									"const requestData = pm.request.body.raw ? JSON.parse(pm.request.body.raw) : {};",
+									"",
+									"// Guardar los valores enviados para comparar después",
+									"const sentName = requestData.name;",
+									"const sentEmail = requestData.email;",
+									"const sentUsername = requestData.username;",
+									"const sentRole = requestData.role",
+									"",
+									"// Guardar variables de entorno",
+									"pm.environment.set(\"userId1\", pm.response.json().id);",
+									"pm.environment.set(\"emailUser1\", pm.response.json().email);",
+									"pm.environment.set(\"usernameUser1\", pm.response.json().username);",
+									"pm.environment.set(\"nameOfUser1\", pm.response.json().name);",
+									"pm.environment.set(\"pi_password\", requestData.password); // Save PI password for later use",
+									"",
+									"pm.test(\"Status code is 201 Created\", function() {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"// Verificar información del usuario",
+									"pm.test(\"User information is valid\", function() {",
+									"    const responseData = pm.response.json();",
+									"    pm.expect(responseData.name).to.be.a('string').and.to.not.be.empty;",
+									"    pm.expect(responseData.email).to.be.a('string').and.to.not.be.empty;",
+									"    pm.expect(responseData.username).to.be.a('string').and.to.not.be.empty;",
+									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;",
+									"});",
+									"",
+									"// Verificar que los datos de respuesta coinciden con los enviados",
+									"pm.test(\"User data in response matches request data\", function() {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    // Verificar que el nombre coincide",
+									"    pm.expect(responseData.name).to.equal(sentName, \"Name in response should match sent name\");",
+									"    ",
+									"    // Verificar que el email coincide",
+									"    pm.expect(responseData.email).to.equal(sentEmail, \"Email in response should match sent email\");",
+									"    ",
+									"    // Verificar que el username coincide",
+									"    pm.expect(responseData.username).to.equal(sentUsername, \"Username in response should match sent username\");",
+									"});",
+									"",
+									"// Verificar que el usuario tiene el rol de PI",
+									"pm.test(\"User has correct role\", function() {",
+									"    const responseData = pm.response.json();",
+									"    pm.expect(responseData.roles).to.be.an('array');",
+									"    pm.expect(responseData.roles).to.include(sentRole, \"Role in response should match sent role\");",
+									"});",
+									"",
+									"// Guardar datos del usuario para verificación posterior",
+									"pm.collectionVariables.set(\"pi_user_id\", pm.response.json().id);",
+									"pm.collectionVariables.set(\"pi_username\", pm.response.json().username);",
+									"pm.collectionVariables.set(\"pi_email\", pm.response.json().email);"
 								],
 								"type": "text/javascript",
 								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"{{$randomCompanyName}}\",\r\n    \"description\": \"This organization focuses on {{$randomLoremWords}} and its main mission in life is {{$randomLoremWords}}\"\r\n}\r\n",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
 							}
 						},
-						"url": {
-							"raw": "{{baseUrl}}/organizations",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get All Orgs",
-					"event": [
 						{
-							"listen": "test",
+							"listen": "prerequest",
 							"script": {
 								"exec": [
-									"pm.test(\"Code is 200\", function() {\r",
-									"    pm.response.to.have.status(200);\r",
-									"});\r",
+									"// Generar un nombre aleatorio\r",
+									"let fullName = pm.variables.replaceIn(\"{{$randomFullName}}\");\r",
+									"// Asegurarse de que tiene al menos 8 caracteres\r",
+									"if (fullName.length < 8) {\r",
+									"    fullName = fullName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - fullName.length));\r",
+									"}\r",
+									"pm.environment.set(\"validFullName\", fullName);\r",
 									"\r",
-									"pm.test(\"Non Empty list\", function() {\r",
-									"    pm.expect(pm.response.json()).to.be.an('array').that.is.not.empty;\r",
-									"    pm.expect(pm.response.json()).to.have.lengthOf(1);\r",
-									"    pm.expect(pm.response.json()[0].id).to.equal(pm.environment.get(\"orgId\"));\r",
-									"});\r",
-									""
+									"// Generar un nombre de usuario aleatorio\r",
+									"let userName = pm.variables.replaceIn(\"{{$randomUserName}}\");\r",
+									"// Asegurarse de que tiene al menos 8 caracteres\r",
+									"if (userName.length < 8) {\r",
+									"    userName = userName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - userName.length));\r",
+									"}\r",
+									"pm.environment.set(\"validUserName\", userName);"
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -1223,152 +1243,211 @@
 						}
 					],
 					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/organizations",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create User",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.environment.set(\"userId1\", pm.response.json().id);\r",
-									"pm.environment.set(\"emailUser1\", pm.response.json().email);\r",
-									"pm.environment.set(\"usernameUser1\", pm.response.json().username);\r",
-									"pm.environment.set(\"nameOfUser1\", pm.response.json().name);\r",
-									"\r",
-									"\r",
-									"\r",
-									"pm.test(\"El código de estado es 201\", function() {\r",
-									"    pm.response.to.have.status(201)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Información presente\", function() {\r",
-									"    pm.expect(pm.response.json().name).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().email).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().username).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().organization.id).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().organization.id).to.equal(pm.environment.get(\"orgId\"))\r",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"{{$randomFullName}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"{{$randomUserName}}\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/organizations/{{orgId}}/users",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations",
-								"{{orgId}}",
-								"users"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get User 1",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Code is 200\", function() {\r",
-									"    pm.response.to.have.status(200)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Non empty response\", function() {\r",
-									"    const responseData = pm.response.json();\r",
-									"    pm.expect(responseData.name).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.username).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.id).to.equal(pm.environment.get(\"userId1\"));\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/users/?username=superadmin",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"users",
-								""
-							],
-							"query": [
+						"auth": {
+							"type": "bearer",
+							"bearer": [
 								{
-									"key": "username",
-									"value": "superadmin"
+									"key": "token",
+									"value": "{{token_ADMIN}}",
+									"type": "string"
 								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{validFullName}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"{{validUserName}}\",\r\n    \"password\": \"{{$randomPassword}}\",\r\n    \"role\": \"pi\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"register"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Get User 1 Wrong Org Id",
+					"name": "Admin 2 Creates a Collaborator",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Code is 404\", function() {\r",
-									"    pm.response.to.have.status(404)\r",
-									"});\r",
+									"// Capturar los datos enviados en la solicitud",
+									"const requestData = pm.request.body.raw ? JSON.parse(pm.request.body.raw) : {};",
+									"",
+									"// Guardar los valores enviados para comparar después",
+									"const sentName = requestData.name;",
+									"const sentEmail = requestData.email;",
+									"const sentUsername = requestData.username;",
+									"const sentRole = requestData.role",
+									"",
+									"// Guardar variables de entorno",
+									"pm.environment.set(\"collaboratorId\", pm.response.json().id);",
+									"pm.environment.set(\"collaboratorEmail\", pm.response.json().email);",
+									"pm.environment.set(\"collaborator1Username\", pm.response.json().username);",
+									"pm.environment.set(\"collaborator1_password\", requestData.password); // Save PI password for later use",
+									"",
+									"",
+									"// Verificar código de estado",
+									"pm.test(\"Status code is 201 Created\", function() {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"// Verificar información del usuario",
+									"pm.test(\"collaborator user information is valid\", function() {",
+									"    const responseData = pm.response.json();",
+									"    pm.expect(responseData.name).to.be.a('string').and.to.not.be.empty;",
+									"    pm.expect(responseData.email).to.be.a('string').and.to.not.be.empty;",
+									"    pm.expect(responseData.username).to.be.a('string').and.to.not.be.empty;",
+									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;",
+									"});",
+									"",
+									"// Verificar que los datos de respuesta coinciden con los enviados",
+									"pm.test(\"collaborator data in response matches request data\", function() {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    // Verificar que el nombre coincide",
+									"    pm.expect(responseData.name).to.equal(sentName, \"Name in response should match sent name\");",
+									"    ",
+									"    // Verificar que el email coincide",
+									"    pm.expect(responseData.email).to.equal(sentEmail, \"Email in response should match sent email\");",
+									"    ",
+									"    // Verificar que el username coincide",
+									"    pm.expect(responseData.username).to.equal(sentUsername, \"Username in response should match sent username\");",
+									"});",
+									"",
+									"// Verificar que el usuario tiene el rol de collaborator",
+									"pm.test(\"User has correct collaborator role\", function() {",
+									"    const responseData = pm.response.json();",
+									"    pm.expect(responseData.roles).to.be.an('array');",
+									"    pm.expect(responseData.roles).to.include(sentRole, \"Role in response should match sent role\");",
+									"});",
+									"",
+									"// Guardar datos del usuario collaborator para verificación posterior",
+									"pm.collectionVariables.set(\"collaborator_user_id\", pm.response.json().id);",
+									"pm.collectionVariables.set(\"collaborator_username\", pm.response.json().username);",
+									"pm.collectionVariables.set(\"collaborator_email\", pm.response.json().email);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Generar un nombre aleatorio\r",
+									"let fullName = pm.variables.replaceIn(\"{{$randomFullName}}\");\r",
+									"// Asegurarse de que tiene al menos 8 caracteres\r",
+									"if (fullName.length < 8) {\r",
+									"    fullName = fullName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - fullName.length));\r",
+									"}\r",
+									"pm.environment.set(\"validFullName2\", fullName);\r",
 									"\r",
-									"pm.test(\"Get error message\", function() {\r",
-									"   pm.expect(pm.response.json().message).to.eql(\"The organization provided does not exist\");\r",
-									"});\r",
-									""
+									"// Generar un nombre de usuario aleatorio\r",
+									"let userName = pm.variables.replaceIn(\"{{$randomUserName}}\");\r",
+									"// Asegurarse de que tiene al menos 8 caracteres\r",
+									"if (userName.length < 8) {\r",
+									"    userName = userName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - userName.length));\r",
+									"}\r",
+									"pm.environment.set(\"validUserName2\", userName);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_ADMIN2}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{validFullName2}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"{{validUserName2}}\",\r\n    \"password\": \"{{$randomPassword}}\",\r\n    \"role\": \"collaborator\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin 1 Gets all Users",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 OK\", function() {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response is an array of users\", function() {",
+									"    const responseData = pm.response.json();",
+									"    pm.expect(responseData).to.be.an('array');",
+									"    pm.expect(responseData.length).to.be.greaterThan(0);",
+									"});",
+									"",
+									"// Get the saved PI and collaborator usernames",
+									"const piUsername = pm.collectionVariables.get(\"pi_username\");",
+									"const collaboratorUsername = pm.collectionVariables.get(\"collaborator_username\");",
+									"const piEmail = pm.collectionVariables.get(\"pi_email\");",
+									"const collaboratorEmail = pm.collectionVariables.get(\"collaborator_email\");",
+									"",
+									"// Test that the PI user is in the users list",
+									"pm.test(\"PI user is in the users list\", function() {",
+									"    const responseData = pm.response.json();",
+									"    const piUser = responseData.find(user => user.username === piUsername);",
+									"    ",
+									"    pm.expect(piUser).to.not.be.undefined;",
+									"    pm.expect(piUser.email).to.equal(piEmail);",
+									"    pm.expect(piUser.roles).to.be.an('array');",
+									"    pm.expect(piUser.roles).to.include('pi');",
+									"});",
+									"",
+									"// Test that the collaborator user is in the users list",
+									"pm.test(\"Collaborator user is in the users list\", function() {",
+									"    const responseData = pm.response.json();",
+									"    const collaboratorUser = responseData.find(user => user.username === collaboratorUsername);",
+									"    ",
+									"    pm.expect(collaboratorUser).to.not.be.undefined;",
+									"    pm.expect(collaboratorUser.email).to.equal(collaboratorEmail);",
+									"    pm.expect(collaboratorUser.roles).to.be.an('array');",
+									"    pm.expect(collaboratorUser.roles).to.include('collaborator'); // Changed from 'collaborator' to 'collaborator'",
+									"});"
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -1379,6 +1458,16 @@
 						"disableBodyPruning": true
 					},
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_ADMIN1}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [],
 						"body": {
@@ -1391,35 +1480,48 @@
 							}
 						},
 						"url": {
-							"raw": "{{baseUrl}}/organizations/{{$randomUUID}}/users/{{userId1}}",
+							"raw": "{{baseUrl}}/users",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"organizations",
-								"{{$randomUUID}}",
-								"users",
-								"{{userId1}}"
+								"users"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Get User 1 bad Org Id",
+					"name": "Admin2 Gets PI",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Code is 412\", function() {\r",
-									"    pm.response.to.have.status(412)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Get error message\", function() {\r",
-									"   pm.expect(pm.response.json().message).to.eql(\"The organizationId provided is not valid\");\r",
-									"});\r",
-									""
+									"// Get the saved PI user data",
+									"const piUserId = pm.collectionVariables.get(\"pi_user_id\");",
+									"const piUsername = pm.collectionVariables.get(\"pi_username\");",
+									"const piEmail = pm.collectionVariables.get(\"pi_email\");",
+									"",
+									"pm.test(\"Status code is 200 OK\", function() {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"PI user information is correct\", function() {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData.id).to.equal(piUserId);",
+									"    pm.expect(responseData.username).to.equal(piUsername);",
+									"    pm.expect(responseData.email).to.equal(piEmail);",
+									"    pm.expect(responseData.name).to.be.a('string').and.to.not.be.empty;",
+									"});",
+									"",
+									"pm.test(\"PI user has correct role\", function() {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData.roles).to.be.an('array');",
+									"    pm.expect(responseData.roles).to.include('pi');",
+									"});"
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -1430,6 +1532,16 @@
 						"disableBodyPruning": true
 					},
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_ADMIN2}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [],
 						"body": {
@@ -1442,44 +1554,39 @@
 							}
 						},
 						"url": {
-							"raw": "{{baseUrl}}/organizations/no-valid-id/users/{{userId1}}",
+							"raw": "{{baseUrl}}/users/{{pi_username}}",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"organizations",
-								"no-valid-id",
 								"users",
-								"{{userId1}}"
+								"{{pi_username}}"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Create User 2",
+					"name": "PI user logs in",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.environment.set(\"userId2\", pm.response.json().id);\r",
-									"pm.environment.set(\"emailUser2\", pm.response.json().email);\r",
-									"pm.environment.set(\"usernameUser2\", pm.response.json().username);\r",
-									"pm.environment.set(\"nameOfUser2\", pm.response.json().name);\r",
+									"pm.environment.set(\"token_PI\", pm.response.json().token);\r",
 									"\r",
-									"\r",
-									"pm.test(\"El código de estado es 201\", function() {\r",
-									"    pm.response.to.have.status(201)\r",
+									"pm.test(\"Status code is 201 Created\", function() {\r",
+									"    pm.response.to.have.status(201);\r",
 									"});\r",
 									"\r",
-									"pm.test(\"Información presente\", function() {\r",
-									"    pm.expect(pm.response.json().name).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().email).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().username).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().organization.id).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().organization.id).to.equal(pm.environment.get(\"orgId\"))\r",
+									"pm.test(\"Token is present\", function() {\r",
+									"    pm.expect(pm.response.json().token).to.be.a('string').and.to.not.be.empty;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"PI login successful\", function() {\r",
+									"    // Verificar que hay un token de respuesta (indicación de login exitoso)\r",
+									"    const responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson.token).to.be.a('string').and.to.not.be.empty;\r",
 									"});"
 								],
 								"type": "text/javascript",
@@ -1492,7 +1599,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"{{$randomFullName}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"{{$randomUserName}}\"\r\n}",
+							"raw": "{\r\n   \"username\": \"{{pi_username}}\",\r\n   \"password\": \"{{pi_password}}\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1500,97 +1607,39 @@
 							}
 						},
 						"url": {
-							"raw": "{{baseUrl}}/organizations/{{orgId}}/users",
+							"raw": "{{baseUrl}}/users/login",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"organizations",
-								"{{orgId}}",
-								"users"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get User 2",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Code is 200\", function() {\r",
-									"    pm.response.to.have.status(200)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Non empty response\", function() {\r",
-									"    const responseData = pm.response.json();\r",
-									"    pm.expect(responseData.name).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.username).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.id).to.equal(pm.environment.get(\"userId2\"));\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/organizations/{{orgId}}/users/{{userId2}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations",
-								"{{orgId}}",
 								"users",
-								"{{userId2}}"
+								"login"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Create User 3",
+					"name": "Collaborator1 logs in",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.environment.set(\"userId3\", pm.response.json().id);\r",
-									"pm.environment.set(\"emailUser3\", pm.response.json().email);\r",
-									"pm.environment.set(\"usernameUser3\", pm.response.json().username);\r",
-									"pm.environment.set(\"nameOfUser3\", pm.response.json().name);\r",
+									"pm.environment.set(\"token_CONTRIBUTOR1\", pm.response.json().token);\r",
 									"\r",
-									"pm.test(\"El código de estado es 201\", function() {\r",
-									"    pm.response.to.have.status(201)\r",
+									"pm.test(\"Status code is 201 Created\", function() {\r",
+									"    pm.response.to.have.status(201);\r",
 									"});\r",
 									"\r",
-									"pm.test(\"Información presente\", function() {\r",
-									"    pm.expect(pm.response.json().name).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().email).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().username).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().organization.id).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().organization.id).to.equal(pm.environment.get(\"orgId\"))\r",
+									"pm.test(\"Token is present\", function() {\r",
+									"    pm.expect(pm.response.json().token).to.be.a('string').and.to.not.be.empty;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"collaborator login successful\", function() {\r",
+									"    // Verificar que hay un token de respuesta (indicación de login exitoso)\r",
+									"    const responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson.token).to.be.a('string').and.to.not.be.empty;\r",
 									"});"
 								],
 								"type": "text/javascript",
@@ -1603,7 +1652,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"{{$randomFullName}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"{{$randomUserName}}\"\r\n}",
+							"raw": "{\r\n   \"username\": \"{{collaborator1Username}}\",\r\n   \"password\": \"{{collaborator1_password}}\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1611,104 +1660,274 @@
 							}
 						},
 						"url": {
-							"raw": "{{baseUrl}}/organizations/{{orgId}}/users",
+							"raw": "{{baseUrl}}/users/login",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"organizations",
-								"{{orgId}}",
-								"users"
+								"users",
+								"login"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Get User 3",
+					"name": "PI Creates Collaborator2",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Code is 200\", function() {\r",
-									"    pm.response.to.have.status(200)\r",
+									"// Capturar los datos enviados en la solicitud",
+									"const requestData = pm.request.body.raw ? JSON.parse(pm.request.body.raw) : {};",
+									"",
+									"// Guardar los valores enviados para comparar después",
+									"const sentName = requestData.name;",
+									"const sentEmail = requestData.email;",
+									"const sentUsername = requestData.username;",
+									"const sentRole = requestData.role",
+									"",
+									"// Guardar variables de entorno",
+									"pm.environment.set(\"collaborator2Id\", pm.response.json().id);",
+									"pm.environment.set(\"collaborator2Email\", pm.response.json().email);",
+									"pm.environment.set(\"collaborator2Username\", pm.response.json().username);",
+									"pm.environment.set(\"collaborator2password\", requestData.password)",
+									"",
+									"// Verificar código de estado",
+									"pm.test(\"Status code is 201 Created\", function() {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"// Verificar información del usuario",
+									"pm.test(\"collaborator 2 user information is valid\", function() {",
+									"    const responseData = pm.response.json();",
+									"    pm.expect(responseData.name).to.be.a('string').and.to.not.be.empty;",
+									"    pm.expect(responseData.email).to.be.a('string').and.to.not.be.empty;",
+									"    pm.expect(responseData.username).to.be.a('string').and.to.not.be.empty;",
+									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;",
+									"});",
+									"",
+									"// Verificar que los datos de respuesta coinciden con los enviados",
+									"pm.test(\"collaborator 2 data in response matches request data\", function() {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    // Verificar que el nombre coincide",
+									"    pm.expect(responseData.name).to.equal(sentName, \"Name in response should match sent name\");",
+									"    ",
+									"    // Verificar que el email coincide",
+									"    pm.expect(responseData.email).to.equal(sentEmail, \"Email in response should match sent email\");",
+									"    ",
+									"    // Verificar que el username coincide",
+									"    pm.expect(responseData.username).to.equal(sentUsername, \"Username in response should match sent username\");",
+									"});",
+									"",
+									"// Verificar que el usuario tiene el rol de collaborator",
+									"pm.test(\"User has correct collaborator role\", function() {",
+									"    const responseData = pm.response.json();",
+									"    pm.expect(responseData.roles).to.be.an('array');",
+									"    pm.expect(responseData.roles).to.include(sentRole, \"Role in response should match sent role\");",
+									"});",
+									"",
+									"// Guardar datos del usuario collaborator para verificación posterior",
+									"pm.collectionVariables.set(\"collaborator2_user_id\", pm.response.json().id);",
+									"pm.collectionVariables.set(\"collaborator2_username\", pm.response.json().username);",
+									"pm.collectionVariables.set(\"collaborator2_email\", pm.response.json().email);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Generar un nombre aleatorio\r",
+									"let fullName = pm.variables.replaceIn(\"{{$randomFullName}}\");\r",
+									"// Asegurarse de que tiene al menos 8 caracteres\r",
+									"if (fullName.length < 8) {\r",
+									"    fullName = fullName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - fullName.length));\r",
+									"}\r",
+									"pm.environment.set(\"validFullName3\", fullName);\r",
+									"\r",
+									"// Generar un nombre de usuario aleatorio\r",
+									"let userName = pm.variables.replaceIn(\"{{$randomUserName}}\");\r",
+									"// Asegurarse de que tiene al menos 8 caracteres\r",
+									"if (userName.length < 8) {\r",
+									"    userName = userName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - userName.length));\r",
+									"}\r",
+									"pm.environment.set(\"validUserName3\", userName);\r",
+									"\r",
+									"// Guardar la contraseña para uso posterior en login\r",
+									"const password = pm.variables.replaceIn(\"{{$randomPassword}}\");\r",
+									"pm.environment.set(\"contributor2_password\", password);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_PI}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{validFullName3}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"{{validUserName3}}\",\r\n    \"password\": \"{{contributor2_password}}\",\r\n    \"role\": \"collaborator\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Collaborator2 logs in",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"token_COLLABORATOR2\", pm.response.json().token);\r",
+									"\r",
+									"pm.test(\"Status code is 201 Created\", function() {\r",
+									"    pm.response.to.have.status(201);\r",
 									"});\r",
 									"\r",
-									"pm.test(\"Non empty response\", function() {\r",
+									"pm.test(\"Token is present\", function() {\r",
+									"    pm.expect(pm.response.json().token).to.be.a('string').and.to.not.be.empty;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"collaborator 2 login successful\", function() {\r",
+									"    // Verificar que hay un token de respuesta (indicación de login exitoso)\r",
+									"    const responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson.token).to.be.a('string').and.to.not.be.empty;\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n   \"username\": \"{{collaborator2_username}}\",\r\n   \"password\": \"{{collaborator2password}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Collaborator1 fails to create a user",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code indicates forbidden access\", function() {\r",
+									"    pm.expect(pm.response.code).to.be.oneOf([401, 403]); // Forbidden (403) o Unauthorized (401)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response indicates permission denied\", function() {\r",
 									"    const responseData = pm.response.json();\r",
-									"    pm.expect(responseData.name).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.username).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.id).to.equal(pm.environment.get(\"userId3\"));\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/organizations/{{orgId}}/users/{{userId3}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations",
-								"{{orgId}}",
-								"users",
-								"{{userId3}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get User that doesn't exist",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Code is 404\", function() {\r",
-									"    pm.response.to.have.status(404)\r",
+									"    \r",
+									"    // Verificar que la respuesta indica falta de permisos o acceso denegado\r",
+									"    // Pueden haber diferentes formatos de respuesta, así que verificamos las posibilidades comunes\r",
+									"    if (responseData.message) {\r",
+									"        pm.expect(responseData.message).to.match(/forbidden|unauthorized|denied|permission|access/i);\r",
+									"    } else if (responseData.error) {\r",
+									"        pm.expect(responseData.error).to.match(/forbidden|unauthorized|denied|permission|access/i);\r",
+									"    }\r",
 									"});\r",
 									"\r",
-									"pm.test(\"Get error message\", function() {\r",
-									"   pm.expect(pm.response.json().message).to.eql(\"The user with the provided id does not exist\");\r",
-									"});\r",
-									""
+									"pm.test(\"Contributor cannot create users\", function() {\r",
+									"    // Verificar que el código de estado no es 2xx (éxito)\r",
+									"    pm.expect(pm.response.code).to.not.be.within(200, 299);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Generar un nombre aleatorio\r",
+									"let fullName = pm.variables.replaceIn(\"{{$randomFullName}}\");\r",
+									"// Asegurarse de que tiene al menos 8 caracteres\r",
+									"if (fullName.length < 8) {\r",
+									"    fullName = fullName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - fullName.length));\r",
+									"}\r",
+									"pm.environment.set(\"validFullName4\", fullName);\r",
+									"\r",
+									"// Generar un nombre de usuario aleatorio\r",
+									"let userName = pm.variables.replaceIn(\"{{$randomUserName}}\");\r",
+									"// Asegurarse de que tiene al menos 8 caracteres\r",
+									"if (userName.length < 8) {\r",
+									"    userName = userName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - userName.length));\r",
+									"}\r",
+									"pm.environment.set(\"validUserName4\", userName);"
 								],
 								"type": "text/javascript",
 								"packages": {}
 							}
 						}
 					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
 					"request": {
-						"method": "GET",
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_CONTRIBUTOR1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"{{$randomFullName}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"{{$randomUserName}}\"\r\n}",
+							"raw": "{\r\n    \"name\": \"{{validFullName4}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"{{validUserName4}}\",\r\n    \"password\": \"{{$randomPassword}}\",\r\n    \"role\": \"collaborator\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1716,40 +1935,53 @@
 							}
 						},
 						"url": {
-							"raw": "{{baseUrl}}/organizations/{{orgId}}/users/{{$randomUUID}}",
+							"raw": "{{baseUrl}}/users/register",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"organizations",
-								"{{orgId}}",
 								"users",
-								"{{$randomUUID}}"
+								"register"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Get All Orgs",
+					"name": "Collaborator2 gets info of collaborator1",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Code is 200\", function() {\r",
+									"// Get the saved collaborator 1 user data\r",
+									"const collaboratorUserId = pm.collectionVariables.get(\"collaborator_user_id\");\r",
+									"const collaboratorUsername = pm.collectionVariables.get(\"collaborator_username\");\r",
+									"const collaboratorEmail = pm.collectionVariables.get(\"collaborator_email\");\r",
+									"\r",
+									"pm.test(\"Status code is 200 OK\", function() {\r",
 									"    pm.response.to.have.status(200);\r",
 									"});\r",
 									"\r",
-									"pm.test(\"Non Empty list\", function() {\r",
-									"    pm.expect(pm.response.json()).to.be.an('array').that.is.not.empty;\r",
-									"    pm.expect(pm.response.json()).to.have.lengthOf(1);\r",
-									"    pm.expect(pm.response.json()[0].id).to.equal(pm.environment.get(\"orgId\"));\r",
-									"    pm.expect(pm.response.json()[0].users).to.not.be.empty;\r",
-									"    pm.expect(pm.response.json()[0].users).to.be.an('array').that.has.lengthOf(3);\r",
-									"    pm.expect(pm.response.json()[0].artifacts).to.be.an('array').that.has.lengthOf(0);\r",
+									"pm.test(\"collaborator 1 user information is correct\", function() {\r",
+									"    const responseData = pm.response.json();\r",
+									"    \r",
+									"    pm.expect(responseData.id).to.equal(collaboratorUserId);\r",
+									"    pm.expect(responseData.username).to.equal(collaboratorUsername);\r",
+									"    pm.expect(responseData.email).to.equal(collaboratorEmail);\r",
+									"    pm.expect(responseData.name).to.be.a('string').and.to.not.be.empty;\r",
 									"});\r",
-									""
+									"\r",
+									"pm.test(\"collaborator 1 user has correct role\", function() {\r",
+									"    const responseData = pm.response.json();\r",
+									"    \r",
+									"    pm.expect(responseData.roles).to.be.an('array');\r",
+									"    pm.expect(responseData.roles).to.include('collaborator');\r",
+									"});\r",
+									"\r",
+									"pm.test(\"collaborators can view other users' information\", function() {\r",
+									"    pm.expect(pm.response.code).to.equal(200);\r",
+									"});"
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -1757,225 +1989,83 @@
 						}
 					],
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_CONTRIBUTOR2}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/organizations",
+							"raw": "{{baseUrl}}/users/{{collaborator1Username}}",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"organizations"
+								"users",
+								"{{collaborator1Username}}"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Get All Users in Org",
+					"name": "Collaborator 2 gets all users",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Code is 200\", function () {\r",
+									"pm.test(\"Status code is 200 OK\", function() {\r",
 									"    pm.response.to.have.status(200);\r",
 									"});\r",
 									"\r",
-									"pm.test(\"Response length is 3\", function () {\r",
+									"pm.test(\"Response is an array of users\", function() {\r",
 									"    const responseData = pm.response.json();\r",
-									"    pm.expect(responseData).to.be.an(\"array\").and.to.have.lengthOf(3);\r",
+									"    pm.expect(responseData).to.be.an('array');\r",
+									"    pm.expect(responseData.length).to.be.greaterThan(0);\r",
 									"});\r",
 									"\r",
-									"pm.test(\"Users validation\", function () {\r",
+									"// Get the saved users' usernames\r",
+									"const piUsername = pm.collectionVariables.get(\"pi_username\");\r",
+									"const collaborator1Username = pm.collectionVariables.get(\"collaborator_username\");\r",
+									"const collaborator2Username = pm.collectionVariables.get(\"collaborator2_username\");\r",
+									"\r",
+									"// Test that all users are in the users list\r",
+									"pm.test(\"PI user is in the users list\", function() {\r",
 									"    const responseData = pm.response.json();\r",
-									"\r",
-									"    // Environment variables for validation\r",
-									"    const userIds = [\r",
-									"        pm.environment.get(\"userId1\"),\r",
-									"        pm.environment.get(\"userId2\"),\r",
-									"        pm.environment.get(\"userId3\")\r",
-									"    ];\r",
-									"    const emails = [\r",
-									"        pm.environment.get(\"emailUser1\"),\r",
-									"        pm.environment.get(\"emailUser2\"),\r",
-									"        pm.environment.get(\"emailUser3\")\r",
-									"    ];\r",
-									"    const usernames = [\r",
-									"        pm.environment.get(\"usernameUser1\"),\r",
-									"        pm.environment.get(\"usernameUser2\"),\r",
-									"        pm.environment.get(\"usernameUser3\")\r",
-									"    ];\r",
-									"    const names = [\r",
-									"        pm.environment.get(\"nameOfUser1\"),\r",
-									"        pm.environment.get(\"nameOfUser2\"),\r",
-									"        pm.environment.get(\"nameOfUser3\")\r",
-									"    ];\r",
-									"\r",
-									"    // Loop through each user in the response and validate\r",
-									"    responseData.forEach((user, index) => {\r",
-									"        pm.expect(user.id).to.equal(userIds[index]);\r",
-									"        pm.expect(user.email).to.equal(emails[index]);\r",
-									"        pm.expect(user.username).to.equal(usernames[index]);\r",
-									"        pm.expect(user.name).to.equal(names[index]);\r",
-									"        pm.expect(user.organization.id).to.equal(pm.environment.get(\"orgId\"));\r",
-									"    });\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"{{$randomFullName}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"{{$randomUserName}}\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/organizations/{{orgId}}/users",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations",
-								"{{orgId}}",
-								"users"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get All Users in Org that doesn't exist",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Code is 412\", function() {\r",
-									"    pm.response.to.have.status(404)\r",
+									"    const piUser = responseData.find(user => user.username === piUsername);\r",
+									"    \r",
+									"    pm.expect(piUser).to.not.be.undefined;\r",
+									"    pm.expect(piUser.roles).to.be.an('array');\r",
+									"    pm.expect(piUser.roles).to.include('pi');\r",
 									"});\r",
 									"\r",
-									"pm.test(\"Get error message\", function() {\r",
-									"   pm.expect(pm.response.json().message).to.eql(\"The organization provided does not exist\");\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"{{$randomFullName}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"{{$randomUserName}}\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/organizations/{{$randomUUID}}/users",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations",
-								"{{$randomUUID}}",
-								"users"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get All Users Bad Org id",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Code is 412\", function() {\r",
-									"    pm.response.to.have.status(412)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Get error message\", function() {\r",
-									"   pm.expect(pm.response.json().message).to.eql(\"The organizationId provided is not valid\");\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"{{$randomFullName}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"{{$randomUserName}}\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/organizations/bad-org-id/users",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations",
-								"bad-org-id",
-								"users"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update User 1 username",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Code is 200\", function() {\r",
-									"    pm.response.to.have.status(200)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Info is present\", function() {\r",
+									"pm.test(\"collaborator 1 is in the users list\", function() {\r",
 									"    const responseData = pm.response.json();\r",
-									"    pm.expect(pm.response.json().name).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().email).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().username).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.id).to.equal(pm.environment.get(\"userId1\"));\r",
-									"    pm.expect(responseData.username).to.equal(\"updated_username\")\r",
+									"    const collaborator1User = responseData.find(user => user.username === collaborator1Username);\r",
+									"    \r",
+									"    pm.expect(collaborator1User).to.not.be.undefined;\r",
+									"    pm.expect(collaborator1User.roles).to.be.an('array');\r",
+									"    pm.expect(collaborator1User.roles).to.include('collaborator');\r",
+									"});\r",
+									"\r",
+									"pm.test(\"collaborator 2 (self) is in the users list\", function() {\r",
+									"    const responseData = pm.response.json();\r",
+									"    const collaborator2User = responseData.find(user => user.username === collaborator2Username);\r",
+									"    \r",
+									"    pm.expect(collaborator2User).to.not.be.undefined;\r",
+									"    pm.expect(collaborator2User.roles).to.be.an('array');\r",
+									"    pm.expect(collaborator2User.roles).to.include('collaborator');\r",
+									"});\r",
+									"\r",
+									"pm.test(\"collaborators can view all users\", function() {\r",
+									"    pm.expect(pm.response.code).to.equal(200);\r",
 									"});"
 								],
 								"type": "text/javascript",
@@ -1984,450 +2074,25 @@
 						}
 					],
 					"request": {
-						"method": "PUT",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"{{nameOfUser1}}\",\r\n    \"email\": \"{{emailUser1}}\",\r\n    \"username\": \"updated_username\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_COLLABORATOR2}}",
+									"type": "string"
 								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/organizations/{{orgId}}/users/{{userId1}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations",
-								"{{orgId}}",
-								"users",
-								"{{userId1}}"
 							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get User 1",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Code is 200\", function() {\r",
-									"    pm.response.to.have.status(200)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Non empty response\", function() {\r",
-									"    const responseData = pm.response.json();\r",
-									"    pm.expect(responseData.name).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.username).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.id).to.equal(pm.environment.get(\"userId1\"));\r",
-									"    pm.expect(responseData.username).to.equal(\"updated_username\")\r",
-									"    pm.expect(responseData.name).to.equal(pm.environment.get(\"nameOfUser1\"));\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
+						},
 						"method": "GET",
 						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
 						"url": {
-							"raw": "{{baseUrl}}/organizations/{{orgId}}/users/{{userId1}}",
+							"raw": "{{baseUrl}}/users",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"organizations",
-								"{{orgId}}",
-								"users",
-								"{{userId1}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update User 2 email",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Code is 200\", function() {\r",
-									"    pm.response.to.have.status(200)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Info is present\", function() {\r",
-									"    const responseData = pm.response.json();\r",
-									"    pm.expect(pm.response.json().name).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().email).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().username).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.id).to.equal(pm.environment.get(\"userId2\"));\r",
-									"    pm.expect(responseData.email).to.equal(\"new_email@hotmail.com\")\r",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "PUT",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"{{nameOfUser2}}\",\r\n    \"email\": \"new_email@hotmail.com\",\r\n    \"username\": \"{{usernameUser2}}\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/organizations/{{orgId}}/users/{{userId2}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations",
-								"{{orgId}}",
-								"users",
-								"{{userId2}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get User 2",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Code is 200\", function() {\r",
-									"    pm.response.to.have.status(200)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Non empty response\", function() {\r",
-									"    const responseData = pm.response.json();\r",
-									"    pm.expect(responseData.name).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.username).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.id).to.equal(pm.environment.get(\"userId2\"));\r",
-									"    pm.expect(responseData.username).to.equal(pm.environment.get(\"usernameUser2\"));\r",
-									"    pm.expect(responseData.name).to.equal(pm.environment.get(\"nameOfUser2\"));\r",
-									"    pm.expect(responseData.email).to.equal(\"new_email@hotmail.com\")\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/organizations/{{orgId}}/users/{{userId2}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations",
-								"{{orgId}}",
-								"users",
-								"{{userId2}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update User 3 with existing email",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Code is 400\", function() {\r",
-									"    pm.response.to.have.status(400)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Get error message\", function() {\r",
-									"   pm.expect(pm.response.json().message).to.eql(\"The email provided is already in use\");\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "PUT",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"{{nameOfUser3}}\",\r\n    \"email\": \"new_email@hotmail.com\",\r\n    \"username\": \"{{usernameUser3}}\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/organizations/{{orgId}}/users/{{userId3}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations",
-								"{{orgId}}",
-								"users",
-								"{{userId3}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update User 3 with existing username",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Code is 400\", function() {\r",
-									"    pm.response.to.have.status(400)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Get error message\", function() {\r",
-									"   pm.expect(pm.response.json().message).to.eql(\"The username provided is already in use\");\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "PUT",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"{{nameOfUser3}}\",\r\n    \"email\": \"{{emailUser3}}\",\r\n    \"username\": \"{{usernameUser2}}\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/organizations/{{orgId}}/users/{{userId3}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations",
-								"{{orgId}}",
-								"users",
-								"{{userId3}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update User that doesn't exist",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Code is 404\", function() {\r",
-									"    pm.response.to.have.status(404)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Get error message\", function() {\r",
-									"   pm.expect(pm.response.json().message).to.eql(\"The User with the provided id does not exist\");\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "PUT",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"{{nameOfUser3}}\",\r\n    \"email\": \"{{emailUser3}}\",\r\n    \"username\": \"{{usernameUser2}}\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/organizations/{{orgId}}/users/{{$randomUUID}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations",
-								"{{orgId}}",
-								"users",
-								"{{$randomUUID}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete a User",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Code is 204\", function() {\r",
-									"    pm.response.to.have.status(204)\r",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "DELETE",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/organizations/{{orgId}}/users/{{userId1}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations",
-								"{{orgId}}",
-								"users",
-								"{{userId1}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete a non existent user",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Code is 404\", function() {\r",
-									"    pm.response.to.have.status(404)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Get error\", function() {\r",
-									"   pm.expect(pm.response.json().message).to.eql(\"The User with the provided id does not exist\");\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "DELETE",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/organizations/{{orgId}}/users/{{userId1}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations",
-								"{{orgId}}",
-								"users",
-								"{{userId1}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete All",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "DELETE",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/organizations",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations"
+								"users"
 							]
 						}
 					},
@@ -2643,7 +2308,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"{{$randomProductName}}\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit, a versatile solution crafted to simplify and enhance every area of your home. This thoughtfully designed kit includes modular bins, sturdy shelves, and customizable labels, offering an elegant and practical approach to decluttering. Whether it’s the bedroom, kitchen, or office, the organizer kit adapts seamlessly to your needs, helping you organize everything from clothes and pantry staples to office supplies. Made from eco-friendly, high-quality materials, it combines style, functionality, and sustainability to create a beautifully ordered and efficient living space you'll love.\",\r\n    \"body\": {{body1}}\r\n}\r\n",
+							"raw": "{\r\n    \"name\": \"{{$randomProductName}}\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit, a versatile solution crafted to simplify and enhance every area of your home. This thoughtfully designed kit includes modular bins, sturdy shelves, and customizable labels, offering an elegant and practical approach to decluttering. Whether it's the bedroom, kitchen, or office, the organizer kit adapts seamlessly to your needs, helping you organize everything from clothes and pantry staples to office supplies. Made from eco-friendly, high-quality materials, it combines style, functionality, and sustainability to create a beautifully ordered and efficient living space you'll love.\",\r\n    \"body\": {{body1}}\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2805,7 +2470,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"{{$randomProductName}}\",\r\n    \"description\": \"Introducing the Ultimate Home Organizer Kit, a comprehensive solution designed to streamline and beautify every corner of your home. This set includes modular storage bins, durable shelves, and customizable labels, perfect for decluttering bedrooms, kitchens, and office spaces. Made from eco-friendly materials, each item in this kit is built for versatility and durability. Whether you’re organizing clothes, kitchen items, or crafting supplies, this organizer kit offers a stylish, functional, and sustainable way to bring order to your home!\",\r\n    \"body\": {{body2}}\r\n}\r\n",
+							"raw": "{\r\n    \"name\": \"{{$randomProductName}}\",\r\n    \"description\": \"Introducing the Ultimate Home Organizer Kit, a comprehensive solution designed to streamline and beautify every corner of your home. This set includes modular storage bins, durable shelves, and customizable labels, perfect for decluttering bedrooms, kitchens, and office spaces. Made from eco-friendly materials, each item in this kit is built for versatility and durability. Whether you're organizing clothes, kitchen items, or crafting supplies, this organizer kit offers a stylish, functional, and sustainable way to bring order to your home!\",\r\n    \"body\": {{body2}}\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2985,7 +2650,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"{{$randomProductName}}\",\r\n    \"description\": \"Revolutionize your home with the Ultimate Home Organizer Kit, a premium all-in-one solution for clutter-free living. Featuring modular storage bins, durable shelves, and customizable labels, this kit is perfect for organizing any space, from bedrooms to kitchens and beyond. Designed with eco-friendly materials and a focus on versatility, it offers a stylish yet practical way to streamline your daily life. Whether you’re arranging clothes, managing pantry essentials, or tidying up office supplies, this organizer kit makes decluttering effortless while adding a touch of elegance to your home.\",\r\n    \"body\": {{body3}}\r\n}\r\n",
+							"raw": "{\r\n    \"name\": \"{{$randomProductName}}\",\r\n    \"description\": \"Revolutionize your home with the Ultimate Home Organizer Kit, a premium all-in-one solution for clutter-free living. Featuring modular storage bins, durable shelves, and customizable labels, this kit is perfect for organizing any space, from bedrooms to kitchens and beyond. Designed with eco-friendly materials and a focus on versatility, it offers a stylish yet practical way to streamline your daily life. Whether you're arranging clothes, managing pantry essentials, or tidying up office supplies, this organizer kit makes decluttering effortless while adding a touch of elegance to your home.\",\r\n    \"body\": {{body3}}\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -3619,7 +3284,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"{{$randomProductName}}\",\r\n    \"description\": \"Simplify your life with the Ultimate Home Organizer Kit, a smart and stylish solution for managing clutter in any space. Featuring modular bins, durable shelves, and customizable labels, this kit transforms bedrooms, kitchens, and offices into neat, efficient areas. Whether you’re storing clothes, organizing kitchenware, or sorting supplies, it adapts to your needs with ease. Crafted from eco-friendly materials, it delivers both durability and elegance, making it an ideal choice for creating a sustainable, well-ordered home. Embrace a more organized lifestyle with this versatile and practical kit designed for modern living.\",\r\n    \"body\": {{body1_updated}}\r\n}\r\n",
+							"raw": "{\r\n    \"name\": \"{{$randomProductName}}\",\r\n    \"description\": \"Simplify your life with the Ultimate Home Organizer Kit, a smart and stylish solution for managing clutter in any space. Featuring modular bins, durable shelves, and customizable labels, this kit transforms bedrooms, kitchens, and offices into neat, efficient areas. Whether you're storing clothes, organizing kitchenware, or sorting supplies, it adapts to your needs with ease. Crafted from eco-friendly materials, it delivers both durability and elegance, making it an ideal choice for creating a sustainable, well-ordered home. Embrace a more organized lifestyle with this versatile and practical kit designed for modern living.\",\r\n    \"body\": {{body1_updated}}\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -3792,7 +3457,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"{{artifactName1}}\",\r\n    \"description\": \"Simplify your life with the Ultimate Home Organizer Kit, a smart and stylish solution for managing clutter in any space. Featuring modular bins, durable shelves, and customizable labels, this kit transforms bedrooms, kitchens, and offices into neat, efficient areas. Whether you’re storing clothes, organizing kitchenware, or sorting supplies, it adapts to your needs with ease. Crafted from eco-friendly materials, it delivers both durability and elegance, making it an ideal choice for creating a sustainable, well-ordered home. Embrace a more organized lifestyle with this versatile and practical kit designed for modern living.\",\r\n    \"body\": {{body1_updated}}\r\n}\r\n",
+							"raw": "{\r\n    \"name\": \"{{artifactName1}}\",\r\n    \"description\": \"Simplify your life with the Ultimate Home Organizer Kit, a smart and stylish solution for managing clutter in any space. Featuring modular bins, durable shelves, and customizable labels, this kit transforms bedrooms, kitchens, and offices into neat, efficient areas. Whether you're storing clothes, organizing kitchenware, or sorting supplies, it adapts to your needs with ease. Crafted from eco-friendly materials, it delivers both durability and elegance, making it an ideal choice for creating a sustainable, well-ordered home. Embrace a more organized lifestyle with this versatile and practical kit designed for modern living.\",\r\n    \"body\": {{body1_updated}}\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -3886,7 +3551,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"{{name2}}\",\r\n    \"description\": \"Simplify your life with the Ultimate Home Organizer Kit, a smart and stylish solution for managing clutter in any space. Featuring modular bins, durable shelves, and customizable labels, this kit transforms bedrooms, kitchens, and offices into neat, efficient areas. Whether you’re storing clothes, organizing kitchenware, or sorting supplies, it adapts to your needs with ease. Crafted from eco-friendly materials, it delivers both durability and elegance, making it an ideal choice for creating a sustainable, well-ordered home. Embrace a more organized lifestyle with this versatile and practical kit designed for modern living.\",\r\n    \"body\": {{body1_updated}}\r\n}\r\n",
+							"raw": "{\r\n    \"name\": \"{{name2}}\",\r\n    \"description\": \"Simplify your life with the Ultimate Home Organizer Kit, a smart and stylish solution for managing clutter in any space. Featuring modular bins, durable shelves, and customizable labels, this kit transforms bedrooms, kitchens, and offices into neat, efficient areas. Whether you're storing clothes, organizing kitchenware, or sorting supplies, it adapts to your needs with ease. Crafted from eco-friendly materials, it delivers both durability and elegance, making it an ideal choice for creating a sustainable, well-ordered home. Embrace a more organized lifestyle with this versatile and practical kit designed for modern living.\",\r\n    \"body\": {{body1_updated}}\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -3934,7 +3599,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"{{name2}}\",\r\n    \"description\": \"Simplify your life with the Ultimate Home Organizer Kit, a smart and stylish solution for managing clutter in any space. Featuring modular bins, durable shelves, and customizable labels, this kit transforms bedrooms, kitchens, and offices into neat, efficient areas. Whether you’re storing clothes, organizing kitchenware, or sorting supplies, it adapts to your needs with ease. Crafted from eco-friendly materials, it delivers both durability and elegance, making it an ideal choice for creating a sustainable, well-ordered home. Embrace a more organized lifestyle with this versatile and practical kit designed for modern living.\",\r\n    \"body\": {{body1_updated}}\r\n}\r\n",
+							"raw": "{\r\n    \"name\": \"{{name2}}\",\r\n    \"description\": \"Simplify your life with the Ultimate Home Organizer Kit, a smart and stylish solution for managing clutter in any space. Featuring modular bins, durable shelves, and customizable labels, this kit transforms bedrooms, kitchens, and offices into neat, efficient areas. Whether you're storing clothes, organizing kitchenware, or sorting supplies, it adapts to your needs with ease. Crafted from eco-friendly materials, it delivers both durability and elegance, making it an ideal choice for creating a sustainable, well-ordered home. Embrace a more organized lifestyle with this versatile and practical kit designed for modern living.\",\r\n    \"body\": {{body1_updated}}\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -4068,6 +3733,68 @@
 					"response": []
 				}
 			]
+		}
+	],
+	"variable": [
+		{
+			"key": "pi_user_id",
+			"value": ""
+		},
+		{
+			"key": "pi_username",
+			"value": ""
+		},
+		{
+			"key": "pi_email",
+			"value": ""
+		},
+		{
+			"key": "contributor_user_id",
+			"value": ""
+		},
+		{
+			"key": "contributor_username",
+			"value": ""
+		},
+		{
+			"key": "contributor_email",
+			"value": ""
+		},
+		{
+			"key": "contributor2_user_id",
+			"value": ""
+		},
+		{
+			"key": "contributor2_username",
+			"value": ""
+		},
+		{
+			"key": "contributor2_email",
+			"value": ""
+		},
+		{
+			"key": "collaborator_user_id",
+			"value": ""
+		},
+		{
+			"key": "collaborator_username",
+			"value": ""
+		},
+		{
+			"key": "collaborator_email",
+			"value": ""
+		},
+		{
+			"key": "collaborator2_user_id",
+			"value": ""
+		},
+		{
+			"key": "collaborator2_username",
+			"value": ""
+		},
+		{
+			"key": "collaborator2_email",
+			"value": ""
 		}
 	]
 }

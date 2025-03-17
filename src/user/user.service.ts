@@ -9,6 +9,7 @@ import { BusinessError, BusinessLogicException } from '../shared/errors/business
 import { UserGetDto } from './userGet.dto';
 import { plainToClass } from 'class-transformer';
 import { User } from './user';
+import { Role } from '../shared/enums/role.enums';
 
 @Injectable()
 export class UserService {
@@ -167,6 +168,15 @@ export class UserService {
             'Username must be at least 8 characters long', 
             BusinessError.PRECONDITION_FAILED);
       }
+      
+      // Validate if the provided role exists in the Role enum
+      const validRoles = Object.values(Role);
+      if (!validRoles.includes(user.role as Role)) {
+         throw new BusinessLogicException(
+            `Invalid role. Valid roles are: ${validRoles.join(', ')}`, 
+            BusinessError.PRECONDITION_FAILED);
+      }
+      
       // Hash the password
       const hashedPassword = await this.passwordService.hashPassword(user.password);
       // Create the new user
@@ -175,6 +185,7 @@ export class UserService {
          username: user.username,
          email: user.email,
          password: hashedPassword,
+         roles: [user.role], // Asignar el rol proporcionado como un array
       });
       const savedUser = await this.userRepository.save(newUser);
       return plainToClass(UserGetDto, savedUser, { excludeExtraneousValues: true });
@@ -184,5 +195,8 @@ export class UserService {
       const users = await this.userRepository.find();
       return users.map(user => plainToClass(UserGetDto, user, { excludeExtraneousValues: true }));
    }
-}
 
+   async deleteAll(): Promise<void> {
+      await this.userRepository.delete({});
+   }
+}

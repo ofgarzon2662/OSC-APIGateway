@@ -7,6 +7,7 @@ import { Roles } from 'src/shared/decorators/roles.decorators';
 import { UserService } from './user.service';
 import { UserCreateDto } from './userCreate.dto';
 import { BusinessErrorsInterceptor } from 'src/shared/interceptors/business-errors.interceptors';
+import { RolesGuard } from 'src/auth/roles/roles.guards';
 
 @Controller('users')
 @UseInterceptors(BusinessErrorsInterceptor)
@@ -19,6 +20,7 @@ export class UserController {
     return this.authService.login(req);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Post('register')
   @Roles(Role.ADMIN, Role.PI)
   create(@Body() user: UserCreateDto) {
@@ -35,5 +37,12 @@ export class UserController {
   @Get(':username')
   findOne(@Param('username') username: string) {
     return this.userService.getOne(username);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @Delete()
+  deleteAll() {
+    return this.userService.deleteAll();
   }
 }
