@@ -9,11 +9,22 @@ import { PasswordService } from './password.service';
 import { TypeOrmTestingConfig } from '../shared/testing-utils/typeorm-testing-config';
 import { faker } from '@faker-js/faker';
 import { UserService } from '../user/user.service';
+import { TokenBlacklistService } from './token-blacklist.service';
 
 // Mock para UserService
 class MockUserService {
   findOneForAuth = jest.fn();
   findOne = jest.fn();
+}
+
+// Mock para TokenBlacklistService
+class MockTokenBlacklistService {
+  blacklistToken = jest.fn();
+  isBlacklisted = jest.fn().mockReturnValue(false);
+  cleanupExpiredTokens = jest.fn();
+  getBlacklistSize = jest.fn().mockReturnValue(0);
+  onModuleInit = jest.fn();
+  onModuleDestroy = jest.fn();
 }
 
 describe('AuthService', () => {
@@ -23,6 +34,7 @@ describe('AuthService', () => {
   let userRepository: Repository<UserEntity>;
   let passwordService: PasswordService;
   let userService: MockUserService;
+  let tokenBlacklistService: MockTokenBlacklistService;
   let userList: UserEntity[];
 
   // Mock JWT service
@@ -59,6 +71,10 @@ describe('AuthService', () => {
           provide: UserService,
           useClass: MockUserService,
         },
+        {
+          provide: TokenBlacklistService,
+          useClass: MockTokenBlacklistService,
+        },
       ],
     }).compile();
 
@@ -68,6 +84,7 @@ describe('AuthService', () => {
     userRepository = module.get<Repository<UserEntity>>(getRepositoryToken(UserEntity));
     passwordService = module.get<PasswordService>(PasswordService);
     userService = module.get<MockUserService>(UserService);
+    tokenBlacklistService = module.get<MockTokenBlacklistService>(TokenBlacklistService);
 
     await seedDatabase();
   });
@@ -174,6 +191,20 @@ describe('AuthService', () => {
           secret: 'test-secret',
         }
       );
+    });
+  });
+
+  describe('logout', () => {
+    it('should blacklist token and return success message', async () => {
+      // Setup
+      const token = 'Bearer mock.jwt.token';
+      
+      // Execute
+      const result = await service.logout(token);
+      
+      // Assert
+      expect(tokenBlacklistService.blacklistToken).toHaveBeenCalledWith(token);
+      expect(result).toEqual({ message: 'Logout successful' });
     });
   });
 });

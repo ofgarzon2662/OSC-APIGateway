@@ -1626,7 +1626,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.environment.set(\"token_CONTRIBUTOR1\", pm.response.json().token);\r",
+									"pm.environment.set(\"token_collaborator1\", pm.response.json().token);\r",
 									"\r",
 									"pm.test(\"Status code is 201 Created\", function() {\r",
 									"    pm.response.to.have.status(201);\r",
@@ -2093,6 +2093,532 @@
 							],
 							"path": [
 								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Log Out as Admin 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"El código de estado es 200\", function() {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Mensaje de confirmación recibido\", function() {\r",
+									"    pm.expect(pm.response.json().message).to.equal(\"Logout successful\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Respuesta en formato correcto\", function() {\r",
+									"    pm.expect(pm.response.json()).to.be.an('object');\r",
+									"    pm.expect(pm.response.json()).to.have.property('message');\r",
+									"});\r",
+									"\r",
+									"// Opcional: Limpiar el token almacenado al hacer logout\r",
+									"// pm.environment.unset(\"token_ADMIN1\");"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"packages": {},
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_ADMIN1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n   \"username\": \"{{ADMIN1_USERNAME}}\",\r\n   \"password\": \"{{ADMIN1_PASSWORD}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/logout",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"logout"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin 1 tries to get all Users",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Verify status code is 401 Unauthorized",
+									"pm.test(\"Status code is 401 Unauthorized\", function() {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"// Verify error message indicates token revocation",
+									"pm.test(\"Message indicates the token has been revoked\", function() {",
+									"    const responseData = pm.response.json();",
+									"    pm.expect(responseData.message).to.equal(\"Token has been revoked\");",
+									"});",
+									"",
+									"// Verify error type is correctly labeled as Unauthorized",
+									"pm.test(\"Error type is Unauthorized\", function() {",
+									"    const responseData = pm.response.json();",
+									"    pm.expect(responseData.error).to.equal(\"Unauthorized\");",
+									"});",
+									"",
+									"// Verify response structure is correct",
+									"pm.test(\"Response structure is correct\", function() {",
+									"    const responseData = pm.response.json();",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData).to.have.property('message');",
+									"    pm.expect(responseData).to.have.property('error');",
+									"    pm.expect(responseData).to.have.property('statusCode');",
+									"    pm.expect(responseData.statusCode).to.equal(401);",
+									"});",
+									"",
+									"// Verify there is no valid token in the response",
+									"pm.test(\"No token in the response\", function() {",
+									"    const responseData = pm.response.json();",
+									"    pm.expect(responseData).to.not.have.property('token');",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_ADMIN1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Log Out as Admin 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"El código de estado es 200\", function() {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Mensaje de confirmación recibido\", function() {\r",
+									"    pm.expect(pm.response.json().message).to.equal(\"Logout successful\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Respuesta en formato correcto\", function() {\r",
+									"    pm.expect(pm.response.json()).to.be.an('object');\r",
+									"    pm.expect(pm.response.json()).to.have.property('message');\r",
+									"});\r",
+									"\r",
+									"// Opcional: Limpiar el token almacenado al hacer logout\r",
+									"// pm.environment.unset(\"token_ADMIN1\");"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_ADMIN2}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n   \"username\": \"{{ADMIN1_USERNAME}}\",\r\n   \"password\": \"{{ADMIN1_PASSWORD}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/logout",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"logout"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin 2 tries to get all Users",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Verify status code is 401 Unauthorized",
+									"pm.test(\"Status code is 401 Unauthorized\", function() {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"// Verify error message indicates token revocation",
+									"pm.test(\"Message indicates the token has been revoked\", function() {",
+									"    const responseData = pm.response.json();",
+									"    pm.expect(responseData.message).to.equal(\"Token has been revoked\");",
+									"});",
+									"",
+									"// Verify error type is correctly labeled as Unauthorized",
+									"pm.test(\"Error type is Unauthorized\", function() {",
+									"    const responseData = pm.response.json();",
+									"    pm.expect(responseData.error).to.equal(\"Unauthorized\");",
+									"});",
+									"",
+									"// Verify response structure is correct",
+									"pm.test(\"Response structure is correct\", function() {",
+									"    const responseData = pm.response.json();",
+									"    pm.expect(responseData).to.be.an('object');",
+									"    pm.expect(responseData).to.have.property('message');",
+									"    pm.expect(responseData).to.have.property('error');",
+									"    pm.expect(responseData).to.have.property('statusCode');",
+									"    pm.expect(responseData.statusCode).to.equal(401);",
+									"});",
+									"",
+									"// Verify there is no valid token in the response",
+									"pm.test(\"No token in the response\", function() {",
+									"    const responseData = pm.response.json();",
+									"    pm.expect(responseData).to.not.have.property('token');",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_ADMIN2}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Log Out as Collaborator 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"El código de estado es 200\", function() {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Mensaje de confirmación recibido\", function() {\r",
+									"    pm.expect(pm.response.json().message).to.equal(\"Logout successful\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Respuesta en formato correcto\", function() {\r",
+									"    pm.expect(pm.response.json()).to.be.an('object');\r",
+									"    pm.expect(pm.response.json()).to.have.property('message');\r",
+									"});\r",
+									"\r",
+									"// Opcional: Limpiar el token almacenado al hacer logout\r",
+									"// pm.environment.unset(\"token_ADMIN1\");"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_collaborator1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n   \"username\": \"{{ADMIN1_USERNAME}}\",\r\n   \"password\": \"{{ADMIN1_PASSWORD}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/logout",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"logout"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Log Out as Collaborator 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"El código de estado es 200\", function() {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Mensaje de confirmación recibido\", function() {\r",
+									"    pm.expect(pm.response.json().message).to.equal(\"Logout successful\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Respuesta en formato correcto\", function() {\r",
+									"    pm.expect(pm.response.json()).to.be.an('object');\r",
+									"    pm.expect(pm.response.json()).to.have.property('message');\r",
+									"});\r",
+									"\r",
+									"// Opcional: Limpiar el token almacenado al hacer logout\r",
+									"// pm.environment.unset(\"token_ADMIN1\");"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_COLLABORATOR2}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n   \"username\": \"{{ADMIN1_USERNAME}}\",\r\n   \"password\": \"{{ADMIN1_PASSWORD}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/logout",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"logout"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Log Out PI",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"El código de estado es 200\", function() {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Mensaje de confirmación recibido\", function() {\r",
+									"    pm.expect(pm.response.json().message).to.equal(\"Logout successful\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Respuesta en formato correcto\", function() {\r",
+									"    pm.expect(pm.response.json()).to.be.an('object');\r",
+									"    pm.expect(pm.response.json()).to.have.property('message');\r",
+									"});\r",
+									"\r",
+									"// Opcional: Limpiar el token almacenado al hacer logout\r",
+									"// pm.environment.unset(\"token_ADMIN1\");"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_PI}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n   \"username\": \"{{ADMIN1_USERNAME}}\",\r\n   \"password\": \"{{ADMIN1_PASSWORD}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/logout",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"logout"
 							]
 						}
 					},

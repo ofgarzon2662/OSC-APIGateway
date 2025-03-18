@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Param, Delete, Req, UseGuards, UseInterceptors, Body } from '@nestjs/common';
+import { Controller, Post, Get, Param, Delete, Req, UseGuards, UseInterceptors, Body, HttpCode } from '@nestjs/common';
 import { LocalAuthGuard } from '../auth/guards/local-auth/local-auth.guard';
 import { AuthService } from '../auth/auth.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth/jwt-auth.guard';
@@ -8,6 +8,7 @@ import { UserService } from './user.service';
 import { UserCreateDto } from './userCreate.dto';
 import { BusinessErrorsInterceptor } from 'src/shared/interceptors/business-errors.interceptors';
 import { RolesGuard } from 'src/auth/roles/roles.guards';
+import { Request } from 'express';
 
 @Controller('users')
 @UseInterceptors(BusinessErrorsInterceptor)
@@ -18,6 +19,14 @@ export class UserController {
   @Post('login')
   async login(@Req() req) {
     return this.authService.login(req);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('logout')
+  @HttpCode(200)
+  async logout(@Req() req: Request) {
+    const token = req.headers.authorization;
+    return this.authService.logout(token);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

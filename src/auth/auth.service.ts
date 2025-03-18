@@ -8,6 +8,7 @@ import { BusinessError, BusinessLogicException } from '../shared/errors/business
 import { PasswordService } from './password.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserService } from '../user/user.service';
+import { TokenBlacklistService } from './token-blacklist.service';
 
 @Injectable()
 export class AuthService { 
@@ -17,7 +18,8 @@ export class AuthService {
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
     private readonly passwordService: PasswordService,
-    private readonly userService: UserService
+    private readonly userService: UserService,
+    private readonly tokenBlacklistService: TokenBlacklistService
   ) {}
 
   async validateUser(username: string, password: string): Promise<any> {
@@ -42,9 +44,6 @@ export class AuthService {
     }
   }
 
-
-
-
   async login(req: any) {
     const payload = {
       username: req.user.username,
@@ -56,5 +55,18 @@ export class AuthService {
         secret: this.configService.get<string>('JWT_SECRET', jwtConstants.JWT_SECRET),
       }),
     };
+  }
+
+  /**
+   * Log out a user by blacklisting their token
+   * @param token The JWT token to blacklist
+   * @returns A success message
+   */
+  async logout(token: string): Promise<{ message: string }> {
+    // Add the token to the blacklist
+    this.tokenBlacklistService.blacklistToken(token);
+
+    // Return a success message
+    return { message: 'Logout successful' };
   }
 }
