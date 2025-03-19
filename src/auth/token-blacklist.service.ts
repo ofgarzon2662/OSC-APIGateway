@@ -1,6 +1,11 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
+interface DecodedToken {
+  exp?: number;
+  [key: string]: any;
+}
+
 @Injectable()
 export class TokenBlacklistService implements OnModuleInit {
   private readonly blacklistedTokens: Set<string> = new Set();
@@ -64,8 +69,8 @@ export class TokenBlacklistService implements OnModuleInit {
     
     this.blacklistedTokens.forEach(token => {
       try {
-        const decoded = this.jwtService.decode(token) as { exp: number };
-        if (decoded && decoded.exp && decoded.exp < now) {
+        const decoded = this.jwtService.decode(token) as DecodedToken;
+        if (decoded?.exp && decoded.exp < now) {
           this.blacklistedTokens.delete(token);
           removedCount++;
         }
