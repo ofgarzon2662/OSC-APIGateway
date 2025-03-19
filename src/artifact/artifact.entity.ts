@@ -7,16 +7,28 @@ export class ArtifactEntity {
   id: string;
 
   @Column()
-  name: string;
+  title: string;
+
+  @Column()
+  contributor: string;
 
   @Column()
   description: string;
 
+  // Add a column for the Submission Date
+  @Column()
+  submittedAt: Date;
+
   @Column({ type: 'text' })
   body: any;
 
-  @Column()
-  timeStamp: Date;
+  // Add a cloumn for an array of keywords, all strings
+  @Column({ type: 'simple-array' })
+  keywords: string[];
+
+  // Add a column for an array of links, all must be urls
+  @Column({ type: 'simple-array' })
+  links: string[];
 
   @ManyToOne(
     () => OrganizationEntity,

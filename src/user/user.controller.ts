@@ -1,69 +1,71 @@
 import {
-  Body,
   Controller,
-  Delete,
-  Get,
-  HttpCode,
-  Param,
   Post,
-  Put,
+  Get,
+  Param,
+  Delete,
+  Req,
+  UseGuards,
   UseInterceptors,
+  Body,
+  HttpCode,
 } from '@nestjs/common';
-
+import { LocalAuthGuard } from '../auth/guards/local-auth/local-auth.guard';
+import { AuthService } from '../auth/auth.service';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth/jwt-auth.guard';
+import { Role } from 'src/shared/enums/role.enums';
+import { Roles } from 'src/shared/decorators/roles.decorators';
 import { UserService } from './user.service';
-import { UserEntity } from './user.entity';
-import { plainToInstance } from 'class-transformer';
-import { UserDto } from './user.dto';
-import { BusinessErrorsInterceptor } from '../shared/interceptors/business-errors.interceptors';
+import { UserCreateDto } from './userCreate.dto';
+import { BusinessErrorsInterceptor } from 'src/shared/interceptors/business-errors.interceptors';
+import { RolesGuard } from 'src/auth/roles/roles.guards';
+import { Request } from 'express';
 
-@Controller('organizations/:organizationId/users')
+@Controller('users')
 @UseInterceptors(BusinessErrorsInterceptor)
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly userService: UserService,
+  ) {}
 
-  // Obtener todos los users
+  @UseGuards(LocalAuthGuard)
+  @Post('login')
+  async login(@Req() req) {
+    return this.authService.login(req);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('logout')
+  @HttpCode(200)
+  async logout(@Req() req: Request) {
+    const token = req.headers.authorization;
+    return this.authService.logout(token);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Post('register')
+  @Roles(Role.ADMIN, Role.PI)
+  create(@Body() user: UserCreateDto) {
+    return this.userService.create(user);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get()
-  async findAll(
-    @Param('organizationId') organizationId: string,
-  ): Promise<UserEntity[]> {
-    return this.userService.findAll(organizationId);
+  findAll() {
+    return this.userService.findAll();
   }
 
-  // Obtener un user por id
-  @Get(':id')
-  async findOne(
-    @Param('organizationId') organizationId: string,
-    @Param('id') id: string,
-  ): Promise<UserEntity> {
-    return this.userService.findOne(organizationId, id);
+  @UseGuards(JwtAuthGuard)
+  @Get(':username')
+  findOne(@Param('username') username: string) {
+    return this.userService.getOne(username);
   }
 
-  // Crear un user
-  @Post()
-  async create(
-    @Param('organizationId') organizationId: string,
-    @Body() userDto: UserDto,
-  ) {
-    const user: UserEntity = plainToInstance(UserEntity, userDto);
-    return await this.userService.create(user, organizationId);
-  }
-
-  // Actualizar un user
-
-  @Put(':userId')
-  async update(
-    @Param('userId') userId: string,
-    @Body() @Body() userDto: UserDto,
-  ) {
-    const user: UserEntity = plainToInstance(UserEntity, userDto);
-    return await this.userService.update(userId, user);
-  }
-
-  // Eliminar un user
-
-  @Delete(':userId')
-  @HttpCode(204)
-  async delte(@Param('userId') userId: string) {
-    return this.userService.delete(userId);
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @Delete()
+  deleteAll() {
+    return this.userService.deleteAll();
   }
 }

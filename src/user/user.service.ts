@@ -1,246 +1,221 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from './user.entity';
-import { Repository } from 'typeorm';
+import { Repository } from 'typeorm/repository/Repository';
+import { PasswordService } from '../auth/password.service';
+import { UserCreateDto } from './userCreate.dto';
 import {
   BusinessError,
   BusinessLogicException,
 } from '../shared/errors/business-errors';
-import validator from 'validator';
-import { OrganizationEntity } from '../organization/organization.entity';
+import { UserGetDto } from './userGet.dto';
+import { plainToClass } from 'class-transformer';
+import { User } from './user';
+import { Role } from '../shared/enums/role.enums';
 
 @Injectable()
 export class UserService {
+  private users: User[] = [];
+
   constructor(
+    private readonly passwordService: PasswordService,
+    private readonly configService: ConfigService,
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
-    @InjectRepository(OrganizationEntity)
-    private readonly organizationRepository: Repository<OrganizationEntity>,
   ) {}
 
-  // Get All Users
-  async findAll(organizationId): Promise<UserEntity[]> {
-    if (!organizationId) {
-      throw new BusinessLogicException(
-        'The organizationId provided is missing',
-        BusinessError.PRECONDITION_FAILED,
-      );
-    }
-    // The organizationId should be a valid UUID
-    if (!validator.isUUID(organizationId))
-      throw new BusinessLogicException(
-        'The organizationId provided is not valid',
-        BusinessError.PRECONDITION_FAILED,
-      );
-    // Check if the organization exists
-    const organization = await this.organizationRepository.findOne({
-      where: { id: organizationId },
-    });
-    if (!organization) {
-      throw new BusinessLogicException(
-        'The organization provided does not exist',
-        BusinessError.NOT_FOUND,
-      );
-    }
-    return await this.userRepository.find({ relations: ['organization'] });
+  async onModuleInit() {
+    await this.loadUsersFromEnv();
   }
 
-  // Get One User
+  async loadUsersFromEnv() {
+    // Load Admin User 1
+    const admin1Username = this.configService.get<string>('ADMIN1_USERNAME');
+    const admin1Password = this.configService.get<string>('ADMIN1_PASSWORD');
+    const admin1RolesStr = this.configService.get<string>(
+      'ADMIN1_ROLES',
+      'admin',
+    );
+    const admin1Roles = admin1RolesStr ? admin1RolesStr.split(',') : ['admin'];
 
-  async findOne(orgId: string, userId: string): Promise<UserEntity> {
-    // Check orgId is a valid UUID
-    if (!validator.isUUID(orgId)) {
-      throw new BusinessLogicException(
-        'The organizationId provided is not valid',
-        BusinessError.PRECONDITION_FAILED,
-      );
-    }
-    // Check userId is a valid UUID
-    if (!validator.isUUID(userId)) {
-      throw new BusinessLogicException(
-        'The userId provided is not valid',
-        BusinessError.PRECONDITION_FAILED,
-      );
-    }
-    // Check if the organization exists
-    const organization = await this.organizationRepository.findOne({
-      where: { id: orgId },
-    });
-    if (!organization) {
-      throw new BusinessLogicException(
-        'The organization provided does not exist',
-        BusinessError.NOT_FOUND,
-      );
-    }
-    // check that the user is part of the organization
-    const user: UserEntity = await this.userRepository.findOne({
-      where: { id: userId, organization },
-      relations: ['organization'],
-    });
-    if (!user)
-      throw new BusinessLogicException(
-        'The user with the provided id does not exist',
-        BusinessError.NOT_FOUND,
-      );
+    if (admin1Username && admin1Password) {
+      this.users.push(new User(1, admin1Username, admin1Password, admin1Roles));
 
-    return user;
+      // Save admin1 to database if it doesn't exist
+      await this.saveAdminUserToDb(admin1Username, admin1Password, admin1Roles);
+    }
+
+    // Load Admin User 2
+    const admin2Username = this.configService.get<string>('ADMIN2_USERNAME');
+    const admin2Password = this.configService.get<string>('ADMIN2_PASSWORD');
+    const admin2RolesStr = this.configService.get<string>(
+      'ADMIN2_ROLES',
+      'admin',
+    );
+    const admin2Roles = admin2RolesStr ? admin2RolesStr.split(',') : ['admin'];
+
+    if (admin2Username && admin2Password) {
+      this.users.push(new User(2, admin2Username, admin2Password, admin2Roles));
+
+      // Save admin2 to database if it doesn't exist
+      await this.saveAdminUserToDb(admin2Username, admin2Password, admin2Roles);
+    }
+
+    // Fallback to default users if no env variables are set
+    if (this.users.length === 0) {
+      console.warn(
+        'No users found in environment variables. Using default users.',
+      );
+      this.users = [
+        new User(1, 'admin', 'admin', ['admin']),
+        new User(2, 'user', 'admin', ['admin']),
+      ];
+
+      // Save default users to database
+      await this.saveAdminUserToDb('admin', 'admin', ['admin']);
+      await this.saveAdminUserToDb('user', 'admin', ['admin']);
+    }
   }
 
-  // Create one User
+  private async saveAdminUserToDb(
+    username: string,
+    password: string,
+    roles: string[],
+  ): Promise<void> {
+    try {
+      // Check if user already exists
+      const existingUser = await this.userRepository.findOne({
+        where: [
+          { username: username },
+          { email: username + '@admin.com' }, // Generate a default email
+        ],
+      });
 
-  async create(
-    user: Partial<UserEntity>,
-    organizationId: string,
-  ): Promise<UserEntity> {
-    if (!organizationId) {
+      if (!existingUser) {
+        // Hash the password
+        const hashedPassword =
+          await this.passwordService.hashPassword(password);
+
+        // Create the user entity
+        const userEntity = this.userRepository.create({
+          name: username,
+          username: username,
+          email: username + '@admin.com', // Generate a default email
+          password: hashedPassword,
+          roles: roles, // Save the roles to the database
+        });
+
+        // Save the user to the database
+        await this.userRepository.save(userEntity);
+      } else {
+        console.log(`Admin user ${username} already exists in database`);
+      }
+    } catch (error) {
+      console.error(`Error saving admin user ${username} to database:`, error);
+    }
+  }
+
+  // Find a user by username or email
+  async findOne(username: string): Promise<any> {
+    const foundUser = await this.userRepository.findOne({
+      where: [{ username: username }, { email: username }],
+    });
+    if (!foundUser) {
       throw new BusinessLogicException(
-        'The organizationId provided is missing',
+        'User not found',
+        BusinessError.NOT_FOUND,
+      );
+    }
+
+    // Convert the entity to a User object with all necessary fields
+    return {
+      id: foundUser.id,
+      name: foundUser.name,
+      username: foundUser.username,
+      email: foundUser.email,
+      password: foundUser.password, // Include password for authentication
+      roles: foundUser.roles || [], // Include roles for authorization
+    };
+  }
+
+  // Get One User by username: Gives a GiveUserDto
+  async getOne(username: string): Promise<UserGetDto> {
+    const user = await this.userRepository.findOne({
+      // username or email
+      where: [{ username: username }, { email: username }],
+    });
+
+    if (!user) {
+      throw new BusinessLogicException(
+        'User not found',
+        BusinessError.NOT_FOUND,
+      );
+    }
+    return plainToClass(UserGetDto, user, { excludeExtraneousValues: true });
+  }
+  //Instead of returning a UserEntity, return a UserGetDto
+  async create(user: UserCreateDto): Promise<UserGetDto> {
+    // Add conditions to check if usename or email already exists
+    const existingUser = await this.userRepository.findOne({
+      where: [{ username: user.username }, { email: user.email }],
+    });
+    if (existingUser) {
+      throw new BusinessLogicException(
+        'Username or email already exists',
         BusinessError.PRECONDITION_FAILED,
       );
     }
-    // The organizationId should be a valid UUID
-    if (!validator.isUUID(organizationId))
+    // Add conditions to check if that user.password is at least 8 characters long
+    if (user.password.length < 8) {
       throw new BusinessLogicException(
-        'The organizationId provided is not valid',
-        BusinessError.PRECONDITION_FAILED,
-      );
-    // Check if the organization exists and assign it
-    const organization = await this.organizationRepository.findOne({
-      where: { id: organizationId },
-    });
-
-    if (!organization) {
-      throw new BusinessLogicException(
-        'The organization provided does not exist',
+        'Password must be at least 8 characters long',
         BusinessError.PRECONDITION_FAILED,
       );
     }
-    if (!this.isValidEmail(user.email)) {
+    // username must be unique and 8 characters long
+    if (user.username.length < 8) {
       throw new BusinessLogicException(
-        'The email provided is not valid',
+        'Username must be at least 8 characters long',
         BusinessError.PRECONDITION_FAILED,
       );
     }
 
-    // Email and Username of User should be unique
-    const existingUser: UserEntity = await this.userRepository.findOne({
-      where: { username: user.username },
-    });
-    const existingEmail: UserEntity = await this.userRepository.findOne({
-      where: { email: user.email },
-    });
-    if (existingUser || existingEmail)
+    // Validate if the provided role exists in the Role enum
+    const validRoles = Object.values(Role);
+    if (!validRoles.includes(user.role as Role)) {
       throw new BusinessLogicException(
-        'The email or username provided is already in use',
-        BusinessError.BAD_REQUEST,
+        `Invalid role. Valid roles are: ${validRoles.join(', ')}`,
+        BusinessError.PRECONDITION_FAILED,
       );
-    // Create the User and save it
+    }
+
+    // Hash the password
+    const hashedPassword = await this.passwordService.hashPassword(
+      user.password,
+    );
+    // Create the new user
     const newUser = this.userRepository.create({
-      ...user,
-      organization,
+      name: user.name,
+      username: user.username,
+      email: user.email,
+      password: hashedPassword,
+      roles: [user.role], // Asignar el rol proporcionado como un array
     });
-    return await this.userRepository.save(newUser);
+    const savedUser = await this.userRepository.save(newUser);
+    return plainToClass(UserGetDto, savedUser, {
+      excludeExtraneousValues: true,
+    });
   }
 
-  // Update a User
-
-  async update(id: string, user: Partial<UserEntity>): Promise<UserEntity> {
-    // Find the user to update
-    const userToUpdate: UserEntity = await this.userRepository.findOne({
-      where: { id },
-    });
-    if (!userToUpdate) {
-      throw new BusinessLogicException(
-        'The User with the provided id does not exist',
-        BusinessError.NOT_FOUND,
-      );
-    }
-
-    // Validate and check uniqueness of email if it's being updated
-    if (user.email && user.email !== userToUpdate.email) {
-      if (!this.isValidEmail(user.email)) {
-        throw new BusinessLogicException(
-          'The email provided is not valid',
-          BusinessError.PRECONDITION_FAILED,
-        );
-      }
-      const existingEmailUser = await this.userRepository.findOne({
-        where: { email: user.email },
-      });
-      if (existingEmailUser && existingEmailUser.id !== id) {
-        throw new BusinessLogicException(
-          'The email provided is already in use',
-          BusinessError.BAD_REQUEST,
-        );
-      }
-    }
-
-    // Check uniqueness of username if it's being updated
-    if (user.username && user.username !== userToUpdate.username) {
-      const existingUsernameUser = await this.userRepository.findOne({
-        where: { username: user.username },
-      });
-      if (existingUsernameUser && existingUsernameUser.id !== id) {
-        throw new BusinessLogicException(
-          'The username provided is already in use',
-          BusinessError.BAD_REQUEST,
-        );
-      }
-    }
-
-    // Merge the updated fields into the existing user
-    Object.assign(userToUpdate, user);
-
-    // Save the updated user
-    return await this.userRepository.save(userToUpdate);
+  async findAll(): Promise<UserGetDto[]> {
+    const users = await this.userRepository.find();
+    return users.map((user) =>
+      plainToClass(UserGetDto, user, { excludeExtraneousValues: true }),
+    );
   }
 
-  // Delete a User
-
-  async delete(id: string) {
-    const user: UserEntity = await this.userRepository.findOne({
-      where: { id },
-    });
-    if (!user)
-      throw new BusinessLogicException(
-        'The User with the provided id does not exist',
-        BusinessError.NOT_FOUND,
-      );
-
-    await this.userRepository.remove(user);
-  }
-
-  async deleteAll(organizationId: string): Promise<void> {
-    // Validate organization ID
-    if (!organizationId) {
-      throw new BusinessLogicException(
-        'The organizationId provided is missing',
-        BusinessError.PRECONDITION_FAILED,
-      );
-    }
-
-    const organization = await this.organizationRepository.findOne({
-      where: { id: organizationId },
-    });
-
-    if (!organization) {
-      throw new BusinessLogicException(
-        'The organization provided does not exist',
-        BusinessError.NOT_FOUND,
-      );
-    }
-
-    const users = await this.userRepository.find({
-      where: { organization: { id: organizationId } },
-    });
-
-    // Remove all users
-    await this.userRepository.remove(users);
-  }
-
-  private isValidEmail(email: string): boolean {
-    return validator.isEmail(email);
+  async deleteAll(): Promise<void> {
+    await this.userRepository.delete({});
   }
 }
-
-// Delete all users

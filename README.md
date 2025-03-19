@@ -58,7 +58,18 @@ $ npm run test:e2e
 
 # test coverage
 $ npm run test:cov
+
+# test coverage for a specific module
+$ npm run test:cov -- --testPathPattern=module-name
 ```
+
+For example, to run tests only for the organization-artifact module:
+
+```bash
+$ npm run test:cov -- --testPathPattern=organization-artifact
+```
+
+This allows you to focus on testing specific modules during development, making the testing process more efficient.
 
 ## Deployment
 

@@ -1,54 +1,79 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { UserService } from './user.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { TypeOrmTestingConfig } from '../shared/testing-utils/typeorm-testing-config';
-import { UserService } from './user.service';
 import { UserEntity } from './user.entity';
-import { OrganizationEntity } from '../organization/organization.entity';
+import { TypeOrmTestingConfig } from '../shared/testing-utils/typeorm-testing-config';
 import { faker } from '@faker-js/faker';
+import { UserCreateDto } from './userCreate.dto';
+import { BusinessError, BusinessLogicException } from '../shared/errors/business-errors';
+import { ConfigService } from '@nestjs/config';
+import { PasswordService } from '../auth/password.service';
+import { UserGetDto } from './userGet.dto';
 
 describe('UserService', () => {
   let service: UserService;
-  let userRepository: Repository<UserEntity>;
-  let organizationRepository: Repository<OrganizationEntity>;
+  let repository: Repository<UserEntity>;
   let userList: UserEntity[];
-  let org: OrganizationEntity;
+  let configService: ConfigService;
+  let passwordService: PasswordService;
+
+  // Mock config service
+  const mockConfigService = {
+    get: jest.fn((key: string, defaultValue?: any) => {
+      const config = {
+        'ADMIN1_USERNAME': 'admin',
+        'ADMIN1_PASSWORD': 'securePassword123',
+        'ADMIN1_ROLES': 'admin',
+        'ADMIN2_USERNAME': 'superadmin',
+        'ADMIN2_PASSWORD': 'superSecurePassword456',
+        'ADMIN2_ROLES': 'admin,pi',
+      };
+      return config[key] || defaultValue;
+    }),
+  };
+
+  // Mock config service sin usuarios definidos
+  const mockEmptyConfigService = {
+    get: jest.fn().mockReturnValue(undefined),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [...TypeOrmTestingConfig()],
-      providers: [UserService],
+      providers: [
+        UserService,
+        PasswordService,
+        {
+          provide: ConfigService,
+          useValue: mockConfigService,
+        }
+      ],
     }).compile();
 
     service = module.get<UserService>(UserService);
-    userRepository = module.get<Repository<UserEntity>>(
-      getRepositoryToken(UserEntity),
-    );
-    organizationRepository = module.get<Repository<OrganizationEntity>>(
-      getRepositoryToken(OrganizationEntity),
-    );
+    repository = module.get<Repository<UserEntity>>(getRepositoryToken(UserEntity));
+    configService = module.get<ConfigService>(ConfigService);
+    passwordService = module.get<PasswordService>(PasswordService);
+    
     await seedDatabase();
   });
 
   const seedDatabase = async () => {
-    await organizationRepository.clear();
-    await userRepository.clear();
+    await repository.clear();
     userList = [];
-    org = await organizationRepository.save({
-      name: faker.company.name(),
-      description: faker.company.catchPhrase(),
-    });
-    const usersAmount = 50;
-
-    for (let i = 0; i < usersAmount; i++) {
-      const user: UserEntity = await userRepository.save({
+    
+    // Create 5 users for testing
+    for (let i = 0; i < 5; i++) {
+      const user = {
         name: faker.person.fullName(),
-        username: faker.internet.username(),
+        username: faker.internet.username() + faker.number.int(10000), // Ensure username is unique and long enough
         email: faker.internet.email(),
-        organization: org,
-      });
-
-      userList.push(user);
+        password: await passwordService.hashPassword('Password' + faker.number.int(10000)), // Ensure password is long enough
+      };
+      
+      const savedUser = await repository.save(user);
+      userList.push(savedUser);
     }
   };
 
@@ -56,301 +81,348 @@ describe('UserService', () => {
     expect(service).toBeDefined();
   });
 
-  // Find all users
-  it('findAll should return all users', async () => {
-    const users: UserEntity[] = await service.findAll(org.id);
-    expect(users).toBeDefined();
-    expect(users).not.toBeNull();
-    expect(users).toHaveLength(userList.length);
-  });
-
-  it('findAll should return no Users for invalid OrgId', async () => {
-    await expect(() =>
-      service.findAll('invalid-org-id'),
-    ).rejects.toHaveProperty(
-      'message',
-      'The organizationId provided is not valid',
-    );
-  });
-
-  it('findAll should return no Users for no OrgId', async () => {
-    await expect(() => service.findAll('')).rejects.toHaveProperty(
-      'message',
-      'The organizationId provided is missing',
-    );
-  });
-
-  it('findAll should return error for non existing Org', async () => {
-    await expect(() =>
-      service.findAll(faker.string.uuid()),
-    ).rejects.toHaveProperty(
-      'message',
-      'The organization provided does not exist',
-    );
-  });
-
-  // Get One User
-  it('findOne should return one user', async () => {
-    const randomIndex = Math.floor(Math.random() * userList.length);
-    const user: UserEntity = await service.findOne(
-      org.id,
-      userList[randomIndex].id,
-    );
-    expect(user).toBeDefined();
-    expect(user).not.toBeNull();
-    expect(user).toMatchObject({
-      id: userList[randomIndex].id,
-      name: userList[randomIndex].name,
-      username: userList[randomIndex].username,
-      email: userList[randomIndex].email,
+  describe('loadUsersFromEnv', () => {
+    it('should save admin users to the database', async () => {
+      // Asegurarnos de que no hay usuarios admin en la base de datos
+      await repository.delete({ username: 'admin' });
+      await repository.delete({ username: 'superadmin' });
+      
+      // Llamar al método directamente
+      await service.loadUsersFromEnv();
+      
+      // Verificar directamente en la base de datos que los usuarios se han guardado
+      const adminUser = await repository.findOne({ where: { username: 'admin' } });
+      const superadminUser = await repository.findOne({ where: { username: 'superadmin' } });
+      
+      // Verificar que existen
+      expect(adminUser).toBeDefined();
+      expect(superadminUser).toBeDefined();
+      
+      // Verificar propiedades del usuario admin
+      expect(adminUser.name).toBe('admin');
+      expect(adminUser.email).toBe('admin@admin.com');
+      expect(adminUser.roles).toEqual(['admin']);
+      
+      // Verificar propiedades del usuario superadmin
+      expect(superadminUser.name).toBe('superadmin');
+      expect(superadminUser.email).toBe('superadmin@admin.com');
+      expect(superadminUser.roles).toEqual(['admin', 'pi']);
+    });
+    
+    // Test para cubrir el caso en que ya existen los usuarios admin
+    it('should handle case when admin users already exist', async () => {
+      // Silenciar los logs para esta prueba
+      const originalConsoleLog = console.log;
+      console.log = jest.fn();
+      
+      try {
+        // Crear un usuario admin manualmente
+        const adminUser = {
+          name: 'admin',
+          username: 'admin',
+          email: 'admin@admin.com',
+          password: await passwordService.hashPassword('existingPassword'),
+          roles: ['admin']
+        };
+        await repository.save(adminUser);
+        
+        // Llamar al método
+        await service.loadUsersFromEnv();
+        
+        // Verificar que se llamó a console.log
+        expect(console.log).toHaveBeenCalledWith('Admin user admin already exists in database');
+        
+        // Verificar que el usuario sigue existiendo (no se ha borrado ni modificado)
+        const existingUser = await repository.findOne({ where: { username: 'admin' } });
+        expect(existingUser).toBeDefined();
+        expect(existingUser.password).toBe(adminUser.password); // Verificar que la contraseña no cambió
+      } finally {
+        // Restaurar console.log
+        console.log = originalConsoleLog;
+      }
+    });
+    
+    // Test para cubrir el caso de error al guardar usuario
+    it('should handle database errors gracefully', async () => {
+      // Crear un mock de repositorio que lance error al llamar a findOne
+      const mockRepository = {
+        findOne: jest.fn().mockImplementation(() => {
+          throw new Error('Database connection error');
+        }),
+        save: jest.fn(),
+        create: jest.fn().mockReturnValue({}),
+        delete: jest.fn(),
+        find: jest.fn(),
+        count: jest.fn(),
+        clear: jest.fn(),
+      };
+      
+      // Silenciar los console.error para esta prueba
+      const originalConsoleError = console.error;
+      console.error = jest.fn();
+      
+      try {
+        // Crear una instancia de servicio con el mock
+        const moduleRef = await Test.createTestingModule({
+          providers: [
+            UserService,
+            PasswordService,
+            {
+              provide: ConfigService,
+              useValue: mockConfigService,
+            },
+            {
+              provide: getRepositoryToken(UserEntity),
+              useValue: mockRepository,
+            }
+          ],
+        }).compile();
+        
+        const serviceWithMockedRepo = moduleRef.get<UserService>(UserService);
+        
+        // Verificar que no lanza error
+        await expect(serviceWithMockedRepo.loadUsersFromEnv()).resolves.not.toThrow();
+        
+        // Verificar que se llamó a console.error
+        expect(console.error).toHaveBeenCalled();
+      } finally {
+        // Restaurar console.error
+        console.error = originalConsoleError;
+      }
+    });
+    
+    // Test para cubrir el caso en que no hay variables de entorno definidas
+    it('should use default users when no environment variables are defined', async () => {
+      // Silenciar la advertencia en console
+      const originalConsoleWarn = console.warn;
+      console.warn = jest.fn();
+      
+      try {
+        // Crear un servicio con un ConfigService vacío
+        const moduleRef = await Test.createTestingModule({
+          imports: [...TypeOrmTestingConfig()],
+          providers: [
+            UserService,
+            PasswordService,
+            {
+              provide: ConfigService,
+              useValue: mockEmptyConfigService,
+            }
+          ],
+        }).compile();
+        
+        const serviceWithEmptyConfig = moduleRef.get<UserService>(UserService);
+        const repo = moduleRef.get<Repository<UserEntity>>(getRepositoryToken(UserEntity));
+        
+        // Limpiar la base de datos
+        await repo.clear();
+        
+        // Llamar al método
+        await serviceWithEmptyConfig.loadUsersFromEnv();
+        
+        // Verificar que se llamó a console.warn
+        expect(console.warn).toHaveBeenCalledWith('No users found in environment variables. Using default users.');
+        
+        // Verificar que se guardaron los usuarios por defecto
+        const adminUser = await repo.findOne({ where: { username: 'admin' } });
+        const userUser = await repo.findOne({ where: { username: 'user' } });
+        
+        expect(adminUser).toBeDefined();
+        expect(userUser).toBeDefined();
+      } finally {
+        // Restaurar console.warn
+        console.warn = originalConsoleWarn;
+      }
     });
   });
-  // Get non existent user
-  it('findOne should throw an exception for a non existent user', async () => {
-    await expect(() =>
-      service.findOne(org.id, 'non-existent-id'),
-    ).rejects.toHaveProperty('message', 'The userId provided is not valid');
+
+  describe('getOne', () => {
+    it('should return a user DTO by username', async () => {
+      const storedUser = userList[0];
+      const result = await service.getOne(storedUser.username);
+      
+      expect(result).toBeDefined();
+      expect(result.username).toEqual(storedUser.username);
+      expect(result).toBeInstanceOf(UserGetDto);
+      // Verificar que el objeto no contiene la propiedad password
+      expect((result as any).password).toBeUndefined();
+    });
+    
+    it('should throw an exception for a non-existent user', async () => {
+      await expect(() => service.getOne('nonexistent')).rejects.toHaveProperty('message', 'User not found');
+    });
   });
 
-  // Get a User with an invalid organization
-  it('findOne should throw an exception for an invalid organization', async () => {
-    await expect(() =>
-      service.findOne('invalid-organization-id', faker.string.uuid()),
-    ).rejects.toHaveProperty(
-      'message',
-      'The organizationId provided is not valid',
-    );
+  describe('findAll', () => {
+    it('should return all users', async () => {
+      const users = await service.findAll();
+      expect(users).toBeDefined();
+      expect(users).not.toBeNull();
+      expect(users.length).toBeGreaterThanOrEqual(userList.length);
+    });
   });
 
-  // Get a User with a non existent organization
-  it('findOne should throw an exception for a non existent organization', async () => {
-    await expect(() =>
-      service.findOne(faker.string.uuid(), faker.string.uuid()),
-    ).rejects.toHaveProperty(
-      'message',
-      'The organization provided does not exist',
-    );
+  describe('findOne', () => {
+    it('should return a user by username', async () => {
+      const storedUser = userList[0];
+      const user = await service.findOne(storedUser.username);
+      expect(user).toBeDefined();
+      expect(user.username).toEqual(storedUser.username);
+    });
+
+    it('should return a user by email', async () => {
+      const storedUser = userList[0];
+      const user = await service.findOne(storedUser.email);
+      expect(user).toBeDefined();
+      expect(user.email).toEqual(storedUser.email);
+    });
+
+    it('should throw an exception for a non-existent user', async () => {
+      await expect(() => service.findOne('nonexistent')).rejects.toHaveProperty('message', 'User not found');
+    });
   });
 
-  // Get a User - Non existent User
-  it('findOne should throw an exception for a non existent user', async () => {
-    await expect(() =>
-      service.findOne(org.id, faker.string.uuid()),
-    ).rejects.toHaveProperty(
-      'message',
-      'The user with the provided id does not exist',
-    );
+  describe('create', () => {
+    it('should create a new user with valid data', async () => {
+      const newUser: UserCreateDto = {
+        name: faker.person.fullName(),
+        username: 'newusername' + faker.number.int(10000),
+        email: faker.internet.email(),
+        password: 'Password' + faker.number.int(10000),
+        role: 'collaborator'
+      };
+
+      const result = await service.create(newUser);
+      
+      expect(result).toBeDefined();
+      expect(result.username).toEqual(newUser.username);
+      expect(result.email).toEqual(newUser.email);
+      
+      // Verify it was added to the database
+      const storedUser = await repository.findOne({ 
+        where: { username: newUser.username } 
+      });
+      expect(storedUser).toBeDefined();
+    });
+
+    it('should throw an exception for a username that already exists', async () => {
+      const existingUser = userList[0];
+      const newUser: UserCreateDto = {
+        name: faker.person.fullName(),
+        username: existingUser.username,
+        email: faker.internet.email(),
+        password: 'Password' + faker.number.int(10000),
+        role: 'collaborator'
+      };
+      
+      await expect(() => service.create(newUser)).rejects.toHaveProperty('message', 'Username or email already exists');
+    });
+
+    it('should throw an exception for an email that already exists', async () => {
+      const existingUser = userList[0];
+      const newUser: UserCreateDto = {
+        name: faker.person.fullName(),
+        username: 'newusername' + faker.number.int(10000),
+        email: existingUser.email,
+        password: 'Password' + faker.number.int(10000),
+        role: 'collaborator'
+      };
+      
+      await expect(() => service.create(newUser)).rejects.toHaveProperty('message', 'Username or email already exists');
+    });
+
+    it('should throw an exception for a password that is too short', async () => {
+      const newUser: UserCreateDto = {
+        name: faker.person.fullName(),
+        username: 'newusername' + faker.number.int(10000),
+        email: faker.internet.email(),
+        password: 'short',
+        role: 'collaborator'
+      };
+      
+      await expect(() => service.create(newUser)).rejects.toHaveProperty('message', 'Password must be at least 8 characters long');
+    });
+
+    it('should throw an exception for a username that is too short', async () => {
+      const newUser: UserCreateDto = {
+        name: faker.person.fullName(),
+        username: 'short',
+        email: faker.internet.email(),
+        password: 'Password' + faker.number.int(10000),
+        role: 'collaborator'
+      };
+      
+      await expect(() => service.create(newUser)).rejects.toHaveProperty('message', 'Username must be at least 8 characters long');
+    });
   });
 
-  // Create a User
-  it('create should create a user', async () => {
-    const user: Partial<UserEntity> = {
-      name: faker.person.fullName(),
-      username: faker.internet.username(),
-      email: faker.internet.email(),
-    };
-    const createdUser: UserEntity = await service.create(user, org.id);
-    expect(createdUser).toBeDefined();
-    expect(createdUser).not.toBeNull();
-    expect(createdUser).toHaveProperty('id');
-    expect(createdUser).toMatchObject(user);
-  });
-  // Create a User with non existent organization
-  it('create should throw an exception for a non existent organization', async () => {
-    const user: Partial<UserEntity> = {
-      name: faker.person.fullName(),
-      username: faker.internet.username(),
-      email: faker.internet.email(),
-    };
-    await expect(() => service.create(user, '')).rejects.toHaveProperty(
-      'message',
-      'The organizationId provided is missing',
-    );
-  });
-  // Create a User with invalid email
-  it('create should throw an exception for an invalid email', async () => {
-    const user: Partial<UserEntity> = {
-      name: faker.person.fullName(),
-      username: faker.internet.username(),
-      email: 'invalid-email',
-    };
-    await expect(() => service.create(user, org.id)).rejects.toHaveProperty(
-      'message',
-      'The email provided is not valid',
-    );
-  });
-  // Create a User with an existing email
-  it('create should throw an exception for an existing email', async () => {
-    const randomIndex = Math.floor(Math.random() * userList.length);
-    const user: Partial<UserEntity> = {
-      name: faker.person.fullName(),
-      username: faker.internet.username(),
-      email: userList[randomIndex].email,
-    };
-    await expect(() => service.create(user, org.id)).rejects.toHaveProperty(
-      'message',
-      'The email or username provided is already in use',
-    );
-  });
-
-  // Create a User with an existing username
-  it('create should throw an exception for an existing username', async () => {
-    const randomIndex = Math.floor(Math.random() * userList.length);
-    const user: Partial<UserEntity> = {
-      name: faker.person.fullName(),
-      username: userList[randomIndex].username,
-      email: faker.internet.email(),
-    };
-    await expect(() => service.create(user, org.id)).rejects.toHaveProperty(
-      'message',
-      'The email or username provided is already in use',
-    );
-  });
-
-  // Create a User with an non vaild organization
-  it('create should throw an exception for an invalid organization', async () => {
-    const user: Partial<UserEntity> = {
-      name: faker.person.fullName(),
-      username: faker.internet.username(),
-      email: faker.internet.email(),
-    };
-    await expect(() =>
-      service.create(user, 'invalid-organization-id'),
-    ).rejects.toHaveProperty(
-      'message',
-      'The organizationId provided is not valid',
-    );
-  });
-
-  // create a User with an non existent organization
-  it('create should throw an exception for a non existent organization', async () => {
-    const user: Partial<UserEntity> = {
-      name: faker.person.fullName(),
-      username: faker.internet.username(),
-      email: faker.internet.email(),
-    };
-    const orgId = faker.string.uuid();
-    await expect(() => service.create(user, orgId)).rejects.toHaveProperty(
-      'message',
-      'The organization provided does not exist',
-    );
-  });
-
-  // Update user
-  it('update should modify user data', async () => {
-    const updatedData: Partial<UserEntity> = {
-      name: faker.person.fullName(),
-      username: faker.internet.username(),
-      email: faker.internet.email(),
-    };
-    const updatedUser: UserEntity = await service.update(
-      userList[0].id,
-      updatedData as UserEntity,
-    );
-    expect(updatedUser).toMatchObject(updatedData);
-  });
-
-  it('update should throw an error for invalid email', async () => {
-    const updatedData: Partial<UserEntity> = {
-      email: 'invalid-email',
-    };
-    await expect(
-      service.update(userList[0].id, updatedData as UserEntity),
-    ).rejects.toHaveProperty('message', 'The email provided is not valid');
-  });
-
-  it('update should throw an error for non-existent user', async () => {
-    const updatedData: Partial<UserEntity> = {
-      name: faker.person.fullName(),
-    };
-    await expect(
-      service.update(faker.string.uuid(), updatedData as UserEntity),
-    ).rejects.toHaveProperty(
-      'message',
-      'The User with the provided id does not exist',
-    );
-  });
-
-  // Update a user with an existing email
-  it('update should throw an exception for an email already in use by another user', async () => {
-    const [userToUpdate, existingUser] = userList;
-    const updatedData: Partial<UserEntity> = {
-      email: existingUser.email,
-    };
-
-    await expect(
-      service.update(userToUpdate.id, updatedData as UserEntity),
-    ).rejects.toHaveProperty('message', 'The email provided is already in use');
-  });
-
-  // Update a user with an existing username
-  it('update should throw an exception for a username already in use by another user', async () => {
-    const [userToUpdate, existingUser] = userList;
-    const updatedData: Partial<UserEntity> = {
-      username: existingUser.username,
-    };
-
-    await expect(
-      service.update(userToUpdate.id, updatedData as UserEntity),
-    ).rejects.toHaveProperty(
-      'message',
-      'The username provided is already in use',
-    );
-  });
-
-  // Delete a User
-  it('delete should delete a user', async () => {
-    const randomIndex = Math.floor(Math.random() * userList.length);
-    const id = userList[randomIndex].id;
-    await service.delete(id);
-    const users: UserEntity[] = await service.findAll(org.id);
-    expect(users).toHaveLength(userList.length - 1);
-    // Check that the user was deleted
-    await expect(() => service.findOne(org.id, id)).rejects.toHaveProperty(
-      'message',
-      'The user with the provided id does not exist',
-    );
-  });
-  // Delete a non existent user
-  it('delete should throw an exception for a non existent user', async () => {
-    await expect(() =>
-      service.delete('non-existent-id'),
-    ).rejects.toHaveProperty(
-      'message',
-      'The User with the provided id does not exist',
-    );
-  });
-
-  // Delete all users
-  it('deleteAll should remove all users from an organization', async () => {
-    await service.deleteAll(org.id);
-    const users: UserEntity[] = await service.findAll(org.id);
-    expect(users).toHaveLength(0);
-  });
-
-  // Delete all users with invalid organization ID
-  it('deleteAll should throw an exception for an invalid organization ID', async () => {
-    await expect(
-      service.deleteAll('invalid-organization-id'),
-    ).rejects.toHaveProperty(
-      'message',
-      'The organization provided does not exist',
-    );
-  });
-
-  // Delete all users with missing organization ID
-  it('deleteAll should throw an exception for a missing organization ID', async () => {
-    await expect(() => service.deleteAll('')).rejects.toHaveProperty(
-      'message',
-      'The organizationId provided is missing',
-    );
-  });
-
-  // Delete all users with a non-existent organization
-  it('deleteAll should throw an exception for a non-existent organization', async () => {
-    await expect(service.deleteAll(faker.string.uuid())).rejects.toHaveProperty(
-      'message',
-      'The organization provided does not exist',
-    );
+  describe('deleteAll', () => {
+    it('should delete all users from the database', async () => {
+      // Verificar que hay usuarios en la base de datos antes de eliminarlos
+      const usersBeforeDelete = await repository.find();
+      expect(usersBeforeDelete.length).toBeGreaterThan(0);
+      
+      // Llamar a deleteAll
+      await service.deleteAll();
+      
+      // Verificar que no quedan usuarios en la base de datos
+      const usersAfterDelete = await repository.find();
+      expect(usersAfterDelete.length).toBe(0);
+    });
+    
+    it('should work even if there are no users in the database', async () => {
+      // Limpiar la base de datos manualmente
+      await repository.clear();
+      
+      // Verificar que no hay usuarios
+      const usersBeforeDelete = await repository.find();
+      expect(usersBeforeDelete.length).toBe(0);
+      
+      // Llamar a deleteAll no debería lanzar errores
+      await expect(service.deleteAll()).resolves.not.toThrow();
+      
+      // Verificar que sigue sin haber usuarios
+      const usersAfterDelete = await repository.find();
+      expect(usersAfterDelete.length).toBe(0);
+    });
+    
+    it('should handle database errors gracefully', async () => {
+      // Crear un mock de repositorio que lance error al llamar a delete
+      const mockRepository = {
+        delete: jest.fn().mockImplementation(() => {
+          throw new Error('Database connection error on delete');
+        }),
+        find: jest.fn().mockReturnValue([]),
+        findOne: jest.fn(),
+        save: jest.fn(),
+        create: jest.fn(),
+        clear: jest.fn(),
+        count: jest.fn(),
+      };
+      
+      // Crear una instancia de servicio con el mock
+      const moduleRef = await Test.createTestingModule({
+        providers: [
+          UserService,
+          PasswordService,
+          {
+            provide: ConfigService,
+            useValue: mockConfigService,
+          },
+          {
+            provide: getRepositoryToken(UserEntity),
+            useValue: mockRepository,
+          }
+        ],
+      }).compile();
+      
+      const serviceWithMockedRepo = moduleRef.get<UserService>(UserService);
+      
+      // Llamar a deleteAll debería rechazar la promesa con un error
+      await expect(serviceWithMockedRepo.deleteAll()).rejects.toThrow('Database connection error on delete');
+      
+      // Verificar que se llamó al método delete
+      expect(mockRepository.delete).toHaveBeenCalledWith({});
+    });
   });
 });
