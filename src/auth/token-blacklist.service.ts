@@ -70,7 +70,7 @@ export class TokenBlacklistService implements OnModuleInit {
     this.blacklistedTokens.forEach(token => {
       try {
         const decoded = this.jwtService.decode(token) as DecodedToken;
-        if (decoded?.exp && decoded.exp < now) {
+        if (decoded?.exp < now) {
           this.blacklistedTokens.delete(token);
           removedCount++;
         }
