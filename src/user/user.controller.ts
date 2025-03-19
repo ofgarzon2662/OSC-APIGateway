@@ -1,4 +1,15 @@
-import { Controller, Post, Get, Param, Delete, Req, UseGuards, UseInterceptors, Body, HttpCode } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Param,
+  Delete,
+  Req,
+  UseGuards,
+  UseInterceptors,
+  Body,
+  HttpCode,
+} from '@nestjs/common';
 import { LocalAuthGuard } from '../auth/guards/local-auth/local-auth.guard';
 import { AuthService } from '../auth/auth.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth/jwt-auth.guard';
@@ -13,8 +24,11 @@ import { Request } from 'express';
 @Controller('users')
 @UseInterceptors(BusinessErrorsInterceptor)
 export class UserController {
-  constructor(private readonly authService: AuthService, private readonly userService: UserService) {}
-  
+  constructor(
+    private readonly authService: AuthService,
+    private readonly userService: UserService,
+  ) {}
+
   @UseGuards(LocalAuthGuard)
   @Post('login')
   async login(@Req() req) {

@@ -17,7 +17,7 @@ export class ArtifactEntity {
 
   // Add a column for the Submission Date
   @Column()
-  submittedAt: Date; 
+  submittedAt: Date;
 
   @Column({ type: 'text' })
   body: any;
@@ -26,11 +26,9 @@ export class ArtifactEntity {
   @Column({ type: 'simple-array' })
   keywords: string[];
 
-
   // Add a column for an array of links, all must be urls
   @Column({ type: 'simple-array' })
   links: string[];
-
 
   @ManyToOne(
     () => OrganizationEntity,

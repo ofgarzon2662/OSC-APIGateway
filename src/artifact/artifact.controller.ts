@@ -29,17 +29,13 @@ export class ArtifactController {
 
   // Get One Artifact
   @Get(':id')
-  async findOne(
-    @Param('id') id: string,
-  ): Promise<ArtifactEntity> {
+  async findOne(@Param('id') id: string): Promise<ArtifactEntity> {
     return this.artifactService.findOne(id);
   }
 
   // Create One artifact
   @Post()
-  async create(
-    @Body() artifactDto: ArtifactDto,
-  ) {
+  async create(@Body() artifactDto: ArtifactDto) {
     const artifact: Partial<ArtifactEntity> = plainToInstance(
       ArtifactEntity,
       artifactDto,

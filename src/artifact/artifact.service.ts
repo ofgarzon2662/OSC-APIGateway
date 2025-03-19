@@ -39,13 +39,22 @@ export class ArtifactService {
   // Create one Artifact
   async create(artifact: Partial<ArtifactEntity>): Promise<ArtifactEntity> {
     this.validateTitle(artifact.title);
-    this.validateDescription(artifact.description, BusinessError.PRECONDITION_FAILED);
-    artifact.body = this.validateBody(artifact.body, BusinessError.PRECONDITION_FAILED);
-    
+    this.validateDescription(
+      artifact.description,
+      BusinessError.PRECONDITION_FAILED,
+    );
+    artifact.body = this.validateBody(
+      artifact.body,
+      BusinessError.PRECONDITION_FAILED,
+    );
+
     if (artifact.keywords) {
-      this.validateKeywords(artifact.keywords, BusinessError.PRECONDITION_FAILED);
+      this.validateKeywords(
+        artifact.keywords,
+        BusinessError.PRECONDITION_FAILED,
+      );
     }
-    
+
     if (artifact.links) {
       this.validateLinks(artifact.links, BusinessError.PRECONDITION_FAILED);
     }
@@ -82,7 +91,7 @@ export class ArtifactService {
     this.validateArtifactId(id);
 
     const artifact = await this.findArtifactById(id);
-    
+
     // Delete the artifact directly
     await this.artifactRepository.remove(artifact);
   }
@@ -106,20 +115,24 @@ export class ArtifactService {
     }
   }
 
-  private validateDescription(description: string, errorType: BusinessError = BusinessError.BAD_REQUEST): void {
+  private validateDescription(
+    description: string,
+    errorType: BusinessError = BusinessError.BAD_REQUEST,
+  ): void {
     if (!description || description.length < 200) {
-      const message = errorType === BusinessError.PRECONDITION_FAILED
-        ? 'The description of the artifact is required and should be at least 200 characters long'
-        : 'The description must be at least 200 characters long';
-        
-      throw new BusinessLogicException(
-        message,
-        errorType,
-      );
+      const message =
+        errorType === BusinessError.PRECONDITION_FAILED
+          ? 'The description of the artifact is required and should be at least 200 characters long'
+          : 'The description must be at least 200 characters long';
+
+      throw new BusinessLogicException(message, errorType);
     }
   }
 
-  private validateBody(body: any, errorType: BusinessError = BusinessError.BAD_REQUEST): any {
+  private validateBody(
+    body: any,
+    errorType: BusinessError = BusinessError.BAD_REQUEST,
+  ): any {
     if (typeof body === 'string') {
       try {
         return JSON.parse(body);
@@ -130,19 +143,20 @@ export class ArtifactService {
         );
       }
     } else if (!body || typeof body !== 'object') {
-      const message = errorType === BusinessError.PRECONDITION_FAILED
-        ? 'The body of the artifact is required and should be a valid JSON object'
-        : 'The body of the artifact should be a valid JSON object';
-        
-      throw new BusinessLogicException(
-        message,
-        errorType,
-      );
+      const message =
+        errorType === BusinessError.PRECONDITION_FAILED
+          ? 'The body of the artifact is required and should be a valid JSON object'
+          : 'The body of the artifact should be a valid JSON object';
+
+      throw new BusinessLogicException(message, errorType);
     }
     return body;
   }
 
-  private validateKeywords(keywords: string[], errorType: BusinessError = BusinessError.BAD_REQUEST): void {
+  private validateKeywords(
+    keywords: string[],
+    errorType: BusinessError = BusinessError.BAD_REQUEST,
+  ): void {
     const totalKeywordsLength = keywords.join('').length;
     if (totalKeywordsLength > 200) {
       throw new BusinessLogicException(
@@ -152,7 +166,10 @@ export class ArtifactService {
     }
   }
 
-  private validateLinks(links: string[], errorType: BusinessError = BusinessError.BAD_REQUEST): void {
+  private validateLinks(
+    links: string[],
+    errorType: BusinessError = BusinessError.BAD_REQUEST,
+  ): void {
     const totalLinksLength = links.join('').length;
     if (totalLinksLength > 1000) {
       throw new BusinessLogicException(
@@ -203,7 +220,9 @@ export class ArtifactService {
     return artifact;
   }
 
-  private processUpdateFields(artifact: Partial<ArtifactEntity>): Partial<ArtifactEntity> {
+  private processUpdateFields(
+    artifact: Partial<ArtifactEntity>,
+  ): Partial<ArtifactEntity> {
     const allowedUpdates: Partial<ArtifactEntity> = {};
 
     if (artifact.description) {
