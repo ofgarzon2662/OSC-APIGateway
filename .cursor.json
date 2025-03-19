@@ -1,0 +1,11 @@
+{
+  "rules": {
+    "codeLanguage": "english",
+    "commentLanguage": "english",
+    "variableNamingConvention": "english"
+  },
+  "preferences": {
+    "indentation": 2,
+    "quoteStyle": "single"
+  }
+} 

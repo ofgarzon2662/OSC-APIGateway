@@ -23,32 +23,24 @@ export class ArtifactController {
 
   // Get All artifacts
   @Get()
-  async findAll(
-    @Param('organizationId') organizationId: string,
-  ): Promise<ArtifactEntity[]> {
-    return this.artifactService.findAll(organizationId);
+  async findAll(): Promise<ArtifactEntity[]> {
+    return this.artifactService.findAll();
   }
 
   // Get One Artifact
   @Get(':id')
-  async findOne(
-    @Param('organizationId') organizationId: string,
-    @Param('id') id: string,
-  ): Promise<ArtifactEntity> {
-    return this.artifactService.findOne(organizationId, id);
+  async findOne(@Param('id') id: string): Promise<ArtifactEntity> {
+    return this.artifactService.findOne(id);
   }
 
   // Create One artifact
   @Post()
-  async create(
-    @Param('organizationId') organizationId: string,
-    @Body() artifactDto: ArtifactDto,
-  ) {
+  async create(@Body() artifactDto: ArtifactDto) {
     const artifact: Partial<ArtifactEntity> = plainToInstance(
       ArtifactEntity,
       artifactDto,
     );
-    return await this.artifactService.create(artifact, organizationId);
+    return await this.artifactService.create(artifact);
   }
 
   // Update an artifact
