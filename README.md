@@ -63,10 +63,10 @@ $ npm run test:cov
 $ npm run test:cov -- --testPathPattern=module-name
 ```
 
-For example, to run tests only for the organization-artifact module:
+For example, to run tests only for the artifact module:
 
 ```bash
-$ npm run test:cov -- --testPathPattern=organization-artifact
+$ npm run test:cov -- --testPathPattern=artifact
 ```
 
 This allows you to focus on testing specific modules during development, making the testing process more efficient.

@@ -1,67 +1,65 @@
 import {
-  Body,
   Controller,
-  Delete,
   Get,
-  HttpCode,
-  Param,
   Post,
+  Body,
+  Param,
+  Delete,
   Put,
   UseInterceptors,
 } from '@nestjs/common';
-
 import { ArtifactService } from './artifact.service';
 import { ArtifactEntity } from './artifact.entity';
-import { plainToInstance } from 'class-transformer';
-import { ArtifactDto } from './artifact.dto';
+import { CreateArtifactDto } from './dto/create-artifact.dto';
+import { UpdateArtifactDto } from './dto/update-artifact.dto';
+import { GetArtifactDto } from './dto/get-artifact.dto';
 import { BusinessErrorsInterceptor } from '../shared/interceptors/business-errors.interceptors';
+import { BusinessError, BusinessLogicException } from '../shared/errors/business-errors';
 
-@Controller('organizations/:organizationId/artifacts')
+@Controller('organization/:organizationId/artifacts')
 @UseInterceptors(BusinessErrorsInterceptor)
 export class ArtifactController {
   constructor(private readonly artifactService: ArtifactService) {}
 
-  // Get All artifacts
-  @Get()
-  async findAll(): Promise<ArtifactEntity[]> {
-    return this.artifactService.findAll();
-  }
-
-  // Get One Artifact
-  @Get(':id')
-  async findOne(@Param('id') id: string): Promise<ArtifactEntity> {
-    return this.artifactService.findOne(id);
-  }
-
-  // Create One artifact
   @Post()
-  async create(@Body() artifactDto: ArtifactDto) {
-    const artifact: Partial<ArtifactEntity> = plainToInstance(
-      ArtifactEntity,
-      artifactDto,
-    );
-    return await this.artifactService.create(artifact);
+  async create(
+    @Param('organizationId') organizationId: string,
+    @Body() createArtifactDto: CreateArtifactDto
+  ): Promise<ArtifactEntity> {
+    // Ensure the organizationId in the path matches the one in the DTO
+    if (createArtifactDto.organizationId !== organizationId) {
+      createArtifactDto.organizationId = organizationId;
+    }
+    return await this.artifactService.create(createArtifactDto);
   }
 
-  // Update an artifact
+  @Get()
+  async findAll(): Promise<GetArtifactDto[]> {
+    return await this.artifactService.findAll();
+  }
 
-  @Put(':artifactId')
+  @Get(':id')
+  async findOne(
+    @Param('organizationId') organizationId: string,
+    @Param('id') id: string
+  ): Promise<GetArtifactDto> {
+    return await this.artifactService.findOne(id);
+  }
+
+  @Put(':id')
   async update(
-    @Param('artifactId') artifactId: string,
-    @Body() @Body() artifactDto: ArtifactDto,
-  ) {
-    const artifact: ArtifactEntity = plainToInstance(
-      ArtifactEntity,
-      artifactDto,
-    );
-    return await this.artifactService.update(artifactId, artifact);
+    @Param('organizationId') organizationId: string,
+    @Param('id') id: string,
+    @Body() updateArtifactDto: UpdateArtifactDto,
+  ): Promise<ArtifactEntity> {
+    return await this.artifactService.update(id, updateArtifactDto);
   }
 
-  // Eliminar un artifact
-
-  @Delete(':artifactId')
-  @HttpCode(204)
-  async delte(@Param('artifactId') artifactId: string) {
-    return this.artifactService.delete(artifactId);
+  @Delete(':id')
+  async delete(
+    @Param('organizationId') organizationId: string,
+    @Param('id') id: string
+  ): Promise<void> {
+    return await this.artifactService.delete(id);
   }
 }
