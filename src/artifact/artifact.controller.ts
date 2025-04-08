@@ -14,7 +14,6 @@ import { CreateArtifactDto } from './dto/create-artifact.dto';
 import { UpdateArtifactDto } from './dto/update-artifact.dto';
 import { GetArtifactDto } from './dto/get-artifact.dto';
 import { BusinessErrorsInterceptor } from '../shared/interceptors/business-errors.interceptors';
-import { BusinessError, BusinessLogicException } from '../shared/errors/business-errors';
 
 @Controller('organization/:organizationId/artifacts')
 @UseInterceptors(BusinessErrorsInterceptor)

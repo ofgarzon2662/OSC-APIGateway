@@ -67,7 +67,10 @@ export class ArtifactEntity {
   @IsBoolean()
   verified: boolean;
 
-  @Column({ type: 'datetime', nullable: true })
+  @Column({ 
+    type: process.env.NODE_ENV === 'test' ? 'datetime' : 'timestamp',
+    nullable: true 
+  })
   @IsDate()
   @IsOptional()
   lastTimeVerified: Date;
@@ -85,7 +88,10 @@ export class ArtifactEntity {
   @IsNotEmpty()
   submitterEmail: string;
 
-  @Column({ type: 'datetime', nullable: true })
+  @Column({ 
+    type: process.env.NODE_ENV === 'test' ? 'datetime' : 'timestamp',
+    nullable: true 
+  })
   @IsDate()
   @IsOptional()
   submittedAt: Date;
