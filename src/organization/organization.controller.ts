@@ -8,6 +8,7 @@ import {
   Post,
   Put,
   UseInterceptors,
+  UseGuards,
 } from '@nestjs/common';
 
 import { BusinessErrorsInterceptor } from '../shared/interceptors/business-errors.interceptors';
@@ -15,6 +16,10 @@ import { OrganizationService } from './organization.service';
 import { OrganizationEntity } from './organization.entity';
 import { OrganizationDto } from './organization.dto';
 import { plainToInstance } from 'class-transformer';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth/jwt-auth.guard';
+import { RolesGuard } from '../auth/roles/roles.guards';
+import { Roles } from '../shared/decorators/roles.decorators';
+import { Role } from '../shared/enums/role.enums';
 
 @Controller('organizations')
 @UseInterceptors(BusinessErrorsInterceptor)
@@ -23,18 +28,22 @@ export class OrganizationController {
 
   // Get All Organizations
   @Get()
+  @UseGuards(JwtAuthGuard)
   async findAll() {
     return await this.organizationService.findAll();
   }
 
   // Get One
   @Get(':organizationId')
+  @UseGuards(JwtAuthGuard)
   async findOne(@Param('organizationId') organizationId: string) {
     return await this.organizationService.findOne(organizationId);
   }
 
   // Create
   @Post()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   async create(@Body() organizationDto: OrganizationDto) {
     const organization: OrganizationEntity = plainToInstance(
       OrganizationEntity,
@@ -45,6 +54,8 @@ export class OrganizationController {
 
   // Update
   @Put(':organizationId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   async update(
     @Param('organizationId') organizationId: string,
     @Body() organizationDto: OrganizationDto,
@@ -58,6 +69,8 @@ export class OrganizationController {
 
   // Delete
   @Delete(':organizationId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @HttpCode(204)
   async delete(@Param('organizationId') organizationId: string) {
     return this.organizationService.delete(organizationId);
@@ -65,6 +78,8 @@ export class OrganizationController {
 
   // Delete all organizations
   @Delete()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @HttpCode(204)
   async deleteAll() {
     await this.organizationService.deleteAll();
