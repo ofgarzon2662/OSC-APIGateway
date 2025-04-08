@@ -12,6 +12,7 @@ import { PasswordService } from './password.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from '../user/user.entity';
 import { TokenBlacklistService } from './token-blacklist.service';
+import { WorkerAuthService } from './worker-auth.service';
 
 @Module({
    imports: [
@@ -29,7 +30,7 @@ import { TokenBlacklistService } from './token-blacklist.service';
          inject: [ConfigService],
        }),
      ],
-   providers: [AuthService, JwtService, LocalStrategy, JwtStrategy, PasswordService, TokenBlacklistService],
-   exports: [AuthService, PasswordService, TokenBlacklistService]
+   providers: [AuthService, JwtService, LocalStrategy, JwtStrategy, PasswordService, TokenBlacklistService, WorkerAuthService],
+   exports: [AuthService, PasswordService, TokenBlacklistService, WorkerAuthService]
 })
 export class AuthModule {}
