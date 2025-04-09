@@ -3,17 +3,17 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
-export class WorkerAuthService {
+export class SubmitterListenerAuthService {
   constructor(
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {}
 
-  generateWorkerToken(): string {
+  generateSubmitterListenerToken(): string {
     const payload = {
-      sub: 'submitter-worker',
-      username: 'submitter-worker',
-      roles: ['submitter_worker'],
+      sub: 'submitter-listener',
+      username: 'submitter-listener',
+      roles: ['submitter_listener'],
     };
 
     return this.jwtService.sign(payload, {
@@ -22,12 +22,12 @@ export class WorkerAuthService {
     });
   }
 
-  validateWorkerToken(token: string): boolean {
+  validateSubmitterListenerToken(token: string): boolean {
     try {
       const decoded = this.jwtService.verify(token, {
         secret: this.configService.get<string>('JWT_SECRET'),
       });
-      return decoded.roles.includes('submitter_worker');
+      return decoded.roles.includes('submitter_listener');
     } catch {
       return false;
     }

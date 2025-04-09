@@ -47,10 +47,6 @@ export class CreateArtifactDto {
   @IsNotEmpty()
   hash: string;
 
-  @IsEmail()
-  @IsNotEmpty()
-  submitterEmail: string;
-
   @IsUUID()
   @IsNotEmpty()
   organizationId: string;

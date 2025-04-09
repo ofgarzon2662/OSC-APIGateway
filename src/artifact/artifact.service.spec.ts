@@ -23,7 +23,6 @@ describe('ArtifactService', () => {
     return {
       title: faker.lorem.words(3),
       description: faker.lorem.paragraphs(2),
-      submitterEmail: faker.internet.email(),
       keywords: [faker.lorem.word(), faker.lorem.word()],
       links: [faker.internet.url(), faker.internet.url()],
       dois: [],
@@ -73,9 +72,11 @@ describe('ArtifactService', () => {
     organization = await organizationRepository.save(organizationData);
 
     // Create 5 artifacts for testing
+    const testEmailForSeeding = 'seed@example.com'; // Use a specific email for seeding
     for (let i = 0; i < 5; i++) {
       const artifactDto = generateRandomArtifact(organization.id);
-      const newArtifact = await service.create(artifactDto);
+      // Pass the test email when seeding the database via the service
+      const newArtifact = await service.create(artifactDto, testEmailForSeeding);
       artifactList.push(newArtifact);
     }
   };
@@ -137,57 +138,77 @@ describe('ArtifactService', () => {
 
   // CREATE TESTS
   describe('create', () => {
+    const testEmail = 'test@example.com'; // Define a consistent test email
+
     it('should create a new artifact with valid data', async () => {
-      const artifact = generateRandomArtifact(organization.id);
-      const newArtifact = await service.create(artifact);
+      const artifactDto = generateRandomArtifact(organization.id);
+      // Remove submitterEmail from the generated DTO if it exists
+      // delete (artifactDto as any).submitterEmail; // REMOVED - No longer needed
+      
+      const newArtifact = await service.create(artifactDto, testEmail);
       expect(newArtifact).toBeDefined();
       expect(newArtifact.id).toBeDefined();
-      expect(newArtifact.title).toBe(artifact.title);
-      expect(newArtifact.description).toBe(artifact.description);
-      expect(newArtifact.submitterEmail).toBe(artifact.submitterEmail);
+      expect(newArtifact.title).toBe(artifactDto.title);
+      expect(newArtifact.description).toBe(artifactDto.description);
+      expect(newArtifact.submitterEmail).toBe(testEmail); // Verify the email was set
       expect(newArtifact.organization.name).toBe(organization.name);
     });
 
+    it('should throw an exception for an invalid submitter email', async () => {
+      const artifactDto = generateRandomArtifact(organization.id);
+      // delete (artifactDto as any).submitterEmail; // REMOVED - No longer needed
+      const invalidEmail = 'not-an-email';
+      await expect(() => service.create(artifactDto, invalidEmail)).rejects.toHaveProperty(
+        'message',
+        'Invalid submitter email provided.'
+      );
+    });
+
     it('should throw an exception for a title that is too short', async () => {
-      const artifact = generateRandomArtifact(organization.id);
-      artifact.title = 'ab'; // Less than 3 characters
-      await expect(() => service.create(artifact)).rejects.toHaveProperty(
+      const artifactDto = generateRandomArtifact(organization.id);
+      // delete (artifactDto as any).submitterEmail; // REMOVED - No longer needed
+      artifactDto.title = 'ab'; // Less than 3 characters
+      await expect(() => service.create(artifactDto, testEmail)).rejects.toHaveProperty(
         'message',
         'The title of the artifact is required and must be at least 3 characters long',
       );
     });
 
     it('should throw an exception for a description that is too short', async () => {
-      const artifact = generateRandomArtifact(organization.id);
-      artifact.description = 'short'; // Less than 50 characters
-      await expect(() => service.create(artifact)).rejects.toHaveProperty(
+      const artifactDto = generateRandomArtifact(organization.id);
+      // delete (artifactDto as any).submitterEmail; // REMOVED - No longer needed
+      artifactDto.description = 'short'; // Less than 50 characters
+      await expect(() => service.create(artifactDto, testEmail)).rejects.toHaveProperty(
         'message',
         'The description must be at least 50 characters long',
       );
     });
 
     it('should throw an exception for keywords exceeding total length', async () => {
-      const artifact = generateRandomArtifact(organization.id);
-      artifact.keywords = Array(1001).fill('keyword'); // Exceeds 1000 characters
-      await expect(() => service.create(artifact)).rejects.toHaveProperty(
+      const artifactDto = generateRandomArtifact(organization.id);
+      // delete (artifactDto as any).submitterEmail; // REMOVED - No longer needed
+      artifactDto.keywords = Array(1001).fill('keyword'); // Exceeds 1000 characters
+      await expect(() => service.create(artifactDto, testEmail)).rejects.toHaveProperty(
         'message',
         'The keywords array can have at most 1000 characters in total',
       );
     });
 
     it('should throw an exception for links exceeding total length', async () => {
-      const artifact = generateRandomArtifact(organization.id);
-      artifact.links = Array(2001).fill('https://example.com'); // Exceeds 2000 characters
-      await expect(() => service.create(artifact)).rejects.toHaveProperty(
+      const artifactDto = generateRandomArtifact(organization.id);
+      // delete (artifactDto as any).submitterEmail; // REMOVED - No longer needed
+      artifactDto.links = Array(2001).fill('https://example.com'); // Exceeds 2000 characters
+      await expect(() => service.create(artifactDto, testEmail)).rejects.toHaveProperty(
         'message',
         'The links array can have at most 2000 characters in total',
       );
     });
 
     it('should throw an exception for invalid URLs in links', async () => {
-      const artifact = generateRandomArtifact(organization.id);
-      artifact.links = ['invalid-url'];
-      await expect(() => service.create(artifact)).rejects.toHaveProperty(
+      const artifactDto = generateRandomArtifact(organization.id);
+      // delete (artifactDto as any).submitterEmail; // REMOVED - No longer needed
+      artifactDto.links = ['invalid-url'];
+      await expect(() => service.create(artifactDto, testEmail)).rejects.toHaveProperty(
         'message',
         'Each link in the links array must be a valid URL',
       );

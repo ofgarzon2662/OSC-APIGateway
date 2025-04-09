@@ -85,7 +85,15 @@ export class ArtifactService {
   }
 
   // Create one Artifact
-  async create(createArtifactDto: CreateArtifactDto): Promise<ArtifactEntity> {
+  async create(createArtifactDto: CreateArtifactDto, submitterEmail: string): Promise<ArtifactEntity> {
+    // Validate submitter email
+    if (!submitterEmail || !validator.isEmail(submitterEmail)) {
+      throw new BusinessLogicException(
+        'Invalid submitter email provided.',
+        BusinessError.PRECONDITION_FAILED, // Or BAD_REQUEST depending on context
+      );
+    }
+    
     // Validate required fields
     if (!createArtifactDto.title || createArtifactDto.title.length < 3) {
       throw new BusinessLogicException(
@@ -142,6 +150,7 @@ export class ArtifactService {
     // Create the artifact with organization context
     const artifact = this.artifactRepository.create({
       ...createArtifactDto,
+      submitterEmail: submitterEmail, // Use the validated email parameter
       organization,
     });
 

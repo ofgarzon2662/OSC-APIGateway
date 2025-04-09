@@ -8,6 +8,7 @@ import {
   Put,
   UseInterceptors,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { ArtifactService } from './artifact.service';
 import { ArtifactEntity } from './artifact.entity';
@@ -20,7 +21,7 @@ import { RolesGuard } from '../auth/roles/roles.guards';
 import { Roles } from '../shared/decorators/roles.decorators';
 import { Role } from '../shared/enums/role.enums';
 
-@Controller('organization/:organizationId/artifacts')
+@Controller('organizations/:organizationId/artifacts')
 @UseInterceptors(BusinessErrorsInterceptor)
 export class ArtifactController {
   constructor(private readonly artifactService: ArtifactService) {}
@@ -28,14 +29,15 @@ export class ArtifactController {
   @Post()
   @UseGuards(JwtAuthGuard)
   async create(
-    @Param('organizationId') organizationId: string,
+    @Req() req: any,
     @Body() createArtifactDto: CreateArtifactDto
   ): Promise<ArtifactEntity> {
-    // Ensure the organizationId in the path matches the one in the DTO
-    if (createArtifactDto.organizationId !== organizationId) {
-      createArtifactDto.organizationId = organizationId;
+    if (!req.user || !req.user.email) {
+      throw new Error('Authenticated user email not found in request.');
     }
-    return await this.artifactService.create(createArtifactDto);
+    const submitterEmail = req.user.email;
+    
+    return await this.artifactService.create(createArtifactDto, submitterEmail);
   }
 
   @Get()
@@ -45,7 +47,6 @@ export class ArtifactController {
 
   @Get(':id')
   async findOne(
-    @Param('organizationId') organizationId: string,
     @Param('id') id: string
   ): Promise<GetArtifactDto> {
     return await this.artifactService.findOne(id);
@@ -53,9 +54,8 @@ export class ArtifactController {
 
   @Put(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.SUBMITTER_WORKER)
+  @Roles(Role.SUBMITTER_LISTENER)
   async update(
-    @Param('organizationId') organizationId: string,
     @Param('id') id: string,
     @Body() updateArtifactDto: UpdateArtifactDto,
   ): Promise<ArtifactEntity> {
@@ -66,7 +66,6 @@ export class ArtifactController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   async delete(
-    @Param('organizationId') organizationId: string,
     @Param('id') id: string
   ): Promise<void> {
     return await this.artifactService.delete(id);
