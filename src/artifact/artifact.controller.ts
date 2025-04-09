@@ -15,6 +15,7 @@ import { ArtifactEntity } from './artifact.entity';
 import { CreateArtifactDto } from './dto/create-artifact.dto';
 import { UpdateArtifactDto } from './dto/update-artifact.dto';
 import { GetArtifactDto } from './dto/get-artifact.dto';
+import { ListArtifactDto } from './dto/list-artifact.dto';
 import { BusinessErrorsInterceptor } from '../shared/interceptors/business-errors.interceptors';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles/roles.guards';
@@ -30,18 +31,19 @@ export class ArtifactController {
   @UseGuards(JwtAuthGuard)
   async create(
     @Req() req: any,
+    @Param('organizationId') organizationId: string,
     @Body() createArtifactDto: CreateArtifactDto
-  ): Promise<ArtifactEntity> {
+  ): Promise<ListArtifactDto> {
     if (!req.user || !req.user.email) {
       throw new Error('Authenticated user email not found in request.');
     }
     const submitterEmail = req.user.email;
     
-    return await this.artifactService.create(createArtifactDto, submitterEmail);
+    return await this.artifactService.create(createArtifactDto, submitterEmail, organizationId);
   }
 
   @Get()
-  async findAll(): Promise<GetArtifactDto[]> {
+  async findAll(): Promise<ListArtifactDto[]> {
     return await this.artifactService.findAll();
   }
 

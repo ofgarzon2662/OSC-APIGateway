@@ -19,24 +19,19 @@ describe('ArtifactService', () => {
   let organization: OrganizationEntity;
 
   // Helper function to generate a random artifact
-  const generateRandomArtifact = (organizationId: string): CreateArtifactDto => {
+  function generateRandomArtifact(): CreateArtifactDto {
     return {
-      title: faker.lorem.words(3),
-      description: faker.lorem.paragraphs(2),
-      keywords: [faker.lorem.word(), faker.lorem.word()],
-      links: [faker.internet.url(), faker.internet.url()],
+      title: faker.commerce.productName(),
+      description: faker.commerce.productDescription() + ' ' + faker.commerce.productDescription() + ' ' + faker.commerce.productDescription(),
+      keywords: [faker.commerce.department(), faker.commerce.department()],
+      links: [faker.internet.url()],
       dois: [],
       fundingAgencies: [],
-      acknowledgements: '',
+      acknowledgements: faker.lorem.sentence(),
       fileName: faker.system.fileName(),
       hash: faker.string.alphanumeric(64),
-      organizationId: organizationId,
-      submissionState: SubmissionState.PENDING,
-      verified: false,
-      lastTimeVerified: null,
-      submittedAt: null
     };
-  };
+  }
 
   // Helper function to generate a random organization
   const generateRandomOrganization = () => {
@@ -74,10 +69,19 @@ describe('ArtifactService', () => {
     // Create 5 artifacts for testing
     const testEmailForSeeding = 'seed@example.com'; // Use a specific email for seeding
     for (let i = 0; i < 5; i++) {
-      const artifactDto = generateRandomArtifact(organization.id);
+      const artifactDto = generateRandomArtifact();
       // Pass the test email when seeding the database via the service
-      const newArtifact = await service.create(artifactDto, testEmailForSeeding);
-      artifactList.push(newArtifact);
+      const createdArtifact = await service.create(artifactDto, testEmailForSeeding, organization.id);
+      
+      // Fetch the full artifact entity to store in artifactList
+      const fullArtifact = await artifactRepository.findOne({
+        where: { id: createdArtifact.id },
+        relations: ['organization']
+      });
+      
+      if (fullArtifact) {
+        artifactList.push(fullArtifact);
+      }
     }
   };
 
@@ -87,20 +91,18 @@ describe('ArtifactService', () => {
 
   // FIND ALL TESTS
   describe('findAll', () => {
-    it('should return all artifacts with only title, submitterEmail, and organizationName', async () => {
+    it('should return all artifacts with minimal fields', async () => {
       const artifacts = await service.findAll();
       expect(artifacts).toBeDefined();
-      expect(artifacts).not.toBeNull();
-      expect(artifacts).toHaveLength(artifactList.length);
+      expect(artifacts.length).toBe(artifactList.length);
       
-      // Verify each artifact has only the expected fields
       artifacts.forEach((artifact, index) => {
         const dbArtifact = artifactList[index];
         expect(artifact).toEqual({
           id: dbArtifact.id,
           title: dbArtifact.title,
-          submitterEmail: dbArtifact.submitterEmail,
-          organizationName: dbArtifact.organization.name
+          description: dbArtifact.description,
+          lastTimeVerified: dbArtifact.lastTimeVerified
         });
       });
     });
@@ -108,15 +110,29 @@ describe('ArtifactService', () => {
 
   // FIND ONE TESTS
   describe('findOne', () => {
-    it('should return one artifact by id', async () => {
+    it('should return one artifact by id with all fields', async () => {
       const storedArtifact = artifactList[0];
       const artifact = await service.findOne(storedArtifact.id);
       expect(artifact).toBeDefined();
       expect(artifact).toEqual({
         id: storedArtifact.id,
         title: storedArtifact.title,
+        description: storedArtifact.description,
+        keywords: storedArtifact.keywords,
+        links: storedArtifact.links,
+        dois: storedArtifact.dois,
+        fundingAgencies: storedArtifact.fundingAgencies,
+        acknowledgements: storedArtifact.acknowledgements,
+        fileName: storedArtifact.fileName,
+        hash: storedArtifact.hash,
+        verified: storedArtifact.verified,
+        lastTimeVerified: storedArtifact.lastTimeVerified,
+        submissionState: storedArtifact.submissionState,
         submitterEmail: storedArtifact.submitterEmail,
-        organizationName: storedArtifact.organization.name
+        submittedAt: storedArtifact.submittedAt,
+        organization: {
+          name: storedArtifact.organization.name
+        }
       });
     });
 
@@ -141,74 +157,73 @@ describe('ArtifactService', () => {
     const testEmail = 'test@example.com'; // Define a consistent test email
 
     it('should create a new artifact with valid data', async () => {
-      const artifactDto = generateRandomArtifact(organization.id);
-      // Remove submitterEmail from the generated DTO if it exists
-      // delete (artifactDto as any).submitterEmail; // REMOVED - No longer needed
+      const artifactDto = generateRandomArtifact();
       
-      const newArtifact = await service.create(artifactDto, testEmail);
+      const newArtifact = await service.create(artifactDto, testEmail, organization.id);
       expect(newArtifact).toBeDefined();
-      expect(newArtifact.id).toBeDefined();
-      expect(newArtifact.title).toBe(artifactDto.title);
-      expect(newArtifact.description).toBe(artifactDto.description);
-      expect(newArtifact.submitterEmail).toBe(testEmail); // Verify the email was set
-      expect(newArtifact.organization.name).toBe(organization.name);
+      expect(newArtifact).toEqual({
+        id: expect.any(String),
+        title: artifactDto.title,
+        description: artifactDto.description,
+        lastTimeVerified: null
+      });
     });
 
     it('should throw an exception for an invalid submitter email', async () => {
-      const artifactDto = generateRandomArtifact(organization.id);
+      const artifactDto = generateRandomArtifact();
       // delete (artifactDto as any).submitterEmail; // REMOVED - No longer needed
       const invalidEmail = 'not-an-email';
-      await expect(() => service.create(artifactDto, invalidEmail)).rejects.toHaveProperty(
+      await expect(() => service.create(artifactDto, invalidEmail, organization.id)).rejects.toHaveProperty(
         'message',
-        'Invalid submitter email provided.'
+        'Invalid submitter email provided.',
       );
     });
 
     it('should throw an exception for a title that is too short', async () => {
-      const artifactDto = generateRandomArtifact(organization.id);
+      const artifactDto = generateRandomArtifact();
       // delete (artifactDto as any).submitterEmail; // REMOVED - No longer needed
       artifactDto.title = 'ab'; // Less than 3 characters
-      await expect(() => service.create(artifactDto, testEmail)).rejects.toHaveProperty(
+      await expect(() => service.create(artifactDto, testEmail, organization.id)).rejects.toHaveProperty(
         'message',
         'The title of the artifact is required and must be at least 3 characters long',
       );
     });
 
     it('should throw an exception for a description that is too short', async () => {
-      const artifactDto = generateRandomArtifact(organization.id);
+      const artifactDto = generateRandomArtifact();
       // delete (artifactDto as any).submitterEmail; // REMOVED - No longer needed
       artifactDto.description = 'short'; // Less than 50 characters
-      await expect(() => service.create(artifactDto, testEmail)).rejects.toHaveProperty(
+      await expect(() => service.create(artifactDto, testEmail, organization.id)).rejects.toHaveProperty(
         'message',
         'The description must be at least 50 characters long',
       );
     });
 
     it('should throw an exception for keywords exceeding total length', async () => {
-      const artifactDto = generateRandomArtifact(organization.id);
+      const artifactDto = generateRandomArtifact();
       // delete (artifactDto as any).submitterEmail; // REMOVED - No longer needed
       artifactDto.keywords = Array(1001).fill('keyword'); // Exceeds 1000 characters
-      await expect(() => service.create(artifactDto, testEmail)).rejects.toHaveProperty(
+      await expect(() => service.create(artifactDto, testEmail, organization.id)).rejects.toHaveProperty(
         'message',
         'The keywords array can have at most 1000 characters in total',
       );
     });
 
     it('should throw an exception for links exceeding total length', async () => {
-      const artifactDto = generateRandomArtifact(organization.id);
+      const artifactDto = generateRandomArtifact();
       // delete (artifactDto as any).submitterEmail; // REMOVED - No longer needed
       artifactDto.links = Array(2001).fill('https://example.com'); // Exceeds 2000 characters
-      await expect(() => service.create(artifactDto, testEmail)).rejects.toHaveProperty(
+      await expect(() => service.create(artifactDto, testEmail, organization.id)).rejects.toHaveProperty(
         'message',
         'The links array can have at most 2000 characters in total',
       );
     });
 
     it('should throw an exception for invalid URLs in links', async () => {
-      const artifactDto = generateRandomArtifact(organization.id);
+      const artifactDto = generateRandomArtifact();
       // delete (artifactDto as any).submitterEmail; // REMOVED - No longer needed
       artifactDto.links = ['invalid-url'];
-      await expect(() => service.create(artifactDto, testEmail)).rejects.toHaveProperty(
+      await expect(() => service.create(artifactDto, testEmail, organization.id)).rejects.toHaveProperty(
         'message',
         'Each link in the links array must be a valid URL',
       );

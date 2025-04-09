@@ -49,6 +49,7 @@ export class AuthService {
       username: req.user.username,
       sub: req.user.id,
       roles: req.user.roles,
+      email: req.user.email,
     };
     return {
       token: this.jwtService.sign(payload, {

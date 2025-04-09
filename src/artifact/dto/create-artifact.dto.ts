@@ -24,7 +24,6 @@ export class CreateArtifactDto {
 
   @IsArray()
   @IsString({ each: true })
-  @Length(0, 4)
   @IsOptional()
   dois: string[];
 
@@ -46,10 +45,6 @@ export class CreateArtifactDto {
   @IsString()
   @IsNotEmpty()
   hash: string;
-
-  @IsUUID()
-  @IsNotEmpty()
-  organizationId: string;
   
   @IsDate()
   @IsOptional()

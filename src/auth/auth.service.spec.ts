@@ -172,6 +172,7 @@ describe('AuthService', () => {
           id: userList[0].id,
           username: userList[0].username,
           roles: ['admin'],
+          email: userList[0].email,
         },
       };
 
@@ -186,6 +187,7 @@ describe('AuthService', () => {
           username: userList[0].username,
           sub: userList[0].id,
           roles: ['admin'],
+          email: userList[0].email,
         },
         {
           secret: 'test-secret',

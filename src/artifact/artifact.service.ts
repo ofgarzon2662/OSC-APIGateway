@@ -10,7 +10,9 @@ import validator from 'validator';
 import { CreateArtifactDto } from './dto/create-artifact.dto';
 import { UpdateArtifactDto } from './dto/update-artifact.dto';
 import { GetArtifactDto } from './dto/get-artifact.dto';
+import { ListArtifactDto } from './dto/list-artifact.dto';
 import { OrganizationEntity } from '../organization/organization.entity';
+import { SubmissionState } from './enums/submission-state.enum';
 
 @Injectable()
 export class ArtifactService {
@@ -21,31 +23,20 @@ export class ArtifactService {
     private readonly organizationRepository: Repository<OrganizationEntity>,
   ) {}
 
-  // Get All Artifacts - Return only specific fields
-  async findAll(): Promise<GetArtifactDto[]> {
-    const artifacts = await this.artifactRepository.find({ 
-      relations: ['organization'],
-      select: {
-        id: true,
-        title: true,
-        submitterEmail: true,
-        organization: {
-          id: true,
-          name: true
-        }
-      }
-    });
+  // Get All Artifacts - Return minimal fields
+  async findAll(): Promise<ListArtifactDto[]> {
+    const artifacts = await this.artifactRepository.find();
     
-    // Transform the result to include organizationName directly
+    // Transform the result to include minimal fields
     return artifacts.map(artifact => ({
       id: artifact.id,
       title: artifact.title,
-      submitterEmail: artifact.submitterEmail,
-      organizationName: artifact.organization.name
+      description: artifact.description,
+      lastTimeVerified: artifact.lastTimeVerified
     }));
   }
 
-  // Get One Artifact - Return only specific fields
+  // Get One Artifact - Return all fields
   async findOne(id: string): Promise<GetArtifactDto> {
     if (!id || !validator.isUUID(id)) {
       throw new BusinessLogicException(
@@ -56,16 +47,7 @@ export class ArtifactService {
     
     const artifact = await this.artifactRepository.findOne({
       where: { id },
-      relations: ['organization'],
-      select: {
-        id: true,
-        title: true,
-        submitterEmail: true,
-        organization: {
-          id: true,
-          name: true
-        }
-      }
+      relations: ['organization']
     });
     
     if (!artifact) {
@@ -75,22 +57,40 @@ export class ArtifactService {
       );
     }
     
-    // Transform the result to include organizationName directly
+    // Transform the result to include all fields
     return {
       id: artifact.id,
       title: artifact.title,
+      description: artifact.description,
+      keywords: artifact.keywords,
+      links: artifact.links,
+      dois: artifact.dois,
+      fundingAgencies: artifact.fundingAgencies,
+      acknowledgements: artifact.acknowledgements,
+      fileName: artifact.fileName,
+      hash: artifact.hash,
+      verified: artifact.verified,
+      lastTimeVerified: artifact.lastTimeVerified,
+      submissionState: artifact.submissionState,
       submitterEmail: artifact.submitterEmail,
-      organizationName: artifact.organization.name
+      submittedAt: artifact.submittedAt,
+      organization: {
+        name: artifact.organization.name
+      }
     };
   }
 
   // Create one Artifact
-  async create(createArtifactDto: CreateArtifactDto, submitterEmail: string): Promise<ArtifactEntity> {
+  async create(
+    createArtifactDto: CreateArtifactDto, 
+    submitterEmail: string,
+    organizationId: string
+  ): Promise<ListArtifactDto> {
     // Validate submitter email
     if (!submitterEmail || !validator.isEmail(submitterEmail)) {
       throw new BusinessLogicException(
         'Invalid submitter email provided.',
-        BusinessError.PRECONDITION_FAILED, // Or BAD_REQUEST depending on context
+        BusinessError.PRECONDITION_FAILED,
       );
     }
     
@@ -137,7 +137,7 @@ export class ArtifactService {
     
     // Find the organization
     const organization = await this.organizationRepository.findOne({
-      where: { id: createArtifactDto.organizationId }
+      where: { id: organizationId }
     });
 
     if (!organization) {
@@ -146,15 +146,24 @@ export class ArtifactService {
         BusinessError.NOT_FOUND,
       );
     }
-
-    // Create the artifact with organization context
+    
+    // Create the artifact
     const artifact = this.artifactRepository.create({
       ...createArtifactDto,
-      submitterEmail: submitterEmail, // Use the validated email parameter
       organization,
+      submitterEmail,
+      submissionState: SubmissionState.PENDING
     });
-
-    return await this.artifactRepository.save(artifact);
+    
+    const savedArtifact = await this.artifactRepository.save(artifact);
+    
+    // Return only the minimal fields
+    return {
+      id: savedArtifact.id,
+      title: savedArtifact.title,
+      description: savedArtifact.description,
+      lastTimeVerified: savedArtifact.lastTimeVerified
+    };
   }
 
   // Update an Artifact - Only allow updating specific fields
