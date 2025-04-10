@@ -36,7 +36,7 @@ export class ArtifactEntity {
   @IsArray()
   @IsString({ each: true })
   @Length(0, 4)
-  @Matches(/^10\.\d{4,9}\/[-._;()/:\w]+$/, { each: true })
+  @Matches(/^10\.\d{4,9}\/[-_.;()/:]\w+$/, { each: true })
   dois: string[];
 
   @Column({ type: 'simple-array' })
