@@ -18,7 +18,7 @@ Authorization: Bearer <your_jwt_token>
 ### Get All Artifacts
 - **Method**: GET
 - **URL**: `/`
-- **Auth Required**: Yes
+- **Auth Required**: No
 - **Roles Required**: None
 - **Parameters**:
   - `organizationId`: UUID of the organization
