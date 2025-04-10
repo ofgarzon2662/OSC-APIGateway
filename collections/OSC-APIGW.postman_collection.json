@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "b55410f7-06a3-4ed2-8d76-02352cbb44ef",
+		"_postman_id": "51138fac-90e7-40d3-bb51-cd30b842c5c7",
 		"name": "OSC-APIGW",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "29465325"
@@ -337,6 +337,164 @@
 						"body": {
 							"mode": "raw",
 							"raw": "{\r\n    \"name\": \"{{validFullName2}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"{{validUserName2}}\",\r\n    \"password\": \"{{$randomPassword}}\",\r\n    \"role\": \"collaborator\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin 2 Creates a Collaborator repeat name",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 412\", function() {",
+									"    pm.response.to.have.status(412)",
+									"});",
+									"",
+									"pm.test(\"Message is correct\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"Username or email already exists\")",
+									"})"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Generar un nombre aleatorio\r",
+									"let fullName = pm.variables.replaceIn(\"{{$randomFullName}}\");\r",
+									"// Asegurarse de que tiene al menos 8 caracteres\r",
+									"if (fullName.length < 8) {\r",
+									"    fullName = fullName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - fullName.length));\r",
+									"}\r",
+									"pm.environment.set(\"validFullName2\", fullName);\r",
+									"\r",
+									"// Generar un nombre de usuario aleatorio\r",
+									"let userName = pm.variables.replaceIn(\"{{$randomUserName}}\");\r",
+									"// Asegurarse de que tiene al menos 8 caracteres\r",
+									"if (userName.length < 8) {\r",
+									"    userName = userName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - userName.length));\r",
+									"}\r",
+									"pm.environment.set(\"validUserName2\", userName);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_ADMIN2}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{validFullName2}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"{{collaborator1Username}}\",\r\n    \"password\": \"{{$randomPassword}}\",\r\n    \"role\": \"collaborator\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin 2 Creates a Collaborator repeat email",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 412\", function() {",
+									"    pm.response.to.have.status(412)",
+									"});",
+									"",
+									"pm.test(\"Message is correct\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"Username or email already exists\")",
+									"})"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Generar un nombre aleatorio\r",
+									"let fullName = pm.variables.replaceIn(\"{{$randomFullName}}\");\r",
+									"// Asegurarse de que tiene al menos 8 caracteres\r",
+									"if (fullName.length < 8) {\r",
+									"    fullName = fullName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - fullName.length));\r",
+									"}\r",
+									"pm.environment.set(\"validFullName2\", fullName);\r",
+									"\r",
+									"// Generar un nombre de usuario aleatorio\r",
+									"let userName = pm.variables.replaceIn(\"{{$randomUserName}}\");\r",
+									"// Asegurarse de que tiene al menos 8 caracteres\r",
+									"if (userName.length < 8) {\r",
+									"    userName = userName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - userName.length));\r",
+									"}\r",
+									"pm.environment.set(\"validUserName2\", userName);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_ADMIN2}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{validFullName2}}\",\r\n    \"email\": \"{{collaboratorEmail}}\",\r\n    \"username\": \"{{collaborator1Username}}\",\r\n    \"password\": \"{{$randomPassword}}\",\r\n    \"role\": \"collaborator\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -4176,6 +4334,59 @@
 					"response": []
 				},
 				{
+					"name": "PI user logs in",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"token_PI\", pm.response.json().token);\r",
+									"\r",
+									"pm.test(\"Status code is 201 Created\", function() {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Token is present\", function() {\r",
+									"    pm.expect(pm.response.json().token).to.be.a('string').and.to.not.be.empty;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"PI login successful\", function() {\r",
+									"    // Verificar que hay un token de respuesta (indicación de login exitoso)\r",
+									"    const responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson.token).to.be.a('string').and.to.not.be.empty;\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n   \"username\": \"{{pi_username}}\",\r\n   \"password\": \"{{pi_password}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Admin 1 Creates an org",
 					"event": [
 						{
@@ -4234,7 +4445,7 @@
 					"response": []
 				},
 				{
-					"name": "Get All Orgs",
+					"name": "Collaborator Get All Orgs",
 					"event": [
 						{
 							"listen": "test",
@@ -4290,6 +4501,8 @@
 								"exec": [
 									"// Store the response data in environment variables\r",
 									"pm.environment.set(\"artifactId1\", pm.response.json().id);\r",
+									"pm.environment.set(\"artifactTitle1\", pm.response.json().title);\r",
+									"pm.environment.set(\"artifactDescription1\", pm.response.json().description)\r",
 									"\r",
 									"// Test HTTP Status Code\r",
 									"pm.test(\"Status code is 201\", function () {\r",
@@ -4304,23 +4517,16 @@
 									"    pm.expect(response).to.have.property('id');\r",
 									"    pm.expect(response).to.have.property('title');\r",
 									"    pm.expect(response).to.have.property('description');\r",
-									"    pm.expect(response).to.have.property('fileName');\r",
-									"    pm.expect(response).to.have.property('hash');\r",
-									"    pm.expect(response).to.have.property('submitterEmail');\r",
-									"    pm.expect(response).to.have.property('submissionState');\r",
-									"    pm.expect(response).to.have.property('organization');\r",
+									"    pm.expect(response).not.to.have.property('fileName');\r",
+									"    pm.expect(response).not.to.have.property('hash');\r",
+									"    pm.expect(response).not.to.have.property('submitterEmail');\r",
+									"    pm.expect(response).not.to.have.property('submissionState');\r",
+									"    pm.expect(response).not.to.have.property('organization');\r",
+									"    pm.expect(response.lastTimeVerified).to.be.null;\r",
 									"    \r",
-									"    // Organization object\r",
-									"    pm.expect(response.organization).to.have.property('id');\r",
-									"    pm.expect(response.organization.id).to.equal(pm.environment.get(\"orgId\"));\r",
 									"});\r",
 									"\r",
-									"// Test Initial State\r",
-									"pm.test(\"Initial state is correct\", function () {\r",
-									"    const response = pm.response.json();\r",
-									"    pm.expect(response.submissionState).to.equal('PENDING');\r",
-									"    pm.expect(response.submittedAt).to.be.null;\r",
-									"});"
+									""
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -4343,7 +4549,7 @@
 									"}",
 									"",
 									"// Set the generated hash in an environment variable",
-									"pm.environment.set(\"randomHash\", generateRandomHash(64));",
+									"pm.environment.set(\"artifacthash1\", generateRandomHash(64));",
 									""
 								],
 								"type": "text/javascript",
@@ -4366,7 +4572,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"title\": \"{{$randomProductName}}\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"fileName\": \"{{$randomFileName}}\",\r\n    \"hash\": \"{{randomHash}}\",\r\n    \"organizationId\": \"{{organizationId}}\",\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example.com/product\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
+							"raw": "{\r\n    \"title\": \"{{$randomProductName}}\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"fileName\": \"{{$randomFileName}}\",\r\n    \"hash\": \"{{artifacthash1}}\",\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example.com/product\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -4395,19 +4601,37 @@
 							"script": {
 								"exec": [
 									"pm.test(\"Code is 200\", function() {\r",
-									"    pm.response.to.have.status(200)\r",
+									"    pm.response.to.have.status(200);\r",
 									"});\r",
 									"\r",
 									"pm.test(\"Non empty response\", function() {\r",
 									"    const responseData = pm.response.json();\r",
-									"    pm.expect(responseData.name).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.description).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.body).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.body).to.be.a('string').to.equal(pm.environment.get(\"body1\"))\r",
+									"    \r",
+									"    // Verify stored values from creation\r",
 									"    pm.expect(responseData.id).to.equal(pm.environment.get(\"artifactId1\"));\r",
-									"    pm.expect(responseData.description).to.equal(pm.environment.get(\"description1\"));\r",
-									"});\r",
-									""
+									"    pm.expect(responseData.title).to.equal(pm.environment.get(\"artifactTitle1\"));\r",
+									"    pm.expect(responseData.description).to.equal(pm.environment.get(\"artifactDescription1\"));\r",
+									"    pm.expect(responseData.hash).to.equal(pm.environment.get(\"artifacthash1\"));\r",
+									"    \r",
+									"    // Rest of the field validations\r",
+									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.title).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.description).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.keywords).to.be.an('array').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.links).to.be.an('array');\r",
+									"    pm.expect(responseData.dois).to.be.an('array');\r",
+									"    pm.expect(responseData.fundingAgencies).to.be.an('array');\r",
+									"    pm.expect(responseData.acknowledgements).to.be.a('string');\r",
+									"    pm.expect(responseData.fileName).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.hash).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.verified).to.be.a('boolean');\r",
+									"    pm.expect(responseData.lastTimeVerified).to.be.null; // Assuming null is expected\r",
+									"    pm.expect(responseData.submissionState).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.submitterEmail).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.submittedAt).to.be.null; // Assuming null is expected\r",
+									"    pm.expect(responseData.organization).to.be.an('object');\r",
+									"    pm.expect(responseData.organization.name).to.be.a('string').and.to.not.be.empty;\r",
+									"});"
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -4445,32 +4669,41 @@
 					"response": []
 				},
 				{
-					"name": "Create Artifact 2",
+					"name": "PI Create Artifact 2",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
+									"// Store the response data in environment variables\r",
+									"pm.environment.set(\"artifact2title\", pm.response.json().title);\r",
 									"pm.environment.set(\"artifactId2\", pm.response.json().id);\r",
-									"pm.environment.set(\"description2\", pm.response.json().description);\r",
-									"pm.environment.set(\"name2\", pm.response.json().name);\r",
+									"pm.environment.set(\"artifactTitle2\", pm.response.json().title);\r",
+									"pm.environment.set(\"artifactDescription2\", pm.response.json().description)\r",
 									"\r",
-									"\r",
-									"\r",
-									"\r",
-									"pm.test(\"El código de estado es 201\", function() {\r",
-									"    pm.response.to.have.status(201)\r",
+									"// Test HTTP Status Code\r",
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
 									"});\r",
 									"\r",
-									"pm.test(\"Información presente\", function() {\r",
-									"    pm.expect(pm.response.json().name).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().description).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().description).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().body).to.be.not.be.empty;\r",
-									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().organization.id).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().organization.id).to.equal(pm.environment.get(\"orgId\"))\r",
-									"});"
+									"// Test Response Structure\r",
+									"pm.test(\"Response has the correct structure\", function () {\r",
+									"    const response = pm.response.json();\r",
+									"    \r",
+									"    // Required fields\r",
+									"    pm.expect(response).to.have.property('id');\r",
+									"    pm.expect(response).to.have.property('title');\r",
+									"    pm.expect(response).to.have.property('description');\r",
+									"    pm.expect(response).not.to.have.property('fileName');\r",
+									"    pm.expect(response).not.to.have.property('hash');\r",
+									"    pm.expect(response).not.to.have.property('submitterEmail');\r",
+									"    pm.expect(response).not.to.have.property('submissionState');\r",
+									"    pm.expect(response).not.to.have.property('organization');\r",
+									"    pm.expect(response.lastTimeVerified).to.be.null;\r",
+									"    \r",
+									"});\r",
+									"\r",
+									""
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -4480,42 +4713,20 @@
 							"listen": "prerequest",
 							"script": {
 								"exec": [
-									"const bodyObject = {",
-									"    name: \"All-in-One Portable Fitness Kit\",",
-									"    description: \"A complete fitness solution featuring resistance bands, adjustable dumbbells, and a foldable yoga mat, perfect for home or travel workouts.\",",
-									"    category: \"Fitness Equipment\",",
-									"    features: [",
-									"        \"High-quality resistance bands\",",
-									"        \"Adjustable weight dumbbells\",",
-									"        \"Non-slip foldable yoga mat\",",
-									"        \"Compact carrying case\",",
-									"        \"Ideal for beginners and pros\"",
-									"    ],",
-									"    price: 79.99,",
-									"    availability: true,",
-									"    dimensions: {",
-									"        width: \"15 inches\",",
-									"        height: \"10 inches\",",
-									"        depth: \"8 inches\"",
-									"    },",
-									"    colorOptions: [\"red\", \"blue\", \"green\"],",
-									"    rating: 4.8,",
-									"    reviews: [",
-									"        {",
-									"            user: \"Alex M.\",",
-									"            rating: 5,",
-									"            comment: \"This kit has everything I need for my home workouts. Highly recommend!\"",
-									"        },",
-									"        {",
-									"            user: \"Jordan T.\",",
-									"            rating: 4,",
-									"            comment: \"Great quality, but the carrying case could be a bit bigger.\"",
-									"        }",
-									"    ]",
-									"};",
+									"function generateRandomHash(length) {",
+									"    let result = '';",
+									"    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';",
+									"    const charactersLength = characters.length;",
 									"",
-									"// Convert JSON object to a string and set it as an environment variable",
-									"pm.environment.set(\"body2\", JSON.stringify(bodyObject));",
+									"    for (let i = 0; i < length; i++) {",
+									"        result += characters.charAt(Math.floor(Math.random() * charactersLength));",
+									"    }",
+									"",
+									"    return result;",
+									"}",
+									"",
+									"// Set the generated hash in an environment variable",
+									"pm.environment.set(\"artifacthash2\", generateRandomHash(64));",
 									""
 								],
 								"type": "text/javascript",
@@ -4524,11 +4735,21 @@
 						}
 					],
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_PI}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"{{$randomProductName}}\",\r\n    \"description\": \"Introducing the Ultimate Home Organizer Kit, a comprehensive solution designed to streamline and beautify every corner of your home. This set includes modular storage bins, durable shelves, and customizable labels, perfect for decluttering bedrooms, kitchens, and office spaces. Made from eco-friendly materials, each item in this kit is built for versatility and durability. Whether you're organizing clothes, kitchen items, or crafting supplies, this organizer kit offers a stylish, functional, and sustainable way to bring order to your home!\",\r\n    \"body\": {{body2}}\r\n}\r\n",
+							"raw": "{\r\n    \"title\": \"{{$randomProductName}}\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"fileName\": \"{{$randomFileName}}\",\r\n    \"hash\": \"{{artifacthash2}}\",\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example.com/product\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -4557,20 +4778,37 @@
 							"script": {
 								"exec": [
 									"pm.test(\"Code is 200\", function() {\r",
-									"    pm.response.to.have.status(200)\r",
+									"    pm.response.to.have.status(200);\r",
 									"});\r",
 									"\r",
 									"pm.test(\"Non empty response\", function() {\r",
 									"    const responseData = pm.response.json();\r",
-									"    pm.expect(responseData.name).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.description).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.body).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.body).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.body).to.be.a('string').to.equal(pm.environment.get(\"body2\"))\r",
+									"    \r",
+									"    // Verify stored values from creation\r",
 									"    pm.expect(responseData.id).to.equal(pm.environment.get(\"artifactId2\"));\r",
-									"    pm.expect(responseData.description).to.equal(pm.environment.get(\"description2\"));\r",
-									"});\r",
-									""
+									"    pm.expect(responseData.title).to.equal(pm.environment.get(\"artifactTitle2\"));\r",
+									"    pm.expect(responseData.description).to.equal(pm.environment.get(\"artifactDescription2\"));\r",
+									"    pm.expect(responseData.hash).to.equal(pm.environment.get(\"artifacthash2\"));\r",
+									"    \r",
+									"    // Rest of the field validations\r",
+									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.title).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.description).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.keywords).to.be.an('array').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.links).to.be.an('array');\r",
+									"    pm.expect(responseData.dois).to.be.an('array');\r",
+									"    pm.expect(responseData.fundingAgencies).to.be.an('array');\r",
+									"    pm.expect(responseData.acknowledgements).to.be.a('string');\r",
+									"    pm.expect(responseData.fileName).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.hash).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.verified).to.be.a('boolean');\r",
+									"    pm.expect(responseData.lastTimeVerified).to.be.null; // Assuming null is expected\r",
+									"    pm.expect(responseData.submissionState).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.submitterEmail).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.submittedAt).to.be.null; // Assuming null is expected\r",
+									"    pm.expect(responseData.organization).to.be.an('object');\r",
+									"    pm.expect(responseData.organization.name).to.be.a('string').and.to.not.be.empty;\r",
+									"});"
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -4608,30 +4846,19 @@
 					"response": []
 				},
 				{
-					"name": "Create Artifact 3",
+					"name": "PI Create Artifact 2 same title",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.environment.set(\"artifactId3\", pm.response.json().id);\r",
-									"pm.environment.set(\"description3\", pm.response.json().description);\r",
-									"\r",
-									"\r",
-									"\r",
-									"pm.test(\"El código de estado es 201\", function() {\r",
-									"    pm.response.to.have.status(201)\r",
+									"pm.test(\"Code is 412\", function() {\r",
+									"    pm.response.to.have.status(412)\r",
 									"});\r",
 									"\r",
-									"pm.test(\"Información presente\", function() {\r",
-									"    pm.expect(pm.response.json().name).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().description).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().description).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().body).to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().organization.id).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().organization.id).to.equal(pm.environment.get(\"orgId\"))\r",
-									"});"
+									"pm.test(\"Message is correct\", function () {\r",
+									"    pm.expect(pm.response.text()).to.include(\"An artifact with this title already exists in the organization\")\r",
+									"})"
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -4641,61 +4868,20 @@
 							"listen": "prerequest",
 							"script": {
 								"exec": [
-									"const bodyObject = {",
-									"    productDetails: {",
-									"        title: \"Smart Gardening Assistant\",",
-									"        summary: \"An innovative device that monitors soil, water levels, and sunlight to help your plants thrive.\",",
-									"        type: \"Gardening Gadgets\"",
-									"    },",
-									"    specifications: {",
-									"        materials: \"Weather-resistant plastic and stainless steel\",",
-									"        dimensions: {",
-									"            length: \"10 inches\",",
-									"            width: \"5 inches\",",
-									"            height: \"2 inches\"",
-									"        },",
-									"        weight: \"1.5 lbs\",",
-									"        power: \"USB rechargeable battery\"",
-									"    },",
-									"    features: [",
-									"        {",
-									"            featureName: \"Soil Monitoring\",",
-									"            description: \"Tracks moisture and nutrient levels.\"",
-									"        },",
-									"        {",
-									"            featureName: \"Sunlight Detector\",",
-									"            description: \"Measures light intensity for optimal plant placement.\"",
-									"        },",
-									"        {",
-									"            featureName: \"Water Reminder\",",
-									"            description: \"Sends notifications when plants need watering.\"",
-									"        }",
-									"    ],",
-									"    pricing: {",
-									"        cost: 59.99,",
-									"        discountAvailable: true,",
-									"        discountPercentage: 10",
-									"    },",
-									"    availability: \"In Stock\",",
-									"    customerFeedback: {",
-									"        averageRating: 4.6,",
-									"        testimonials: [",
-									"            {",
-									"                reviewer: \"Emily G.\",",
-									"                stars: 5,",
-									"                remarks: \"This device has transformed my garden!\"",
-									"            },",
-									"            {",
-									"                reviewer: \"Ryan P.\",",
-									"                stars: 4,",
-									"                remarks: \"Works great, but the app could use some improvements.\"",
-									"            }",
-									"        ]",
-									"    }",
-									"};",
+									"function generateRandomHash(length) {",
+									"    let result = '';",
+									"    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';",
+									"    const charactersLength = characters.length;",
 									"",
-									"// Convert JSON object to a string and set it as an environment variable",
-									"pm.environment.set(\"body3\", JSON.stringify(bodyObject));",
+									"    for (let i = 0; i < length; i++) {",
+									"        result += characters.charAt(Math.floor(Math.random() * charactersLength));",
+									"    }",
+									"",
+									"    return result;",
+									"}",
+									"",
+									"// Set the generated hash in an environment variable",
+									"pm.environment.set(\"artifacthash2\", generateRandomHash(64));",
 									""
 								],
 								"type": "text/javascript",
@@ -4704,11 +4890,21 @@
 						}
 					],
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_PI}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "POST",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"{{$randomProductName}}\",\r\n    \"description\": \"Revolutionize your home with the Ultimate Home Organizer Kit, a premium all-in-one solution for clutter-free living. Featuring modular storage bins, durable shelves, and customizable labels, this kit is perfect for organizing any space, from bedrooms to kitchens and beyond. Designed with eco-friendly materials and a focus on versatility, it offers a stylish yet practical way to streamline your daily life. Whether you're arranging clothes, managing pantry essentials, or tidying up office supplies, this organizer kit makes decluttering effortless while adding a touch of elegance to your home.\",\r\n    \"body\": {{body3}}\r\n}\r\n",
+							"raw": "{\r\n    \"title\": \"{{artifact2title}}\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"fileName\": \"{{$randomFileName}}\",\r\n    \"hash\": \"{{artifacthash2}}\",\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example.com/product\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -4730,25 +4926,50 @@
 					"response": []
 				},
 				{
-					"name": "Get Artifact 3",
+					"name": "Get All Artifacts",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Code is 200\", function() {\r",
-									"    pm.response.to.have.status(200)\r",
+									"pm.test(\"Code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
 									"});\r",
 									"\r",
-									"pm.test(\"Non empty response\", function() {\r",
+									"pm.test(\"Response length is 2\", function () {\r",
 									"    const responseData = pm.response.json();\r",
-									"    pm.expect(responseData.name).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.description).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.body).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.body).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.body).to.be.a('string').to.equal(pm.environment.get(\"body3\"))\r",
-									"    pm.expect(responseData.id).to.equal(pm.environment.get(\"artifactId3\"));\r",
-									"    pm.expect(responseData.description).to.equal(pm.environment.get(\"description3\"));\r",
+									"    pm.expect(responseData).to.be.an(\"array\").and.to.have.lengthOf(2);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Artifacts validation\", function () {\r",
+									"    const responseData = pm.response.json();\r",
+									"    \r",
+									"    // Environment variables for validation\r",
+									"    const artifactIds = [\r",
+									"        pm.environment.get(\"artifactId1\"),\r",
+									"        pm.environment.get(\"artifactId2\"),\r",
+									"    ];\r",
+									"    const descriptions = [\r",
+									"        pm.environment.get(\"description1\"),\r",
+									"        pm.environment.get(\"description2\"),\r",
+									"\r",
+									"    ];\r",
+									"\r",
+									"    // Create a reference array of expected artifacts\r",
+									"    const expectedArtifacts = artifactIds.map((id, index) => ({\r",
+									"        id,\r",
+									"        description: descriptions[index],\r",
+									"    }));\r",
+									"\r",
+									"    // Sort both arrays by `id`\r",
+									"    const sortedResponse = responseData.sort((a, b) => a.id.localeCompare(b.id));\r",
+									"    const sortedExpectedArtifacts = expectedArtifacts.sort((a, b) => a.id.localeCompare(b.id));\r",
+									"\r",
+									"    // Validate each artifact\r",
+									"    sortedResponse.forEach((artifact, index) => {\r",
+									"        pm.expect(artifact.id).to.equal(sortedExpectedArtifacts[index].id);\r",
+									"        pm.expect(artifact.description).to.equal(sortedExpectedArtifacts[index].description);\r",
+									"    });\r",
 									"});\r",
 									""
 								],
@@ -4783,76 +5004,14 @@
 							}
 						},
 						"url": {
-							"raw": "{{baseUrl}}/organizations/{{orgId}}/artifacts/{{artifactId3}}",
+							"raw": "{{baseUrl}}/organizations/{{orgId}}/artifacts",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
 								"organizations",
 								"{{orgId}}",
-								"artifacts",
-								"{{artifactId3}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Artifact bad non existent org",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Code is 404\", function() {\r",
-									"    pm.response.to.have.status(404)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Get error message\", function() {\r",
-									"   pm.expect(pm.response.json().message).to.eql(\"The organization provided does not exist\");\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/organizations/{{$randomUUID}}/artifacts/{{artifactId1}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations",
-								"{{$randomUUID}}",
-								"artifacts",
-								"{{artifactId1}}"
+								"artifacts"
 							]
 						}
 					},
@@ -4878,29 +5037,22 @@
 									"    // Extract organization\r",
 									"    const org = responseData[0];\r",
 									"    pm.expect(org.id).to.equal(pm.environment.get(\"orgId\"));\r",
-									"    pm.expect(org.artifacts).to.be.an(\"array\").and.to.have.lengthOf(3);\r",
+									"    pm.expect(org.artifacts).to.be.an(\"array\").and.to.have.lengthOf(2);\r",
 									"\r",
 									"    // Environment variables for artifacts validation\r",
 									"    const artifactIds = [\r",
 									"        pm.environment.get(\"artifactId1\"),\r",
 									"        pm.environment.get(\"artifactId2\"),\r",
-									"        pm.environment.get(\"artifactId3\")\r",
 									"    ];\r",
-									"    const bodies = [\r",
-									"        pm.environment.get(\"body1\"),\r",
-									"        pm.environment.get(\"body2\"),\r",
-									"        pm.environment.get(\"body3\")\r",
-									"    ];\r",
+									"  \r",
 									"    const descriptions = [\r",
 									"        pm.environment.get(\"description1\"),\r",
 									"        pm.environment.get(\"description2\"),\r",
-									"        pm.environment.get(\"description3\")\r",
 									"    ];\r",
 									"\r",
 									"    // Create a reference array of expected artifacts\r",
 									"    const expectedArtifacts = artifactIds.map((id, index) => ({\r",
 									"        id,\r",
-									"        body: bodies[index],\r",
 									"        description: descriptions[index],\r",
 									"    }));\r",
 									"\r",
@@ -4911,7 +5063,6 @@
 									"    // Validate each artifact\r",
 									"    sortedResponseArtifacts.forEach((artifact, index) => {\r",
 									"        pm.expect(artifact.id).to.equal(sortedExpectedArtifacts[index].id);\r",
-									"        pm.expect(artifact.body).to.equal(sortedExpectedArtifacts[index].body);\r",
 									"        pm.expect(artifact.description).to.equal(sortedExpectedArtifacts[index].description);\r",
 									"    });\r",
 									"});\r",
@@ -4923,145 +5074,16 @@
 						}
 					],
 					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/organizations",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get All Artifacts",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Code is 200\", function () {\r",
-									"    pm.response.to.have.status(200);\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Response length is 3\", function () {\r",
-									"    const responseData = pm.response.json();\r",
-									"    pm.expect(responseData).to.be.an(\"array\").and.to.have.lengthOf(3);\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Artifacts validation\", function () {\r",
-									"    const responseData = pm.response.json();\r",
-									"    \r",
-									"    // Environment variables for validation\r",
-									"    const artifactIds = [\r",
-									"        pm.environment.get(\"artifactId1\"),\r",
-									"        pm.environment.get(\"artifactId2\"),\r",
-									"        pm.environment.get(\"artifactId3\")\r",
-									"    ];\r",
-									"    const bodies = [\r",
-									"        pm.environment.get(\"body1\"),\r",
-									"        pm.environment.get(\"body2\"),\r",
-									"        pm.environment.get(\"body3\")\r",
-									"    ];\r",
-									"    const descriptions = [\r",
-									"        pm.environment.get(\"description1\"),\r",
-									"        pm.environment.get(\"description2\"),\r",
-									"        pm.environment.get(\"description3\")\r",
-									"    ];\r",
-									"\r",
-									"    // Create a reference array of expected artifacts\r",
-									"    const expectedArtifacts = artifactIds.map((id, index) => ({\r",
-									"        id,\r",
-									"        body: bodies[index],\r",
-									"        description: descriptions[index],\r",
-									"    }));\r",
-									"\r",
-									"    // Sort both arrays by `id`\r",
-									"    const sortedResponse = responseData.sort((a, b) => a.id.localeCompare(b.id));\r",
-									"    const sortedExpectedArtifacts = expectedArtifacts.sort((a, b) => a.id.localeCompare(b.id));\r",
-									"\r",
-									"    // Validate each artifact\r",
-									"    sortedResponse.forEach((artifact, index) => {\r",
-									"        pm.expect(artifact.id).to.equal(sortedExpectedArtifacts[index].id);\r",
-									"        pm.expect(artifact.body).to.equal(sortedExpectedArtifacts[index].body);\r",
-									"        pm.expect(artifact.description).to.equal(sortedExpectedArtifacts[index].description);\r",
-									"    });\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_PI}}",
+									"type": "string"
 								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/organizations/{{orgId}}/artifacts",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations",
-								"{{orgId}}",
-								"artifacts"
 							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get All Orgs",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Code is 200\", function() {\r",
-									"    pm.response.to.have.status(200);\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Non Empty list\", function() {\r",
-									"    pm.expect(pm.response.json()).to.be.an('array').that.is.not.empty;\r",
-									"    pm.expect(pm.response.json()).to.have.lengthOf(1);\r",
-									"    pm.expect(pm.response.json()[0].id).to.equal(pm.environment.get(\"orgId\"));\r",
-									"    pm.expect(pm.response.json()[0].artifacts).to.have.length(3);\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
+						},
 						"method": "GET",
 						"header": [],
 						"url": {
@@ -5138,67 +5160,6 @@
 					"response": []
 				},
 				{
-					"name": "Get Artifact bad ID",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Code is 412\", function() {\r",
-									"    pm.response.to.have.status(412)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Get error message\", function() {\r",
-									"   pm.expect(pm.response.json().message).to.eql(\"The artifactId provided is not valid\");\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/organizations/{{orgId}}/artifacts/bad-id",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations",
-								"{{orgId}}",
-								"artifacts",
-								"bad-id"
-							]
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "Get Artifact bad Org ID",
 					"event": [
 						{
@@ -5260,31 +5221,303 @@
 					"response": []
 				},
 				{
-					"name": "Update Artifact 1",
+					"name": "Get All Artifactd wrong Org ID",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.environment.set(\"artifactName1_updated\", pm.response.json().name);\r",
-									"pm.environment.set(\"description1_updated\", pm.response.json().description);\r",
-									"\r",
-									"pm.test(\"Code is 200\", function () {\r",
-									"    pm.response.to.have.status(200);\r",
+									"pm.test(\"Code is 404\", function() {\r",
+									"    pm.response.to.have.status(404)\r",
 									"});\r",
 									"\r",
-									"pm.test(\"Artifact update validation\", function () {\r",
-									"    const responseData = pm.response.json();\r",
-									"\r",
-									"    // Verify ID remains the same\r",
-									"    pm.expect(responseData.id).to.equal(pm.environment.get(\"artifactId1\"));\r",
-									"\r",
-									"    // Verify name, description, and body are updated\r",
-									"    pm.expect(responseData.name).to.be.a('string').to.not.equal(pm.environment.get(\"artifactName1\"));\r",
-									"    pm.expect(responseData.description).to.not.equal(pm.environment.get(\"description1\"));\r",
-									"    pm.expect(responseData.body).to.not.equal(pm.environment.get(\"artifactBody1\"));\r",
+									"pm.test(\"Get error message\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"The organization with the provided id does not exist\");\r",
 									"});\r",
 									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/organizations/{{$randomUUID}}/artifacts/{{artifactId1}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								"{{$randomUUID}}",
+								"artifacts",
+								"{{artifactId1}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Artifactd bad Org ID Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 404\", function() {\r",
+									"    pm.response.to.have.status(412)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Get error message\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"The organizationId provided is not valid\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/organizations/bad-id/artifacts/{{artifactId1}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								"bad-id",
+								"artifacts",
+								"{{artifactId1}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Collaborator Create Artifact bad Org Id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 412\", function() {\r",
+									"    pm.response.to.have.status(412)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Get error message\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"The organizationId provided is not valid\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"function generateRandomHash(length) {",
+									"    let result = '';",
+									"    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';",
+									"    const charactersLength = characters.length;",
+									"",
+									"    for (let i = 0; i < length; i++) {",
+									"        result += characters.charAt(Math.floor(Math.random() * charactersLength));",
+									"    }",
+									"",
+									"    return result;",
+									"}",
+									"",
+									"// Set the generated hash in an environment variable",
+									"pm.environment.set(\"artifacthash1\", generateRandomHash(64));",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_collaborator1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\": \"{{$randomProductName}}\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"fileName\": \"{{$randomFileName}}\",\r\n    \"hash\": \"{{artifacthash1}}\",\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example.com/product\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/organizations/bad-id/artifacts",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								"bad-id",
+								"artifacts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Collaborator Create Artifact wrongOrg Id Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 412\", function() {\r",
+									"    pm.response.to.have.status(404)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Get error message\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"The organization with the provided id does not exist\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"function generateRandomHash(length) {",
+									"    let result = '';",
+									"    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';",
+									"    const charactersLength = characters.length;",
+									"",
+									"    for (let i = 0; i < length; i++) {",
+									"        result += characters.charAt(Math.floor(Math.random() * charactersLength));",
+									"    }",
+									"",
+									"    return result;",
+									"}",
+									"",
+									"// Set the generated hash in an environment variable",
+									"pm.environment.set(\"artifacthash1\", generateRandomHash(64));",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_collaborator1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\": \"{{$randomProductName}}\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"fileName\": \"{{$randomFileName}}\",\r\n    \"hash\": \"{{artifacthash1}}\",\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example.com/product\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/organizations/{{$randomUUID}}/artifacts",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								"{{$randomUUID}}",
+								"artifacts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PI Update Artifact 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Accessing artifact with insufficient permissions returns 403 Forbidden\", function () {\r",
+									"    pm.response.to.have.status(403);\r",
+									"    const responseData = pm.response.json();\r",
+									"    pm.expect(responseData).to.have.property('message', 'Forbidden resource');\r",
+									"    pm.expect(responseData).to.have.property('error', 'Forbidden');\r",
+									"    pm.expect(responseData).to.have.property('statusCode', 403);\r",
+									"});"
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -5338,6 +5571,16 @@
 						}
 					],
 					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_PI}}",
+									"type": "string"
+								}
+							]
+						},
 						"method": "PUT",
 						"header": [],
 						"body": {
@@ -5365,27 +5608,19 @@
 					"response": []
 				},
 				{
-					"name": "Get Artifact 1",
+					"name": "cOLLABORATOR Update Artifact 1 Copy",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Code is 200\", function() {\r",
-									"    pm.response.to.have.status(200)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Non empty response\", function() {\r",
+									"pm.test(\"Accessing artifact with insufficient permissions returns 403 Forbidden\", function () {\r",
+									"    pm.response.to.have.status(403);\r",
 									"    const responseData = pm.response.json();\r",
-									"    pm.expect(responseData.name).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.description).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.body).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.body).to.be.a('string').to.equal(pm.environment.get(\"body1_updated\"))\r",
-									"    pm.expect(responseData.id).to.equal(pm.environment.get(\"artifactId1\"));\r",
-									"    pm.expect(responseData.description).to.equal(pm.environment.get(\"description1_updated\"));\r",
-									"    pm.expect(responseData.name).to.equal(pm.environment.get(\"artifactName1_updated\"));\r",
-									"});\r",
-									""
+									"    pm.expect(responseData).to.have.property('message', 'Forbidden resource');\r",
+									"    pm.expect(responseData).to.have.property('error', 'Forbidden');\r",
+									"    pm.expect(responseData).to.have.property('statusCode', 403);\r",
+									"});"
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -5394,16 +5629,588 @@
 						{
 							"listen": "prerequest",
 							"script": {
-								"packages": {},
-								"type": "text/javascript"
+								"exec": [
+									"const bodyObject = {",
+									"    name: \"Smart Home Security Kit\",",
+									"    description: \"A complete smart security solution to protect your home, featuring motion sensors, HD cameras, and a mobile app for real-time monitoring.\",",
+									"    category: \"Home Security\",",
+									"    features: [",
+									"        \"HD motion-activated cameras\",",
+									"        \"Real-time mobile alerts\",",
+									"        \"Easy DIY installation\",",
+									"        \"Night vision support\",",
+									"        \"Smart home integration\"",
+									"    ],",
+									"    price: 199.99,",
+									"    availability: true,",
+									"    dimensions: {",
+									"        width: \"6 inches\",",
+									"        height: \"9 inches\",",
+									"        depth: \"3 inches\"",
+									"    },",
+									"    colorOptions: [\"white\", \"black\"],",
+									"    rating: 4.8,",
+									"    reviews: [",
+									"        {",
+									"            user: \"Emma T.\",",
+									"            rating: 5,",
+									"            comment: \"Easy to set up and works like a charm. Highly recommend!\"",
+									"        },",
+									"        {",
+									"            user: \"John D.\",",
+									"            rating: 4,",
+									"            comment: \"Good system but the app interface could use improvement.\"",
+									"        }",
+									"    ]",
+									"};",
+									"",
+									"// Convert JSON object to a string and set it as an environment variable",
+									"pm.environment.set(\"body1_updated\", JSON.stringify(bodyObject));",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
 							}
 						}
 					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
 					"request": {
-						"method": "GET",
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_collaborator1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{$randomProductName}}\",\r\n    \"description\": \"Simplify your life with the Ultimate Home Organizer Kit, a smart and stylish solution for managing clutter in any space. Featuring modular bins, durable shelves, and customizable labels, this kit transforms bedrooms, kitchens, and offices into neat, efficient areas. Whether you're storing clothes, organizing kitchenware, or sorting supplies, it adapts to your needs with ease. Crafted from eco-friendly materials, it delivers both durability and elegance, making it an ideal choice for creating a sustainable, well-ordered home. Embrace a more organized lifestyle with this versatile and practical kit designed for modern living.\",\r\n    \"body\": {{body1_updated}}\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/organizations/{{orgId}}/artifacts/{{artifactId1}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								"{{orgId}}",
+								"artifacts",
+								"{{artifactId1}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "admin Update Artifact 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Accessing artifact with insufficient permissions returns 403 Forbidden\", function () {\r",
+									"    pm.response.to.have.status(403);\r",
+									"    const responseData = pm.response.json();\r",
+									"    pm.expect(responseData).to.have.property('message', 'Forbidden resource');\r",
+									"    pm.expect(responseData).to.have.property('error', 'Forbidden');\r",
+									"    pm.expect(responseData).to.have.property('statusCode', 403);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const bodyObject = {",
+									"    name: \"Smart Home Security Kit\",",
+									"    description: \"A complete smart security solution to protect your home, featuring motion sensors, HD cameras, and a mobile app for real-time monitoring.\",",
+									"    category: \"Home Security\",",
+									"    features: [",
+									"        \"HD motion-activated cameras\",",
+									"        \"Real-time mobile alerts\",",
+									"        \"Easy DIY installation\",",
+									"        \"Night vision support\",",
+									"        \"Smart home integration\"",
+									"    ],",
+									"    price: 199.99,",
+									"    availability: true,",
+									"    dimensions: {",
+									"        width: \"6 inches\",",
+									"        height: \"9 inches\",",
+									"        depth: \"3 inches\"",
+									"    },",
+									"    colorOptions: [\"white\", \"black\"],",
+									"    rating: 4.8,",
+									"    reviews: [",
+									"        {",
+									"            user: \"Emma T.\",",
+									"            rating: 5,",
+									"            comment: \"Easy to set up and works like a charm. Highly recommend!\"",
+									"        },",
+									"        {",
+									"            user: \"John D.\",",
+									"            rating: 4,",
+									"            comment: \"Good system but the app interface could use improvement.\"",
+									"        }",
+									"    ]",
+									"};",
+									"",
+									"// Convert JSON object to a string and set it as an environment variable",
+									"pm.environment.set(\"body1_updated\", JSON.stringify(bodyObject));",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_ADMIN1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{$randomProductName}}\",\r\n    \"description\": \"Simplify your life with the Ultimate Home Organizer Kit, a smart and stylish solution for managing clutter in any space. Featuring modular bins, durable shelves, and customizable labels, this kit transforms bedrooms, kitchens, and offices into neat, efficient areas. Whether you're storing clothes, organizing kitchenware, or sorting supplies, it adapts to your needs with ease. Crafted from eco-friendly materials, it delivers both durability and elegance, making it an ideal choice for creating a sustainable, well-ordered home. Embrace a more organized lifestyle with this versatile and practical kit designed for modern living.\",\r\n    \"body\": {{body1_updated}}\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/organizations/{{orgId}}/artifacts/{{artifactId1}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								"{{orgId}}",
+								"artifacts",
+								"{{artifactId1}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete an Artifact Unauthenticated",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 401\", function() {\r",
+									"    pm.response.to.have.status(401)\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/organizations/{{orgId}}/artifacts/{{artifactId1}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								"{{orgId}}",
+								"artifacts",
+								"{{artifactId1}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PI DELETE an Artifact",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Accessing artifact with insufficient permissions returns 403 Forbidden\", function () {\r",
+									"    pm.response.to.have.status(403);\r",
+									"    const responseData = pm.response.json();\r",
+									"    pm.expect(responseData).to.have.property('message', 'Forbidden resource');\r",
+									"    pm.expect(responseData).to.have.property('error', 'Forbidden');\r",
+									"    pm.expect(responseData).to.have.property('statusCode', 403);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_PI}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/organizations/{{orgId}}/artifacts/{{artifactId1}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								"{{orgId}}",
+								"artifacts",
+								"{{artifactId1}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Collaborator DELETE an Artifact Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Accessing artifact with insufficient permissions returns 403 Forbidden\", function () {\r",
+									"    pm.response.to.have.status(403);\r",
+									"    const responseData = pm.response.json();\r",
+									"    pm.expect(responseData).to.have.property('message', 'Forbidden resource');\r",
+									"    pm.expect(responseData).to.have.property('error', 'Forbidden');\r",
+									"    pm.expect(responseData).to.have.property('statusCode', 403);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_collaborator1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/organizations/{{orgId}}/artifacts/{{artifactId1}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								"{{orgId}}",
+								"artifacts",
+								"{{artifactId1}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin delete artifact 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 200\", function() {\r",
+									"    pm.response.to.have.status(200)\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_ADMIN1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/organizations/{{orgId}}/artifacts/{{artifactId2}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								"{{orgId}}",
+								"artifacts",
+								"{{artifactId2}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin delete artifact 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 200\", function() {\r",
+									"    pm.response.to.have.status(404)\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_ADMIN1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/organizations/{{orgId}}/artifacts/{{artifactId2}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								"{{orgId}}",
+								"artifacts",
+								"{{artifactId2}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin delete artifact 2 bad id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 412\", function() {\r",
+									"    pm.response.to.have.status(412)\r",
+									"\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Get error message\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"The artifactId provided is not valid\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_ADMIN1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/organizations/{{orgId}}/artifacts/bad-id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								"{{orgId}}",
+								"artifacts",
+								"bad-id"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin delete artifact 1 bad org id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 412\", function() {\r",
+									"    pm.response.to.have.status(412)\r",
+									"\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Get error message\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"The organizationId provided is not valid\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_ADMIN1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/organizations/bad-id/artifacts/{{artifactId1}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								"bad-id",
+								"artifacts",
+								"{{artifactId1}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin delete artifact 1 wrong org id Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 404\", function() {\r",
+									"    pm.response.to.have.status(404)\r",
+									"\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Get error message\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"The organization with the provided id does not exist\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_ADMIN1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/organizations/{{$randomUUID}}/artifacts/{{artifactId1}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								"{{$randomUUID}}",
+								"artifacts",
+								"{{artifactId1}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete All Unauthenticated",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 401\", function() {\r",
+									"    pm.response.to.have.status(401)\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
 						"header": [],
 						"body": {
 							"mode": "raw",
@@ -5415,95 +6222,27 @@
 							}
 						},
 						"url": {
-							"raw": "{{baseUrl}}/organizations/{{orgId}}/artifacts/{{artifactId1}}",
+							"raw": "{{baseUrl}}/organizations",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"organizations",
-								"{{orgId}}",
-								"artifacts",
-								"{{artifactId1}}"
+								"organizations"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Update Artifact 1 with its own name",
+					"name": "Delete All PI",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Code is 200\", function () {\r",
-									"    pm.response.to.have.status(200);\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Artifact update validation\", function () {\r",
-									"    const responseData = pm.response.json();\r",
-									"\r",
-									"    // Verify ID remains the same\r",
-									"    pm.expect(responseData.id).to.equal(pm.environment.get(\"artifactId1\"));\r",
-									"\r",
-									"    // Verify name, description, and body are updated\r",
-									"    pm.expect(responseData.name).to.be.a('string').to.equal(pm.environment.get(\"artifactName1\"));\r",
-									"    pm.expect(responseData.description).to.be.a('string').to.equal(pm.environment.get(\"description1_updated\"));\r",
-									"    // Verify body is updated (parse if necessary)\r",
-									"    const responseBody = typeof responseData.body === 'string'\r",
-									"        ? JSON.parse(responseData.body)\r",
-									"        : responseData.body;\r",
-									"    const updatedBody = JSON.parse(pm.environment.get(\"body1_updated\"));\r",
-									"\r",
-									"    pm.expect(responseBody).to.deep.equal(updatedBody);\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"const bodyObject = {",
-									"    name: \"Smart Home Security Kit\",",
-									"    description: \"A complete smart security solution to protect your home, featuring motion sensors, HD cameras, and a mobile app for real-time monitoring.\",",
-									"    category: \"Home Security\",",
-									"    features: [",
-									"        \"HD motion-activated cameras\",",
-									"        \"Real-time mobile alerts\",",
-									"        \"Easy DIY installation\",",
-									"        \"Night vision support\",",
-									"        \"Smart home integration\"",
-									"    ],",
-									"    price: 199.99,",
-									"    availability: true,",
-									"    dimensions: {",
-									"        width: \"6 inches\",",
-									"        height: \"9 inches\",",
-									"        depth: \"3 inches\"",
-									"    },",
-									"    colorOptions: [\"white\", \"black\"],",
-									"    rating: 4.8,",
-									"    reviews: [",
-									"        {",
-									"            user: \"Emma T.\",",
-									"            rating: 5,",
-									"            comment: \"Easy to set up and works like a charm. Highly recommend!\"",
-									"        },",
-									"        {",
-									"            user: \"John D.\",",
-									"            rating: 4,",
-									"            comment: \"Good system but the app interface could use improvement.\"",
-									"        }",
-									"    ]",
-									"};",
-									"",
-									"// Convert JSON object to a string and set it as an environment variable",
-									"pm.environment.set(\"body1_updated\", JSON.stringify(bodyObject));",
-									""
+									"pm.test(\"Code is 403\", function() {\r",
+									"    pm.response.to.have.status(403)\r",
+									"});"
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -5511,11 +6250,21 @@
 						}
 					],
 					"request": {
-						"method": "PUT",
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_PI}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"{{artifactName1}}\",\r\n    \"description\": \"Simplify your life with the Ultimate Home Organizer Kit, a smart and stylish solution for managing clutter in any space. Featuring modular bins, durable shelves, and customizable labels, this kit transforms bedrooms, kitchens, and offices into neat, efficient areas. Whether you're storing clothes, organizing kitchenware, or sorting supplies, it adapts to your needs with ease. Crafted from eco-friendly materials, it delivers both durability and elegance, making it an ideal choice for creating a sustainable, well-ordered home. Embrace a more organized lifestyle with this versatile and practical kit designed for modern living.\",\r\n    \"body\": {{body1_updated}}\r\n}\r\n",
+							"raw": "",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -5523,81 +6272,27 @@
 							}
 						},
 						"url": {
-							"raw": "{{baseUrl}}/organizations/{{orgId}}/artifacts/{{artifactId1}}",
+							"raw": "{{baseUrl}}/organizations",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"organizations",
-								"{{orgId}}",
-								"artifacts",
-								"{{artifactId1}}"
+								"organizations"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Update Artifact 1 with Artifact 2 Name",
+					"name": "Delete All Collaborator",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Code is 400\", function() {\r",
-									"    pm.response.to.have.status(400)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Get error message\", function() {\r",
-									"   pm.expect(pm.response.json().message).to.eql(\"The artifact name provided is already in use within this organization\");\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"const bodyObject = {",
-									"    name: \"Smart Home Security Kit\",",
-									"    description: \"A complete smart security solution to protect your home, featuring motion sensors, HD cameras, and a mobile app for real-time monitoring.\",",
-									"    category: \"Home Security\",",
-									"    features: [",
-									"        \"HD motion-activated cameras\",",
-									"        \"Real-time mobile alerts\",",
-									"        \"Easy DIY installation\",",
-									"        \"Night vision support\",",
-									"        \"Smart home integration\"",
-									"    ],",
-									"    price: 199.99,",
-									"    availability: true,",
-									"    dimensions: {",
-									"        width: \"6 inches\",",
-									"        height: \"9 inches\",",
-									"        depth: \"3 inches\"",
-									"    },",
-									"    colorOptions: [\"white\", \"black\"],",
-									"    rating: 4.8,",
-									"    reviews: [",
-									"        {",
-									"            user: \"Emma T.\",",
-									"            rating: 5,",
-									"            comment: \"Easy to set up and works like a charm. Highly recommend!\"",
-									"        },",
-									"        {",
-									"            user: \"John D.\",",
-									"            rating: 4,",
-									"            comment: \"Good system but the app interface could use improvement.\"",
-									"        }",
-									"    ]",
-									"};",
-									"",
-									"// Convert JSON object to a string and set it as an environment variable",
-									"pm.environment.set(\"body1_updated\", JSON.stringify(bodyObject));",
-									""
+									"pm.test(\"Code is 403\", function() {\r",
+									"    pm.response.to.have.status(403)\r",
+									"});"
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -5605,11 +6300,21 @@
 						}
 					],
 					"request": {
-						"method": "PUT",
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_collaborator1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"{{name2}}\",\r\n    \"description\": \"Simplify your life with the Ultimate Home Organizer Kit, a smart and stylish solution for managing clutter in any space. Featuring modular bins, durable shelves, and customizable labels, this kit transforms bedrooms, kitchens, and offices into neat, efficient areas. Whether you're storing clothes, organizing kitchenware, or sorting supplies, it adapts to your needs with ease. Crafted from eco-friendly materials, it delivers both durability and elegance, making it an ideal choice for creating a sustainable, well-ordered home. Embrace a more organized lifestyle with this versatile and practical kit designed for modern living.\",\r\n    \"body\": {{body1_updated}}\r\n}\r\n",
+							"raw": "",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -5617,70 +6322,19 @@
 							}
 						},
 						"url": {
-							"raw": "{{baseUrl}}/organizations/{{orgId}}/artifacts/{{artifactId1}}",
+							"raw": "{{baseUrl}}/organizations",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"organizations",
-								"{{orgId}}",
-								"artifacts",
-								"{{artifactId1}}"
+								"organizations"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Update Artifact that doesn't exist",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Code is 404\", function() {\r",
-									"    pm.response.to.have.status(404)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Get error message\", function() {\r",
-									"   pm.expect(pm.response.json().message).to.eql(\"The artifact with the provided id does not exist\");\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "PUT",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"{{name2}}\",\r\n    \"description\": \"Simplify your life with the Ultimate Home Organizer Kit, a smart and stylish solution for managing clutter in any space. Featuring modular bins, durable shelves, and customizable labels, this kit transforms bedrooms, kitchens, and offices into neat, efficient areas. Whether you're storing clothes, organizing kitchenware, or sorting supplies, it adapts to your needs with ease. Crafted from eco-friendly materials, it delivers both durability and elegance, making it an ideal choice for creating a sustainable, well-ordered home. Embrace a more organized lifestyle with this versatile and practical kit designed for modern living.\",\r\n    \"body\": {{body1_updated}}\r\n}\r\n",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/organizations/{{orgId}}/artifacts/{{$randomUUID}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations",
-								"{{orgId}}",
-								"artifacts",
-								"{{$randomUUID}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete an Artifact",
+					"name": "Delete All Admin",
 					"event": [
 						{
 							"listen": "test",
@@ -5696,77 +6350,16 @@
 						}
 					],
 					"request": {
-						"method": "DELETE",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/organizations/{{orgId}}/artifacts/{{artifactId1}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations",
-								"{{orgId}}",
-								"artifacts",
-								"{{artifactId1}}"
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_ADMIN2}}",
+									"type": "string"
+								}
 							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete a non existent Artifact",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Code is 404\", function() {\r",
-									"    pm.response.to.have.status(404)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Get error\", function() {\r",
-									"   pm.expect(pm.response.json().message).to.eql(\"The artifact with the provided id does not exist\");\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "DELETE",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/organizations/{{orgId}}/artifacts/{{userId1}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations",
-								"{{orgId}}",
-								"artifacts",
-								"{{userId1}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete All",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
+						},
 						"method": "DELETE",
 						"header": [],
 						"body": {

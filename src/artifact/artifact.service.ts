@@ -24,8 +24,31 @@ export class ArtifactService {
   ) {}
 
   // Get All Artifacts - Return minimal fields
-  async findAll(): Promise<ListArtifactDto[]> {
-    const artifacts = await this.artifactRepository.find();
+  async findAll(organizationId: string): Promise<ListArtifactDto[]> {
+    // Validate organization ID
+    if (!organizationId || !validator.isUUID(organizationId)) {
+      throw new BusinessLogicException(
+        'The organizationId provided is not valid',
+        BusinessError.PRECONDITION_FAILED,
+      );
+    }
+    
+    // Check if organization exists
+    const organization = await this.organizationRepository.findOne({
+      where: { id: organizationId }
+    });
+    
+    if (!organization) {
+      throw new BusinessLogicException(
+        'The organization with the provided id does not exist',
+        BusinessError.NOT_FOUND,
+      );
+    }
+    
+    // Find artifacts for the organization
+    const artifacts = await this.artifactRepository.find({
+      where: { organization: { id: organizationId } }
+    });
     
     // Transform the result to include minimal fields
     return artifacts.map(artifact => ({
@@ -37,22 +60,47 @@ export class ArtifactService {
   }
 
   // Get One Artifact - Return all fields
-  async findOne(id: string): Promise<GetArtifactDto> {
+  async findOne(id: string, organizationId: string): Promise<GetArtifactDto> {
+    // Validate artifact ID
     if (!id || !validator.isUUID(id)) {
       throw new BusinessLogicException(
-        'The artifact with the given id was not found',
+        'The artifactId provided is not valid',
+        BusinessError.PRECONDITION_FAILED,
+      );
+    }
+    
+    // Validate organization ID
+    if (!organizationId || !validator.isUUID(organizationId)) {
+      throw new BusinessLogicException(
+        'The organizationId provided is not valid',
+        BusinessError.PRECONDITION_FAILED,
+      );
+    }
+    
+    // Check if organization exists
+    const organization = await this.organizationRepository.findOne({
+      where: { id: organizationId }
+    });
+    
+    if (!organization) {
+      throw new BusinessLogicException(
+        'The organization with the provided id does not exist',
         BusinessError.NOT_FOUND,
       );
     }
     
+    // Find the artifact with the organization relation
     const artifact = await this.artifactRepository.findOne({
-      where: { id },
+      where: { 
+        id,
+        organization: { id: organizationId }
+      },
       relations: ['organization']
     });
     
     if (!artifact) {
       throw new BusinessLogicException(
-        'The artifact with the given id was not found',
+        'The artifact with the provided id does not exist',
         BusinessError.NOT_FOUND,
       );
     }
@@ -86,6 +134,14 @@ export class ArtifactService {
     submitterEmail: string,
     organizationId: string
   ): Promise<ListArtifactDto> {
+    // Validate organization ID
+    if (!organizationId || !validator.isUUID(organizationId)) {
+      throw new BusinessLogicException(
+        'The organizationId provided is not valid',
+        BusinessError.PRECONDITION_FAILED,
+      );
+    }
+    
     // Validate submitter email
     if (!submitterEmail || !validator.isEmail(submitterEmail)) {
       throw new BusinessLogicException(
@@ -146,6 +202,21 @@ export class ArtifactService {
         BusinessError.NOT_FOUND,
       );
     }
+
+    // Check if an artifact with the same title already exists in the organization
+    const existingArtifact = await this.artifactRepository.findOne({
+      where: { 
+        title: createArtifactDto.title,
+        organization: { id: organizationId }
+      }
+    });
+
+    if (existingArtifact) {
+      throw new BusinessLogicException(
+        'An artifact with this title already exists in the organization',
+        BusinessError.PRECONDITION_FAILED,
+      );
+    }
     
     // Create the artifact
     const artifact = this.artifactRepository.create({
@@ -167,22 +238,47 @@ export class ArtifactService {
   }
 
   // Update an Artifact - Only allow updating specific fields
-  async update(id: string, updateArtifactDto: UpdateArtifactDto): Promise<ArtifactEntity> {
+  async update(id: string, updateArtifactDto: UpdateArtifactDto, organizationId: string): Promise<ArtifactEntity> {
+    // Validate artifact ID
     if (!id || !validator.isUUID(id)) {
       throw new BusinessLogicException(
-        'The artifact with the given id was not found',
+        'The artifactId provided is not valid',
+        BusinessError.PRECONDITION_FAILED,
+      );
+    }
+    
+    // Validate organization ID
+    if (!organizationId || !validator.isUUID(organizationId)) {
+      throw new BusinessLogicException(
+        'The organizationId provided is not valid',
+        BusinessError.PRECONDITION_FAILED,
+      );
+    }
+    
+    // Check if organization exists
+    const organization = await this.organizationRepository.findOne({
+      where: { id: organizationId }
+    });
+    
+    if (!organization) {
+      throw new BusinessLogicException(
+        'The organization with the provided id does not exist',
         BusinessError.NOT_FOUND,
       );
     }
     
+    // Find the artifact with the organization relation
     const artifact = await this.artifactRepository.findOne({
-      where: { id },
+      where: { 
+        id,
+        organization: { id: organizationId }
+      },
       relations: ['organization']
     });
     
     if (!artifact) {
       throw new BusinessLogicException(
-        'The artifact with the given id was not found',
+        'The artifact with the provided id does not exist',
         BusinessError.NOT_FOUND,
       );
     }
@@ -213,21 +309,46 @@ export class ArtifactService {
   }
 
   // Delete an Artifact
-  async delete(id: string): Promise<void> {
+  async delete(id: string, organizationId: string): Promise<void> {
+    // Validate artifact ID
     if (!id || !validator.isUUID(id)) {
       throw new BusinessLogicException(
-        'The artifact with the given id was not found',
+        'The artifactId provided is not valid',
+        BusinessError.PRECONDITION_FAILED,
+      );
+    }
+    
+    // Validate organization ID
+    if (!organizationId || !validator.isUUID(organizationId)) {
+      throw new BusinessLogicException(
+        'The organizationId provided is not valid',
+        BusinessError.PRECONDITION_FAILED,
+      );
+    }
+    
+    // Check if organization exists
+    const organization = await this.organizationRepository.findOne({
+      where: { id: organizationId }
+    });
+    
+    if (!organization) {
+      throw new BusinessLogicException(
+        'The organization with the provided id does not exist',
         BusinessError.NOT_FOUND,
       );
     }
 
+    // Find the artifact with the organization relation
     const artifact = await this.artifactRepository.findOne({
-      where: { id }
+      where: { 
+        id,
+        organization: { id: organizationId }
+      }
     });
     
     if (!artifact) {
       throw new BusinessLogicException(
-        'The artifact with the given id was not found',
+        'The artifact with the provided id does not exist',
         BusinessError.NOT_FOUND,
       );
     }

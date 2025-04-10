@@ -43,15 +43,18 @@ export class ArtifactController {
   }
 
   @Get()
-  async findAll(): Promise<ListArtifactDto[]> {
-    return await this.artifactService.findAll();
+  async findAll(
+    @Param('organizationId') organizationId: string
+  ): Promise<ListArtifactDto[]> {
+    return await this.artifactService.findAll(organizationId);
   }
 
   @Get(':id')
   async findOne(
-    @Param('id') id: string
+    @Param('id') id: string,
+    @Param('organizationId') organizationId: string
   ): Promise<GetArtifactDto> {
-    return await this.artifactService.findOne(id);
+    return await this.artifactService.findOne(id, organizationId);
   }
 
   @Put(':id')
@@ -59,17 +62,19 @@ export class ArtifactController {
   @Roles(Role.SUBMITTER_LISTENER)
   async update(
     @Param('id') id: string,
+    @Param('organizationId') organizationId: string,
     @Body() updateArtifactDto: UpdateArtifactDto,
   ): Promise<ArtifactEntity> {
-    return await this.artifactService.update(id, updateArtifactDto);
+    return await this.artifactService.update(id, updateArtifactDto, organizationId);
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   async delete(
-    @Param('id') id: string
+    @Param('id') id: string,
+    @Param('organizationId') organizationId: string
   ): Promise<void> {
-    return await this.artifactService.delete(id);
+    return await this.artifactService.delete(id, organizationId);
   }
 }

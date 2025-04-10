@@ -83,6 +83,8 @@ describe('ArtifactService', () => {
         artifactList.push(fullArtifact);
       }
     }
+
+    return artifactList;
   };
 
   it('should be defined', () => {
@@ -91,8 +93,8 @@ describe('ArtifactService', () => {
 
   // FIND ALL TESTS
   describe('findAll', () => {
-    it('should return all artifacts with minimal fields', async () => {
-      const artifacts = await service.findAll();
+    it('should return all artifacts with minimal fields for a valid organization', async () => {
+      const artifacts = await service.findAll(organization.id);
       expect(artifacts).toBeDefined();
       expect(artifacts.length).toBe(artifactList.length);
       
@@ -106,13 +108,28 @@ describe('ArtifactService', () => {
         });
       });
     });
+
+    it('should throw an exception for an invalid organization ID', async () => {
+      await expect(() => service.findAll('invalid-uuid')).rejects.toHaveProperty(
+        'message',
+        'The organizationId provided is not valid',
+      );
+    });
+
+    it('should throw an exception for a non-existent organization', async () => {
+      const nonExistentId = faker.string.uuid();
+      await expect(() => service.findAll(nonExistentId)).rejects.toHaveProperty(
+        'message',
+        'The organization with the provided id does not exist',
+      );
+    });
   });
 
   // FIND ONE TESTS
   describe('findOne', () => {
-    it('should return one artifact by id with all fields', async () => {
+    it('should return one artifact by id with all fields for a valid organization', async () => {
       const storedArtifact = artifactList[0];
-      const artifact = await service.findOne(storedArtifact.id);
+      const artifact = await service.findOne(storedArtifact.id, organization.id);
       expect(artifact).toBeDefined();
       expect(artifact).toEqual({
         id: storedArtifact.id,
@@ -136,18 +153,35 @@ describe('ArtifactService', () => {
       });
     });
 
-    it('should throw an exception for an invalid UUID', async () => {
-      await expect(() => service.findOne('invalid-uuid')).rejects.toHaveProperty(
+    it('should throw an exception for an invalid artifact ID', async () => {
+      await expect(() => service.findOne('invalid-uuid', organization.id)).rejects.toHaveProperty(
         'message',
-        'The artifact with the given id was not found',
+        'The artifactId provided is not valid',
+      );
+    });
+
+    it('should throw an exception for an invalid organization ID', async () => {
+      const storedArtifact = artifactList[0];
+      await expect(() => service.findOne(storedArtifact.id, 'invalid-uuid')).rejects.toHaveProperty(
+        'message',
+        'The organizationId provided is not valid',
+      );
+    });
+
+    it('should throw an exception for a non-existent organization', async () => {
+      const storedArtifact = artifactList[0];
+      const nonExistentId = faker.string.uuid();
+      await expect(() => service.findOne(storedArtifact.id, nonExistentId)).rejects.toHaveProperty(
+        'message',
+        'The organization with the provided id does not exist',
       );
     });
 
     it('should throw an exception for a non-existent artifact', async () => {
       const nonExistentId = faker.string.uuid();
-      await expect(() => service.findOne(nonExistentId)).rejects.toHaveProperty(
+      await expect(() => service.findOne(nonExistentId, organization.id)).rejects.toHaveProperty(
         'message',
-        'The artifact with the given id was not found',
+        'The artifact with the provided id does not exist',
       );
     });
   });
@@ -228,97 +262,107 @@ describe('ArtifactService', () => {
         'Each link in the links array must be a valid URL',
       );
     });
+
+    it('should throw an exception when creating an artifact with a duplicate title in the same organization', async () => {
+      const artifactDto = generateRandomArtifact();
+      // Create first artifact
+      await service.create(artifactDto, testEmail, organization.id);
+      
+      // Try to create another artifact with the same title
+      await expect(() => service.create(artifactDto, testEmail, organization.id)).rejects.toHaveProperty(
+        'message',
+        'An artifact with this title already exists in the organization',
+      );
+    });
   });
 
   // UPDATE TESTS
   describe('update', () => {
-    it('should update an artifact with all allowed fields', async () => {
-      const storedArtifact = artifactList[0];
-      const updateData: UpdateArtifactDto = {
+    it('should update an artifact', async () => {
+      const artifacts = await seedDatabase();
+      const updateDto: UpdateArtifactDto = {
         verified: true,
         lastTimeVerified: new Date(),
         submissionState: SubmissionState.SUCCESS,
         submittedAt: new Date()
       };
-      const updatedArtifact = await service.update(storedArtifact.id, updateData);
-      expect(updatedArtifact).toBeDefined();
-      expect(updatedArtifact.verified).toBe(updateData.verified);
-      expect(updatedArtifact.lastTimeVerified).toEqual(updateData.lastTimeVerified);
-      expect(updatedArtifact.submissionState).toBe(updateData.submissionState);
-      expect(updatedArtifact.submittedAt).toEqual(updateData.submittedAt);
+
+      const updated = await service.update(artifacts[0].id, updateDto, organization.id);
+      expect(updated.verified).toBe(updateDto.verified);
+      expect(updated.lastTimeVerified).toEqual(updateDto.lastTimeVerified);
+      expect(updated.submissionState).toBe(updateDto.submissionState);
+      expect(updated.submittedAt).toEqual(updateDto.submittedAt);
     });
 
-    it('should update an artifact with partial allowed fields', async () => {
-      const storedArtifact = artifactList[1];
-      const updateData: UpdateArtifactDto = {
+    it('should throw an exception if artifact not found', async () => {
+      const updateDto: UpdateArtifactDto = {
         verified: true
       };
-      const updatedArtifact = await service.update(storedArtifact.id, updateData);
-      expect(updatedArtifact).toBeDefined();
-      expect(updatedArtifact.verified).toBe(updateData.verified);
+
+      await expect(() => service.update('non-existent-id', updateDto, organization.id))
+        .rejects
+        .toHaveProperty('message', 'The artifactId provided is not valid');
     });
 
-    it('should throw BusinessLogicException when trying to update non-allowed fields', async () => {
-      const storedArtifact = artifactList[0];
-      const updateData = {
-        title: 'New Title',
-        contributor: 'New Contributor',
-        description: 'New Description'
-      };
-      await expect(() => service.update(storedArtifact.id, updateData as UpdateArtifactDto)).rejects.toHaveProperty(
-        'message',
-        'Cannot update title, contributor, or submittedAt fields',
-      );
-    });
-
-    it('should throw an exception for a non-existent artifact', async () => {
-      const nonExistentId = faker.string.uuid();
-      const updateData: UpdateArtifactDto = {
+    it('should throw an exception if organization not found', async () => {
+      const artifacts = await seedDatabase();
+      const updateDto: UpdateArtifactDto = {
         verified: true
       };
-      await expect(() => service.update(nonExistentId, updateData)).rejects.toHaveProperty(
-        'message',
-        'The artifact with the given id was not found',
-      );
+
+      await expect(() => service.update(artifacts[0].id, updateDto, 'non-existent-org'))
+        .rejects
+        .toHaveProperty('message', 'The organizationId provided is not valid');
     });
 
-    it('should throw an exception for an invalid artifact ID', async () => {
-      const invalidId = 'invalid-uuid';
-      const updateData: UpdateArtifactDto = {
+    it('should throw an exception if artifact belongs to different organization', async () => {
+      const artifacts = await seedDatabase();
+      const otherOrg = await organizationRepository.save({
+        name: 'Other Org',
+        description: 'Other Org Description'
+      });
+      const updateDto: UpdateArtifactDto = {
         verified: true
       };
-      await expect(() => service.update(invalidId, updateData)).rejects.toHaveProperty(
-        'message',
-        'The artifact with the given id was not found',
-      );
+
+      await expect(() => service.update(artifacts[0].id, updateDto, otherOrg.id))
+        .rejects
+        .toHaveProperty('message', 'The artifact with the provided id does not exist');
     });
   });
 
   // DELETE TESTS
   describe('delete', () => {
-    it('should delete an existing artifact', async () => {
-      const storedArtifact = artifactList[0];
-      await service.delete(storedArtifact.id);
-      const deletedArtifact = await artifactRepository.findOne({
-        where: { id: storedArtifact.id },
+    it('should delete an artifact', async () => {
+      const artifacts = await seedDatabase();
+      await service.delete(artifacts[0].id, organization.id);
+      const deleted = await artifactRepository.findOne({ where: { id: artifacts[0].id } });
+      expect(deleted).toBeNull();
+    });
+
+    it('should throw an exception if artifact not found', async () => {
+      await expect(() => service.delete('non-existent-id', organization.id))
+        .rejects
+        .toHaveProperty('message', 'The artifactId provided is not valid');
+    });
+
+    it('should throw an exception if organization not found', async () => {
+      const artifacts = await seedDatabase();
+      await expect(() => service.delete(artifacts[0].id, 'non-existent-org'))
+        .rejects
+        .toHaveProperty('message', 'The organizationId provided is not valid');
+    });
+
+    it('should throw an exception if artifact belongs to different organization', async () => {
+      const artifacts = await seedDatabase();
+      const otherOrg = await organizationRepository.save({
+        name: 'Other Org',
+        description: 'Other Org Description'
       });
-      expect(deletedArtifact).toBeNull();
-    });
 
-    it('should throw an exception for a non-existent artifact', async () => {
-      const nonExistentId = faker.string.uuid();
-      await expect(() => service.delete(nonExistentId)).rejects.toHaveProperty(
-        'message',
-        'The artifact with the given id was not found',
-      );
-    });
-
-    it('should throw an exception for an invalid artifact ID', async () => {
-      const invalidId = 'invalid-uuid';
-      await expect(() => service.delete(invalidId)).rejects.toHaveProperty(
-        'message',
-        'The artifact with the given id was not found',
-      );
+      await expect(() => service.delete(artifacts[0].id, otherOrg.id))
+        .rejects
+        .toHaveProperty('message', 'The artifact with the provided id does not exist');
     });
   });
 });
