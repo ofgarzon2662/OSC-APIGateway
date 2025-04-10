@@ -39,7 +39,7 @@ Authorization: Bearer <your_jwt_token>
 ### Get One Artifact
 - **Method**: GET
 - **URL**: `/:artifactId`
-- **Auth Required**: Yes
+- **Auth Required**: No
 - **Roles Required**: None
 - **Parameters**: 
   - `organizationId`: UUID of the organization
