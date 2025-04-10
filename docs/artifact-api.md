@@ -78,11 +78,15 @@ Authorization: Bearer <your_jwt_token>
 - **Request Body**:
   ```json
   {
-    "title": "string",
-    "description": "string",
-    "keywords": ["string"],
-    "links": ["string"],
-    "fundingAgencies": ["string"]
+    "title": "string (min 3 chars)",
+    "description": "string (min 50 chars)",
+    "keywords": ["string (total length ≤ 1000 chars)"],
+    "links": ["string (valid URLs, total length ≤ 2000 chars)"],
+    "fundingAgencies": ["string"],
+    "dois": ["string"],
+    "acknowledgements": "string",
+    "fileName": "string",
+    "hash": "string"
   }
   ```
 - **Response**: 
@@ -96,10 +100,14 @@ Authorization: Bearer <your_jwt_token>
   ```
 - **Error Responses**:
   - 404: "Organization not found"
-  - 412: "Title is required"
-  - 412: "Description is required"
-  - 412: "Total length of keywords and links must not exceed 10"
+  - 412: "The title of the artifact is required and must be at least 3 characters long"
+  - 412: "The description must be at least 50 characters long"
+  - 412: "The keywords array can have at most 1000 characters in total"
+  - 412: "The links array can have at most 2000 characters in total"
+  - 412: "Each link in the links array must be a valid URL"
   - 412: "An artifact with this title already exists in this organization"
+  - 412: "Invalid submitter email provided"
+  - 412: "The organizationId provided is not valid"
 
 ### Update Artifact
 - **Method**: PUT
