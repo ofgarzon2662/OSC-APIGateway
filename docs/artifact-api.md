@@ -113,7 +113,7 @@ Authorization: Bearer <your_jwt_token>
 - **Method**: PUT
 - **URL**: `/:artifactId`
 - **Auth Required**: Yes
-- **Roles Required**: None
+- **Roles Required**: submitter_listener
 - **Parameters**: 
   - `organizationId`: UUID of the organization
   - `artifactId`: UUID of the artifact
@@ -143,7 +143,7 @@ Authorization: Bearer <your_jwt_token>
 - **Method**: DELETE
 - **URL**: `/:artifactId`
 - **Auth Required**: Yes
-- **Roles Required**: None
+- **Roles Required**: admin
 - **Parameters**: 
   - `organizationId`: UUID of the organization
   - `artifactId`: UUID of the artifact
