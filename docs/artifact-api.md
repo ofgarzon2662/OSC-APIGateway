@@ -8,7 +8,7 @@ All endpoints are relative to: `{{baseUrl}}/organizations/{organizationId}/artif
 
 ## Authentication
 
-All endpoints require JWT authentication. Include the JWT token in the Authorization header:
+Most endpoints require JWT authentication. Include the JWT token in the Authorization header:
 ```
 Authorization: Bearer <your_jwt_token>
 ```
@@ -35,6 +35,7 @@ Authorization: Bearer <your_jwt_token>
   ```
 - **Error Responses**:
   - 404: "Organization not found"
+  - 412: "The organizationId provided is not valid"
 
 ### Get One Artifact
 - **Method**: GET
@@ -52,21 +53,26 @@ Authorization: Bearer <your_jwt_token>
     "description": "string",
     "keywords": ["string"],
     "links": ["string"],
+    "dois": ["string"],
     "fundingAgencies": ["string"],
+    "acknowledgements": "string",
+    "fileName": "string",
+    "hash": "string",
     "verified": boolean,
     "lastTimeVerified": "date",
-    "submissionState": "string",
+    "submissionState": "PENDING|FAILED|SUCCESS",
+    "submitterEmail": "string",
     "submittedAt": "date",
-    "submittedBy": {
-      "id": "uuid",
-      "name": "string",
-      "email": "string"
+    "organization": {
+      "name": "string"
     }
   }
   ```
 - **Error Responses**:
   - 404: "Organization not found"
   - 404: "Artifact not found"
+  - 412: "The organizationId provided is not valid"
+  - 412: "The artifactId provided is not valid"
 
 ### Create Artifact
 - **Method**: POST
@@ -78,15 +84,19 @@ Authorization: Bearer <your_jwt_token>
 - **Request Body**:
   ```json
   {
-    "title": "string (min 3 chars)",
-    "description": "string (min 50 chars)",
-    "keywords": ["string (total length ≤ 1000 chars)"],
-    "links": ["string (valid URLs, total length ≤ 2000 chars)"],
-    "fundingAgencies": ["string"],
+    "title": "string (min 3 chars, max 200)",
+    "description": "string (min 50 chars, max 3000)",
+    "keywords": ["string"],
+    "links": ["string (valid URLs)"],
     "dois": ["string"],
-    "acknowledgements": "string",
-    "fileName": "string",
-    "hash": "string"
+    "fundingAgencies": ["string"],
+    "acknowledgements": "string (max 3000)",
+    "fileName": "string (min 1 char, max 1000)",
+    "hash": "string",
+    "submittedAt": "date (optional)",
+    "verified": boolean (optional),
+    "lastTimeVerified": "date (optional)",
+    "submissionState": "PENDING|FAILED|SUCCESS (optional)"
   }
   ```
 - **Response**: 
@@ -120,24 +130,19 @@ Authorization: Bearer <your_jwt_token>
 - **Request Body**:
   ```json
   {
-    "title": "string",
-    "description": "string",
-    "keywords": ["string"],
-    "links": ["string"],
-    "fundingAgencies": ["string"],
-    "verified": boolean,
-    "lastTimeVerified": "date",
-    "submissionState": "string",
-    "submittedAt": "date"
+    "verified": boolean (optional),
+    "lastTimeVerified": "date (optional)",
+    "submissionState": "PENDING|FAILED|SUCCESS (optional)",
+    "submittedAt": "date (optional)"
   }
   ```
 - **Response**: Updated artifact object
 - **Error Responses**:
   - 404: "Organization not found"
   - 404: "Artifact not found"
-  - 412: "Artifact belongs to a different organization"
-  - 412: "Total length of keywords and links must not exceed 10"
-  - 412: "An artifact with this title already exists in this organization"
+  - 412: "Cannot update title, contributor, or submittedAt fields"
+  - 412: "The organizationId provided is not valid"
+  - 412: "The artifactId provided is not valid"
 
 ### Delete Artifact
 - **Method**: DELETE
@@ -151,4 +156,5 @@ Authorization: Bearer <your_jwt_token>
 - **Error Responses**:
   - 404: "Organization not found"
   - 404: "Artifact not found"
-  - 412: "Artifact belongs to a different organization" 
+  - 412: "The organizationId provided is not valid"
+  - 412: "The artifactId provided is not valid" 
