@@ -64,7 +64,7 @@ Authorization: Bearer <your_jwt_token>
   - 412: "Username or email already exists"
   - 412: "Password must be at least 8 characters long"
   - 412: "Username must be at least 8 characters long"
-  - 412: "Invalid role. Valid roles are: [list of valid roles]"
+  - 412: "Invalid role. Valid roles are: [admin, collaborator, pi]"
 
 ### Get All Users
 - **Method**: GET
