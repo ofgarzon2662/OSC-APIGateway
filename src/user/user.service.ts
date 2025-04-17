@@ -4,20 +4,18 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from './user.entity';
 import { Repository } from 'typeorm';
 import { PasswordService } from '../auth/password.service';
-import { UserCreateDto } from './userCreate.dto';
+import { UserCreateDto } from './dto/userCreate.dto';
 import {
   BusinessError,
   BusinessLogicException,
 } from '../shared/errors/business-errors';
-import { UserGetDto } from './userGet.dto';
+import { UserGetDto } from './dto/userGet.dto';
 import { plainToClass } from 'class-transformer';
 import { User } from './user';
 import { Role } from '../shared/enums/role.enums';
 import { OrganizationEntity } from '../organization/organization.entity';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { validate } from 'class-validator';
-import { AdminOrganizationDto } from './dto/admin-organization.dto';
+
+
 
 @Injectable()
 export class UserService {
@@ -128,34 +126,12 @@ The application requires at least one admin user to function properly.
     }
   }
 
-  private async validateOrganizationId(organizationId: string): Promise<OrganizationEntity> {
-    // Validate UUID format
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    if (!uuidRegex.test(organizationId)) {
-      throw new BadRequestException('Invalid organization ID format. Must be a valid UUID.');
-    }
-
-    const organization = await this.organizationRepository.findOne({
-      where: { id: organizationId }
-    });
-
-    if (!organization) {
-      throw new BusinessLogicException(
-        'Organization not found',
-        BusinessError.NOT_FOUND
-      );
-    }
-
-    return organization;
-  }
-
   /**
    * Find a user by username or email
    * @param username The username or email to search for
-   * @param organizationId Optional organization ID for organization-specific queries
    * @returns The user data
    */
-  async findOne(username: string, organizationId?: string): Promise<any> {
+  async findOne(username: string): Promise<any> {
     const foundUser = await this.userRepository.findOne({
       where: [
         { username: username },
@@ -171,17 +147,6 @@ The application requires at least one admin user to function properly.
       );
     }
 
-    // If organizationId is provided, validate it and check if the user belongs to that organization
-    if (organizationId) {
-      await this.validateOrganizationId(organizationId);
-      if (foundUser.organization?.id !== organizationId) {
-        throw new BusinessLogicException(
-          'User does not belong to the specified organization',
-          BusinessError.PRECONDITION_FAILED,
-        );
-      }
-    }
-
     // Convert the entity to a User object with all necessary fields
     return {
       id: foundUser.id,
@@ -194,7 +159,7 @@ The application requires at least one admin user to function properly.
   }
 
   // Get One User by username: Gives a GiveUserDto
-  async getOne(username: string, organizationId: string): Promise<UserGetDto> {
+  async getOne(username: string): Promise<UserGetDto> {
     const user = await this.userRepository.findOne({
       // username or email
       where: [{ username: username }, { email: username }],
@@ -208,59 +173,11 @@ The application requires at least one admin user to function properly.
       );
     }
 
-    // Validate organization and check if the user belongs to that organization
-    await this.validateOrganizationId(organizationId);
-    if (user.organization?.id !== organizationId) {
-      throw new BusinessLogicException(
-        'User does not belong to the specified organization',
-        BusinessError.PRECONDITION_FAILED,
-      );
-    }
-
     return plainToClass(UserGetDto, user, { excludeExtraneousValues: true });
   }
 
-  /**
-   * Associates an admin user with an organization
-   * @param userId The ID of the admin user
-   * @param organizationId The ID of the organization to associate with
-   * @returns The admin user data with organization information
-   */
-  async associateAdminWithOrganization(userId: string, organizationId: string): Promise<AdminOrganizationDto> {
-    const user = await this.userRepository.findOne({
-      where: { id: userId },
-      relations: ['organization']
-    });
-
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
-    // Verify user is an admin
-    if (!user.roles.includes(Role.ADMIN)) {
-      throw new BadRequestException('Only admin users can be associated with organizations');
-    }
-
-    // Verify user isn't already associated with an organization
-    if (user.organization) {
-      throw new BadRequestException('User is already associated with an organization');
-    }
-
-    // Validate and get the organization
-    const organization = await this.validateOrganizationId(organizationId);
-
-    // Associate user with organization
-    user.organization = organization;
-    const savedUser = await this.userRepository.save(user);
-
-    // Transform to DTO to exclude sensitive information
-    return plainToClass(AdminOrganizationDto, savedUser, { 
-      excludeExtraneousValues: true 
-    });
-  }
-
-  // Create a new user with organization association
-  async create(createUserDto: CreateUserDto, organizationId: string, creator?: UserEntity): Promise<UserEntity> {
+  // Create a new user
+  async create(createUserDto: UserCreateDto, creator: UserEntity): Promise<UserGetDto> {
     // Check if user already exists
     const existingUser = await this.userRepository.findOne({
       where: [
@@ -278,77 +195,66 @@ The application requires at least one admin user to function properly.
       throw new BadRequestException('Password must be at least 8 characters long');
     }
 
-    // Validate roles
-    if (!createUserDto.roles || createUserDto.roles.length === 0) {
-      throw new BadRequestException('User must have at least one role');
+    // Convert single role string to array
+    const roles = [createUserDto.role];
+
+    // Check if creator is an admin or PI
+    if (!creator.roles.includes(Role.ADMIN) && !creator.roles.includes(Role.PI)) {
+      throw new BadRequestException('Only admins and PIs can create users');
     }
 
-    // If creator is provided, validate their permissions
-    if (creator) {
-      // Role-based permission checks
-      if (creator.roles.includes(Role.PI)) {
-        // PI can only create PI or COLLABORATOR users
-        const invalidRoles = createUserDto.roles.filter(role => 
-          role !== Role.PI && role !== Role.COLLABORATOR
-        );
-        
-        if (invalidRoles.length > 0) {
-          throw new BadRequestException('PI can only create PI or COLLABORATOR users');
-        }
-        
-        // PI must be associated with an organization to create users
-        if (!creator.organization) {
-          throw new BadRequestException('PI must be associated with an organization to create users');
-        }
-        
-        // PI can only create users in their organization
-        if (creator.organization.id !== organizationId) {
-          throw new BadRequestException('PI can only create users for their associated organization');
-        }
-      } else if (creator.roles.includes(Role.ADMIN)) {
-        // Admin creating non-admin users must be associated with an organization
-        const isCreatingNonAdmin = createUserDto.roles.some(role => 
-          role !== Role.ADMIN
-        );
-        
-        if (isCreatingNonAdmin && !creator.organization) {
-          throw new BadRequestException('Admin must be associated with an organization to create PI or Collaborator users');
-        }
-        
-        // If admin is creating non-admin users, they must be in the same organization
-        if (isCreatingNonAdmin && creator.organization && creator.organization.id !== organizationId) {
-          throw new BadRequestException('Admin can only create PI or Collaborator users for their associated organization');
-        }
+    // If creator is a PI, they can only create PI or COLLABORATOR users
+    if (creator.roles.includes(Role.PI) && !creator.roles.includes(Role.ADMIN)) {
+      if (createUserDto.role !== Role.PI && createUserDto.role !== Role.COLLABORATOR) {
+        throw new BadRequestException('PI can only create PI or COLLABORATOR users');
       }
     }
 
-    // Handle organization association
-    if (createUserDto.roles.includes(Role.ADMIN)) {
-      // For admin users, inherit organization from creator if available
-      if (creator?.organization) {
-        createUserDto.organization = creator.organization;
-      } else {
-        // If no organization is specified for admin, don't associate with any
-        createUserDto.organization = null;
+    // Check if creating non-admin users (PI or COLLABORATOR)
+    const isCreatingNonAdmin = createUserDto.role !== Role.ADMIN;
+
+    if (isCreatingNonAdmin) {
+      try {
+        // For non-admin users, we need to associate them with the existing organization
+        const organization = await this.organizationRepository.findOne({
+          where: {} // This will get the first (and only) organization
+        });
+
+        if (!organization) {
+          throw new BadRequestException('Cannot create PI or Collaborator users: No organization exists in the system');
+        }
+
+        // Create user entity with organization
+        const user = this.userRepository.create({
+          ...createUserDto,
+          roles,
+          organization
+        });
+        const savedUser = await this.userRepository.save(user);
+        return plainToClass(UserGetDto, savedUser, { excludeExtraneousValues: true });
+      } catch (error) {
+        throw new BadRequestException(`Failed to associate user with organization: ${error.message}`);
       }
     } else {
-      // For non-admin users, validate and set the organization
-      const organization = await this.validateOrganizationId(organizationId);
-      createUserDto.organization = organization;
+      // For admin users, don't associate with any organization
+      const user = this.userRepository.create({
+        ...createUserDto,
+        roles,
+        organization: null
+      });
+      const savedUser = await this.userRepository.save(user);
+      return plainToClass(UserGetDto, savedUser, { excludeExtraneousValues: true });
     }
-
-    const user = this.userRepository.create(createUserDto);
-    return this.userRepository.save(user);
   }
 
-  async findAll(organizationId: string): Promise<UserEntity[]> {
-    await this.validateOrganizationId(organizationId);
-    return this.userRepository.find({ 
-      where: { organization: { id: organizationId } }
+  async findAll(): Promise<UserGetDto[]> {
+    const users = await this.userRepository.find({
+      relations: ['organization']
     });
+    return users.map(user => plainToClass(UserGetDto, user, { excludeExtraneousValues: true }));
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto, organizationId: string): Promise<UserEntity> {
+  async update(id: string, updateUserDto: UserCreateDto): Promise<UserGetDto> {
     const user = await this.userRepository.findOne({
       where: { id },
       relations: ['organization']
@@ -358,20 +264,21 @@ The application requires at least one admin user to function properly.
       throw new NotFoundException('User not found');
     }
 
-    await this.validateOrganizationId(organizationId);
-    if (user.organization?.id !== organizationId) {
-      throw new BadRequestException('User does not belong to the specified organization');
-    }
-    
     if (updateUserDto.password && updateUserDto.password.length < 8) {
       throw new BadRequestException('Password must be at least 8 characters long');
     }
 
+    // Convert single role string to array if role is being updated
+    if (updateUserDto.role) {
+      user.roles = [updateUserDto.role];
+    }
+
     Object.assign(user, updateUserDto);
-    return this.userRepository.save(user);
+    const savedUser = await this.userRepository.save(user);
+    return plainToClass(UserGetDto, savedUser, { excludeExtraneousValues: true });
   }
 
-  async remove(id: string, organizationId?: string): Promise<void> {
+  async remove(id: string): Promise<void> {
     const user = await this.userRepository.findOne({
       where: { id },
       relations: ['organization']
@@ -381,25 +288,6 @@ The application requires at least one admin user to function properly.
       throw new NotFoundException('User not found');
     }
 
-    // If organizationId is provided, validate it and check if the user belongs to that organization
-    if (organizationId) {
-      await this.validateOrganizationId(organizationId);
-      if (user.organization?.id !== organizationId) {
-        throw new BadRequestException('User does not belong to the specified organization');
-      }
-    } else {
-      // If no organizationId is provided, ensure the user is not an admin
-      // This prevents accidental deletion of admin users
-      if (user.roles.includes(Role.ADMIN)) {
-        throw new BadRequestException('Cannot delete admin users without specifying an organization');
-      }
-    }
-
     await this.userRepository.remove(user);
-  }
-
-  async deleteAll(organizationId: string): Promise<void> {
-    await this.validateOrganizationId(organizationId);
-    await this.userRepository.delete({ organization: { id: organizationId } });
   }
 }

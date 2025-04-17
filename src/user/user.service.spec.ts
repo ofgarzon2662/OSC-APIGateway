@@ -5,11 +5,11 @@ import { Repository } from 'typeorm';
 import { UserEntity } from './user.entity';
 import { TypeOrmTestingConfig } from '../shared/testing-utils/typeorm-testing-config';
 import { faker } from '@faker-js/faker';
-import { UserCreateDto } from './userCreate.dto';
+import { UserCreateDto } from './dto/userCreate.dto';
 import { BusinessError, BusinessLogicException } from '../shared/errors/business-errors';
 import { ConfigService } from '@nestjs/config';
 import { PasswordService } from '../auth/password.service';
-import { UserGetDto } from './userGet.dto';
+import { UserGetDto } from './dto/userGet.dto';
 
 describe('UserService', () => {
   let service: UserService;
