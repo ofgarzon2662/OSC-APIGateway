@@ -13,9 +13,15 @@ export class OrganizationEntity {
   @Column()
   description: string;
 
-  @OneToMany(() => UserEntity, (user: UserEntity) => user.organization)
+  @OneToMany(() => UserEntity, (user: UserEntity) => user.organization, {
+    cascade: true,
+    onDelete: 'CASCADE'
+  })
   users: UserEntity[];
 
-  @OneToMany(() => ArtifactEntity, (artifact) => artifact.organization)
+  @OneToMany(() => ArtifactEntity, (artifact) => artifact.organization, {
+    cascade: true,
+    onDelete: 'CASCADE'
+  })
   artifacts: ArtifactEntity[];
 }

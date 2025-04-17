@@ -1,6 +1,6 @@
 import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
 import { OrganizationEntity } from '../organization/organization.entity';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, JoinColumn } from 'typeorm';
 
 @Entity()
 export class UserEntity {
@@ -27,13 +27,10 @@ export class UserEntity {
   @IsString()
   password: string;
 
-  @Column('simple-array', { nullable: true })
+  @Column('simple-array')
   roles: string[];
 
-  @ManyToOne(
-    () => OrganizationEntity,
-    (organization: OrganizationEntity) => organization.users,
-    { onDelete: 'CASCADE' },
-  )
+  @ManyToOne(() => OrganizationEntity, { nullable: true })
+  @JoinColumn()
   organization: OrganizationEntity;
 }
