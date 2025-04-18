@@ -1,5 +1,5 @@
 import { OrganizationEntity } from '../organization/organization.entity';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { IsNotEmpty, IsString, IsDate, IsArray, IsUrl, IsEmail, IsBoolean, IsEnum, Length, Matches, IsOptional } from 'class-validator';
 import { SubmissionState } from './enums/submission-state.enum';
 

@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ArtifactEntity } from './artifact.entity';
 import { Repository } from 'typeorm';
@@ -214,8 +214,8 @@ export class ArtifactService {
 
   // Get One Artifact - Return all fields
   async findOne(id: string): Promise<GetArtifactDto> {
-    // Find the organization
-    const organization = await this.findOrganizationOrThrow();
+    // Verificar primero que exista una organización
+    await this.findOrganizationOrThrow();
     
     // Find the artifact with the organization relation
     const artifact = await this.findArtifactOrThrow(id, true);
@@ -295,9 +295,9 @@ export class ArtifactService {
 
   // Update an Artifact - Only allow updating specific fields
   async update(id: string, updateArtifactDto: UpdateArtifactDto): Promise<ArtifactEntity> {
-    // Find the organization
-    const organization = await this.findOrganizationOrThrow();
-    
+    // Verificar primero que exista una organización
+    await this.findOrganizationOrThrow();
+
     // Find the artifact with the organization relation
     const artifact = await this.findArtifactOrThrow(id, true);
     
@@ -311,9 +311,9 @@ export class ArtifactService {
 
   // Delete an Artifact
   async delete(id: string): Promise<void> {
-    // Find the organization
-    const organization = await this.findOrganizationOrThrow();
-    
+    // Verificar primero que exista una organización
+    await this.findOrganizationOrThrow();
+
     // Find the artifact
     const artifact = await this.findArtifactOrThrow(id);
     

@@ -20,7 +20,7 @@ import { OrganizationEntity } from '../organization/organization.entity';
 
 @Injectable()
 export class UserService {
-  private users: User[] = [];
+  private readonly users: User[] = [];
 
   constructor(
     private readonly passwordService: PasswordService,
@@ -261,17 +261,29 @@ The application requires at least one admin user to function properly.
     return users.map(user => this.transformToDto(user));
   }
 
-  async update(id: string, updateUserDto: UserUpdateDto, currentUser: UserEntity): Promise<UserGetDto> {
-    // Find the user to update
-    const userToUpdate = await this.userRepository.findOne({
+  /**
+   * Finds a user by ID or throws an exception if not found
+   */
+  private async findUserByIdOrThrow(id: string): Promise<UserEntity> {
+    const user = await this.userRepository.findOne({
       where: { id }
     });
 
-    if (!userToUpdate) {
+    if (!user) {
       throw new NotFoundException(`User with id ${id} not found`);
     }
+    
+    return user;
+  }
 
-    // Check if user is trying to update themselves
+  /**
+   * Validates update permissions based on user roles and update context
+   */
+  private validateUpdatePermissions(
+    userToUpdate: UserEntity, 
+    currentUser: UserEntity, 
+    updateUserDto: UserUpdateDto
+  ): void {
     const isSelfUpdate = currentUser.id === userToUpdate.id;
 
     // If updating another user
@@ -284,50 +296,69 @@ The application requires at least one admin user to function properly.
 
     // If self-updating and user is an admin, prevent email/username changes
     if (isSelfUpdate && currentUser.roles.includes(Role.ADMIN)) {
-      if (updateUserDto.email && updateUserDto.email !== userToUpdate.email) {
-        throw new UnauthorizedException('Admins cannot change their own email');
-      }
-      if (updateUserDto.username && updateUserDto.username !== userToUpdate.username) {
-        throw new UnauthorizedException('Admins cannot change their own username');
-      }
-    } else {
-      // Check for username/email uniqueness if they're being updated
-      if (updateUserDto.username && updateUserDto.username !== userToUpdate.username) {
-        const existingUser = await this.userRepository.findOne({
-          where: { username: updateUserDto.username }
-        });
-        if (existingUser) {
-          throw new BadRequestException('Username already exists');
-        }
-      }
-
-      if (updateUserDto.email && updateUserDto.email !== userToUpdate.email) {
-        const existingUser = await this.userRepository.findOne({
-          where: { email: updateUserDto.email }
-        });
-        if (existingUser) {
-          throw new BadRequestException('Email already exists');
-        }
-      }
+      this.validateAdminSelfUpdate(userToUpdate, updateUserDto);
     }
 
-    // Validate password length if it's being updated
-    if (updateUserDto.password && updateUserDto.password.length < 8) {
-      throw new BadRequestException('Password must be at least 8 characters long');
-    }
-
-    // Convert single role to array if needed
-    const roles = updateUserDto.role ? [updateUserDto.role] : [];
-
-    // If updating roles
-    if (roles.length > 0) {
-      // If self-updating, can't change own roles
+    // Validate role updates
+    const hasRoleUpdate = updateUserDto.role !== undefined;
+    if (hasRoleUpdate) {
       if (isSelfUpdate) {
         throw new UnauthorizedException('Users cannot update their own roles');
       }
     }
+  }
 
-    // Prepare update data - only include fields that are provided
+  /**
+   * Validates admin self-update restrictions
+   */
+  private validateAdminSelfUpdate(userToUpdate: UserEntity, updateUserDto: UserUpdateDto): void {
+    if (updateUserDto.email && updateUserDto.email !== userToUpdate.email) {
+      throw new UnauthorizedException('Admins cannot change their own email');
+    }
+    if (updateUserDto.username && updateUserDto.username !== userToUpdate.username) {
+      throw new UnauthorizedException('Admins cannot change their own username');
+    }
+  }
+
+  /**
+   * Validates uniqueness of username and email
+   */
+  private async validateFieldUniqueness(
+    userToUpdate: UserEntity, 
+    updateUserDto: UserUpdateDto
+  ): Promise<void> {
+    if (updateUserDto.username && updateUserDto.username !== userToUpdate.username) {
+      const existingUser = await this.userRepository.findOne({
+        where: { username: updateUserDto.username }
+      });
+      if (existingUser) {
+        throw new BadRequestException('Username already exists');
+      }
+    }
+
+    if (updateUserDto.email && updateUserDto.email !== userToUpdate.email) {
+      const existingUser = await this.userRepository.findOne({
+        where: { email: updateUserDto.email }
+      });
+      if (existingUser) {
+        throw new BadRequestException('Email already exists');
+      }
+    }
+  }
+
+  /**
+   * Validates password requirements
+   */
+  private validatePassword(password: string): void {
+    if (password && password.length < 8) {
+      throw new BadRequestException('Password must be at least 8 characters long');
+    }
+  }
+
+  /**
+   * Prepares user data for update
+   */
+  private async prepareUpdateData(updateUserDto: UserUpdateDto): Promise<any> {
     const updateData: any = {};
     
     if (updateUserDto.name !== undefined) updateData.name = updateUserDto.name;
@@ -336,15 +367,41 @@ The application requires at least one admin user to function properly.
     if (updateUserDto.password !== undefined) {
       updateData.password = await this.passwordService.hashPassword(updateUserDto.password);
     }
-    if (roles.length > 0) updateData.roles = roles;
+    
+    // Convert single role to array if needed
+    if (updateUserDto.role !== undefined) {
+      updateData.roles = [updateUserDto.role];
+    }
+    
+    return updateData;
+  }
 
+  async update(id: string, updateUserDto: UserUpdateDto, currentUser: UserEntity): Promise<UserGetDto> {
+    // Find the user to update
+    const userToUpdate = await this.findUserByIdOrThrow(id);
+    
+    // Validate update permissions
+    this.validateUpdatePermissions(userToUpdate, currentUser, updateUserDto);
+    
+    // Check for username and email uniqueness
+    const isSelfUpdateByAdmin = (currentUser.id === userToUpdate.id) && currentUser.roles.includes(Role.ADMIN);
+    if (!isSelfUpdateByAdmin) {
+      await this.validateFieldUniqueness(userToUpdate, updateUserDto);
+    }
+    
+    // Validate password
+    this.validatePassword(updateUserDto.password);
+    
+    // Prepare update data
+    const updateData = await this.prepareUpdateData(updateUserDto);
+    
     // Update the user
     const updatedUser = await this.userRepository.save({
       ...userToUpdate,
       ...updateData
     });
 
-    // If password was changed, return a special flag to indicate re-login is required
+    // Create response
     const response = this.transformToDto(updatedUser);
     if (updateUserDto.password) {
       (response as any).requiresRelogin = true;

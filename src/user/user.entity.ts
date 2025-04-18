@@ -1,8 +1,7 @@
-import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, IsArray, IsEnum, ValidateIf } from 'class-validator';
 import { OrganizationEntity } from '../organization/organization.entity';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, JoinColumn } from 'typeorm';
 import { Role } from '../shared/enums/role.enums';
-import { IsArray, IsEnum, ValidateIf } from 'class-validator';
 
 @Entity()
 export class UserEntity {
