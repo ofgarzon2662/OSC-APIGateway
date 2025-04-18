@@ -26,7 +26,6 @@ import { User } from '../auth/decorators/user.decorator';
 import { UserEntity } from './user.entity';
 
 @Controller('users')
-@UseGuards(JwtAuthGuard, RolesGuard)
 @UseInterceptors(BusinessErrorsInterceptor)
 export class UserController {
   constructor(
@@ -34,14 +33,47 @@ export class UserController {
     private readonly userService: UserService,
   ) {}
 
-  @Post('login')
-  @UseGuards(LocalAuthGuard)
+  @Get('/admins/check-admin-users')
   @HttpCode(200)
-  async login(@Req() req: Request) {
-    return this.authService.login(req.user);
+  async checkAdminUsers() {
+    try {
+      const users = await this.userService.findAll();
+      const adminUsers = users.filter(user => 
+        user.roles && user.roles.includes('admin')
+      );
+      return {
+        message: 'Admin users found',
+        count: adminUsers.length,
+        users: adminUsers.map(user => ({
+          id: user.id,
+          username: user.username,
+          roles: user.roles
+        }))
+      };
+    } catch (error) {
+      return {
+        message: 'Error checking admin users',
+        error: error.message
+      };
+    }
   }
 
-  @Post()
+  @UseGuards(LocalAuthGuard)
+  @Post('login')
+  async login(@Req() req) {
+    return this.authService.login(req);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('logout')
+  @HttpCode(200)
+  async logout(@Req() req: Request) {
+    const token = req.headers.authorization;
+    return this.authService.logout(token);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Post('register')
   @Roles(Role.ADMIN, Role.PI)
   async create(
     @Body() createUserDto: UserCreateDto,
@@ -50,18 +82,21 @@ export class UserController {
     return this.userService.create(createUserDto, creator);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Get()
   @Roles(Role.ADMIN, Role.PI)
   async findAll() {
     return this.userService.findAll();
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Get(':id')
   @Roles(Role.ADMIN, Role.PI)
   async findOne(@Param('id') id: string) {
     return this.userService.findOneById(id);
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Put(':id')
   @Roles(Role.ADMIN)
   async update(
@@ -82,6 +117,7 @@ export class UserController {
     return result;
   }
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Delete(':id')
   @Roles(Role.ADMIN, Role.PI)
   async remove(
@@ -90,4 +126,6 @@ export class UserController {
   ) {
     return this.userService.remove(id, currentUser);
   }
+
+
 }

@@ -6,6 +6,7 @@ import {
   BusinessError,
   BusinessLogicException,
 } from '../shared/errors/business-errors';
+import { OrganizationResponseDto, UserForOrganizationDto } from './organization.dto';
 
 @Injectable()
 export class OrganizationService {
@@ -14,8 +15,27 @@ export class OrganizationService {
     private readonly organizationRepository: Repository<OrganizationEntity>,
   ) {}
 
+  // Transform Organization to DTO, excluding sensitive data
+  private transformToDto(organization: OrganizationEntity): OrganizationResponseDto {
+    const { id, name, description, users, artifacts } = organization;
+    
+    // Transform users to exclude passwords
+    const transformedUsers: UserForOrganizationDto[] = users ? users.map(user => {
+      const { id, name, username, email, roles } = user;
+      return { id, name, username, email, roles };
+    }) : [];
+    
+    return {
+      id,
+      name,
+      description,
+      users: transformedUsers,
+      artifacts: artifacts || []
+    };
+  }
+
   // Get All Organizations
-  async findAll(): Promise<OrganizationEntity[]> {
+  async findAll(): Promise<OrganizationResponseDto[]> {
     const orgs = await this.organizationRepository.find({
       relations: ['users', 'artifacts'],
     });
@@ -30,12 +50,11 @@ export class OrganizationService {
         BusinessError.PRECONDITION_FAILED,
       );
 
-    return orgs;
+    return orgs.map(org => this.transformToDto(org));
   }
 
   // Get One Organization
-
-  async findOne(id: string): Promise<OrganizationEntity> {
+  async findOne(id: string): Promise<OrganizationResponseDto> {
     const organization: OrganizationEntity =
       await this.organizationRepository.findOne({
         where: { id },
@@ -47,11 +66,11 @@ export class OrganizationService {
         BusinessError.NOT_FOUND,
       );
 
-    return organization;
+    return this.transformToDto(organization);
   }
 
   // Create one organization
-  async create(organization: OrganizationEntity): Promise<OrganizationEntity> {
+  async create(organization: OrganizationEntity): Promise<OrganizationResponseDto> {
     // Check if an organization already exists
     const countOrganization = await this.organizationRepository.count();
     if (countOrganization > 0) {
@@ -86,18 +105,19 @@ export class OrganizationService {
       );
     }
 
-    return await this.organizationRepository.save(organization);
+    const savedOrg = await this.organizationRepository.save(organization);
+    return this.transformToDto(savedOrg);
   }
 
   // Update
-
   async update(
     id: string,
     organization: Partial<OrganizationEntity>,
-  ): Promise<OrganizationEntity> {
+  ): Promise<OrganizationResponseDto> {
     // Find the organization by id
     const organizationToUpdate = await this.organizationRepository.findOne({
       where: { id },
+      relations: ['users', 'artifacts']
     });
 
     if (!organizationToUpdate) {
@@ -133,7 +153,8 @@ export class OrganizationService {
     });
 
     // Save the updated entity
-    return await this.organizationRepository.save(organizationToUpdate);
+    const updatedOrg = await this.organizationRepository.save(organizationToUpdate);
+    return this.transformToDto(updatedOrg);
   }
 
   // Delete
@@ -147,7 +168,10 @@ export class OrganizationService {
         BusinessError.NOT_FOUND,
       );
 
-    await this.organizationRepository.remove(organization);
+    await this.organizationRepository.createQueryBuilder()
+      .delete()
+      .where("id = :id", { id: organization.id })
+      .execute();
   }
 
   // Delete all organizations
@@ -161,6 +185,9 @@ export class OrganizationService {
       );
     }
 
-    await this.organizationRepository.remove(organizations);
+    await this.organizationRepository.createQueryBuilder()
+      .delete()
+      .from(OrganizationEntity)
+      .execute();
   }
 }

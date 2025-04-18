@@ -317,7 +317,10 @@ export class ArtifactService {
     // Find the artifact
     const artifact = await this.findArtifactOrThrow(id);
     
-    // Delete the artifact directly
-    await this.artifactRepository.remove(artifact);
+    // Usar createQueryBuilder().delete() en lugar de remove para respetar las cascadas
+    await this.artifactRepository.createQueryBuilder()
+      .delete()
+      .where("id = :id", { id: artifact.id })
+      .execute();
   }
 }

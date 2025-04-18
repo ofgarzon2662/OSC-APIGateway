@@ -34,7 +34,10 @@ export class UserEntity {
   @IsEnum(Role, { each: true })
   roles: Role[];
 
-  @ManyToOne(() => OrganizationEntity, { nullable: true })
+  @ManyToOne(() => OrganizationEntity, { 
+    nullable: true,
+    onDelete: 'CASCADE'
+  })
   @JoinColumn()
   organization: OrganizationEntity;
 }

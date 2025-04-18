@@ -5,6 +5,7 @@ import { TypeOrmTestingConfig } from '../shared/testing-utils/typeorm-testing-co
 import { OrganizationService } from './organization.service';
 import { OrganizationEntity } from './organization.entity';
 import { faker } from '@faker-js/faker';
+import { OrganizationResponseDto } from './organization.dto';
 
 describe('OrganizationService', () => {
   let service: OrganizationService;
@@ -43,7 +44,7 @@ describe('OrganizationService', () => {
   // Find all organizations
 
   it('findAll should return all organizations', async () => {
-    const organizations: OrganizationEntity[] = await service.findAll();
+    const organizations: OrganizationResponseDto[] = await service.findAll();
     expect(organizations).toBeDefined();
     expect(organizations).not.toBeNull();
     expect(organizations).toHaveLength(organizationsList.length);
@@ -75,7 +76,7 @@ describe('OrganizationService', () => {
 
   it('findOne should return a Organization by id', async () => {
     const storedOrganization: OrganizationEntity = organizationsList[0];
-    const organization: OrganizationEntity = await service.findOne(
+    const organization: OrganizationResponseDto = await service.findOne(
       storedOrganization.id,
     );
     expect(organization).not.toBeNull();
@@ -106,7 +107,7 @@ describe('OrganizationService', () => {
       'There is already an organization in the database. There can only be one.',
     );
 
-    const organizations: OrganizationEntity[] = await service.findAll();
+    const organizations: OrganizationResponseDto[] = await service.findAll();
     expect(organizations).toHaveLength(1);
   });
 
@@ -153,7 +154,7 @@ describe('OrganizationService', () => {
       users: [],
     };
 
-    const newOrganization: OrganizationEntity = await service.create(
+    const newOrganization: OrganizationResponseDto = await service.create(
       organization as OrganizationEntity,
     );
 
@@ -276,7 +277,7 @@ describe('OrganizationService', () => {
       users: [],
     };
 
-    const organization: OrganizationEntity = await service.update(
+    const organization: OrganizationResponseDto = await service.update(
       storedOrganization.id,
       modifiedOrganization as OrganizationEntity,
     );
