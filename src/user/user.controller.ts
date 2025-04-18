@@ -18,6 +18,7 @@ import { Role } from 'src/shared/enums/role.enums';
 import { Roles } from 'src/shared/decorators/roles.decorators';
 import { UserService } from './user.service';
 import { UserCreateDto } from './dto/userCreate.dto';
+import { UserUpdateDto } from './dto/user-update.dto';
 import { BusinessErrorsInterceptor } from 'src/shared/interceptors/business-errors.interceptors';
 import { RolesGuard } from 'src/auth/roles/roles.guards';
 import { Request } from 'express';
@@ -50,31 +51,43 @@ export class UserController {
   }
 
   @Get()
+  @Roles(Role.ADMIN, Role.PI)
   async findAll() {
     return this.userService.findAll();
   }
 
   @Get(':id')
-  async findOne(
-    @Param('id') id: string
-  ) {
-    return this.userService.getOne(id);
+  @Roles(Role.ADMIN, Role.PI)
+  async findOne(@Param('id') id: string) {
+    return this.userService.findOneById(id);
   }
 
   @Put(':id')
   @Roles(Role.ADMIN)
   async update(
     @Param('id') id: string,
-    @Body() updateUserDto: UserCreateDto
+    @Body() updateUserDto: UserUpdateDto,
+    @User() currentUser: UserEntity
   ) {
-    return this.userService.update(id, updateUserDto);
+    const result = await this.userService.update(id, updateUserDto, currentUser);
+    
+    // If password was changed, return a message indicating re-login is required
+    if ((result as any).requiresRelogin) {
+      return {
+        ...result,
+        message: 'Password updated successfully. Please log in again with your new credentials.'
+      };
+    }
+    
+    return result;
   }
 
   @Delete(':id')
   @Roles(Role.ADMIN, Role.PI)
   async remove(
-    @Param('id') id: string
+    @Param('id') id: string,
+    @User() currentUser: UserEntity
   ) {
-    return this.userService.remove(id);
+    return this.userService.remove(id, currentUser);
   }
 }

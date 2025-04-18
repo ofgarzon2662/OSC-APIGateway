@@ -1,10 +1,11 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from './user.entity';
 import { Repository } from 'typeorm';
 import { PasswordService } from '../auth/password.service';
 import { UserCreateDto } from './dto/userCreate.dto';
+import { UserUpdateDto } from './dto/user-update.dto';
 import {
   BusinessError,
   BusinessLogicException,
@@ -88,48 +89,55 @@ The application requires at least one admin user to function properly.
     }
   }
 
-  private async saveAdminUserToDb(
-    username: string,
-    password: string,
-    roles: string[],
-  ): Promise<void> {
-    try {
-      // Check if user already exists
-      const existingUser = await this.userRepository.findOne({
-        where: [
-          { username: username },
-          { email: username + '@admin.com' }, // Generate a default email
-        ],
-      });
+  private async saveAdminUserToDb(username: string, password: string, roles: string[]): Promise<void> {
+    const hashedPassword = await this.passwordService.hashPassword(password);
+    const user = this.userRepository.create({
+      username,
+      password: hashedPassword,
+      name: username,
+      email: `${username}@example.com`,
+      roles: roles as Role[]
+    });
+    await this.userRepository.save(user);
+  }
 
-      if (!existingUser) {
-        // Hash the password
-        const hashedPassword =
-          await this.passwordService.hashPassword(password);
-
-        // Create the user entity
-        const userEntity = this.userRepository.create({
-          name: username,
-          username: username,
-          email: username + '@admin.com', // Generate a default email
-          password: hashedPassword,
-          roles: roles, // Save the roles to the database
-        });
-
-        // Save the user to the database
-        await this.userRepository.save(userEntity);
-      } else {
-        console.log(`Admin user ${username} already exists in database`);
-      }
-    } catch (error) {
-      console.error(`Error saving admin user ${username} to database:`, error);
+  /**
+   * Find a user by username or email for authentication purposes
+   * This method is only used by the auth service and includes the password
+   * @param username The username or email to search for
+   * @returns The user data including password for authentication
+   */
+  async findOneForAuth(username: string): Promise<any> {
+    const foundUser = await this.userRepository.findOne({
+      where: [
+        { username: username },
+        { email: username }
+      ],
+      relations: ['organization']
+    });
+    
+    if (!foundUser) {
+      throw new BusinessLogicException(
+        'User not found',
+        BusinessError.NOT_FOUND,
+      );
     }
+
+    return {
+      id: foundUser.id,
+      name: foundUser.name,
+      username: foundUser.username,
+      email: foundUser.email,
+      password: foundUser.password, // Include password for authentication
+      roles: foundUser.roles || [], // Include roles for authorization
+    };
   }
 
   /**
    * Find a user by username or email
+   * This method is for general use and does not include sensitive data
    * @param username The username or email to search for
-   * @returns The user data
+   * @returns The user data without sensitive information
    */
   async findOne(username: string): Promise<any> {
     const foundUser = await this.userRepository.findOne({
@@ -147,33 +155,15 @@ The application requires at least one admin user to function properly.
       );
     }
 
-    // Convert the entity to a User object with all necessary fields
+    // Return user data without sensitive information
     return {
       id: foundUser.id,
       name: foundUser.name,
       username: foundUser.username,
       email: foundUser.email,
-      password: foundUser.password, // Include password for authentication
-      roles: foundUser.roles || [], // Include roles for authorization
+      roles: foundUser.roles || [],
+      organization: foundUser.organization
     };
-  }
-
-  // Get One User by username: Gives a GiveUserDto
-  async getOne(username: string): Promise<UserGetDto> {
-    const user = await this.userRepository.findOne({
-      // username or email
-      where: [{ username: username }, { email: username }],
-      relations: ['organization'],
-    });
-
-    if (!user) {
-      throw new BusinessLogicException(
-        'User not found',
-        BusinessError.NOT_FOUND,
-      );
-    }
-
-    return plainToClass(UserGetDto, user, { excludeExtraneousValues: true });
   }
 
   // Create a new user
@@ -224,61 +214,146 @@ The application requires at least one admin user to function properly.
           throw new BadRequestException('Cannot create PI or Collaborator users: No organization exists in the system');
         }
 
+        // Hash the password
+        const hashedPassword = await this.passwordService.hashPassword(createUserDto.password);
+
         // Create user entity with organization
         const user = this.userRepository.create({
           ...createUserDto,
+          password: hashedPassword,
           roles,
           organization
         });
         const savedUser = await this.userRepository.save(user);
-        return plainToClass(UserGetDto, savedUser, { excludeExtraneousValues: true });
+        return this.transformToDto(savedUser);
       } catch (error) {
         throw new BadRequestException(`Failed to associate user with organization: ${error.message}`);
       }
     } else {
       // For admin users, don't associate with any organization
+      // Hash the password
+      const hashedPassword = await this.passwordService.hashPassword(createUserDto.password);
+
       const user = this.userRepository.create({
         ...createUserDto,
+        password: hashedPassword,
         roles,
         organization: null
       });
       const savedUser = await this.userRepository.save(user);
-      return plainToClass(UserGetDto, savedUser, { excludeExtraneousValues: true });
+      return this.transformToDto(savedUser);
     }
+  }
+
+  private transformToDto(user: UserEntity): UserGetDto {
+    const dto = plainToClass(UserGetDto, user, { excludeExtraneousValues: true });
+    // Add organization name if organization exists
+    if (user.organization) {
+      (dto as any).organizationName = user.organization.name;
+    }
+    return dto;
   }
 
   async findAll(): Promise<UserGetDto[]> {
     const users = await this.userRepository.find({
       relations: ['organization']
     });
-    return users.map(user => plainToClass(UserGetDto, user, { excludeExtraneousValues: true }));
+    return users.map(user => this.transformToDto(user));
   }
 
-  async update(id: string, updateUserDto: UserCreateDto): Promise<UserGetDto> {
-    const user = await this.userRepository.findOne({
-      where: { id },
-      relations: ['organization']
+  async update(id: string, updateUserDto: UserUpdateDto, currentUser: UserEntity): Promise<UserGetDto> {
+    // Find the user to update
+    const userToUpdate = await this.userRepository.findOne({
+      where: { id }
     });
-    
-    if (!user) {
-      throw new NotFoundException('User not found');
+
+    if (!userToUpdate) {
+      throw new NotFoundException(`User with id ${id} not found`);
     }
 
+    // Check if user is trying to update themselves
+    const isSelfUpdate = currentUser.id === userToUpdate.id;
+
+    // If updating another user
+    if (!isSelfUpdate) {
+      // Admin can only update non-admin users
+      if (userToUpdate.roles.includes(Role.ADMIN)) {
+        throw new UnauthorizedException('Only the user themselves can update an admin user');
+      }
+    }
+
+    // If self-updating and user is an admin, prevent email/username changes
+    if (isSelfUpdate && currentUser.roles.includes(Role.ADMIN)) {
+      if (updateUserDto.email && updateUserDto.email !== userToUpdate.email) {
+        throw new UnauthorizedException('Admins cannot change their own email');
+      }
+      if (updateUserDto.username && updateUserDto.username !== userToUpdate.username) {
+        throw new UnauthorizedException('Admins cannot change their own username');
+      }
+    } else {
+      // Check for username/email uniqueness if they're being updated
+      if (updateUserDto.username && updateUserDto.username !== userToUpdate.username) {
+        const existingUser = await this.userRepository.findOne({
+          where: { username: updateUserDto.username }
+        });
+        if (existingUser) {
+          throw new BadRequestException('Username already exists');
+        }
+      }
+
+      if (updateUserDto.email && updateUserDto.email !== userToUpdate.email) {
+        const existingUser = await this.userRepository.findOne({
+          where: { email: updateUserDto.email }
+        });
+        if (existingUser) {
+          throw new BadRequestException('Email already exists');
+        }
+      }
+    }
+
+    // Validate password length if it's being updated
     if (updateUserDto.password && updateUserDto.password.length < 8) {
       throw new BadRequestException('Password must be at least 8 characters long');
     }
 
-    // Convert single role string to array if role is being updated
-    if (updateUserDto.role) {
-      user.roles = [updateUserDto.role];
+    // Convert single role to array if needed
+    const roles = updateUserDto.role ? [updateUserDto.role] : [];
+
+    // If updating roles
+    if (roles.length > 0) {
+      // If self-updating, can't change own roles
+      if (isSelfUpdate) {
+        throw new UnauthorizedException('Users cannot update their own roles');
+      }
     }
 
-    Object.assign(user, updateUserDto);
-    const savedUser = await this.userRepository.save(user);
-    return plainToClass(UserGetDto, savedUser, { excludeExtraneousValues: true });
+    // Prepare update data - only include fields that are provided
+    const updateData: any = {};
+    
+    if (updateUserDto.name !== undefined) updateData.name = updateUserDto.name;
+    if (updateUserDto.email !== undefined) updateData.email = updateUserDto.email;
+    if (updateUserDto.username !== undefined) updateData.username = updateUserDto.username;
+    if (updateUserDto.password !== undefined) {
+      updateData.password = await this.passwordService.hashPassword(updateUserDto.password);
+    }
+    if (roles.length > 0) updateData.roles = roles;
+
+    // Update the user
+    const updatedUser = await this.userRepository.save({
+      ...userToUpdate,
+      ...updateData
+    });
+
+    // If password was changed, return a special flag to indicate re-login is required
+    const response = this.transformToDto(updatedUser);
+    if (updateUserDto.password) {
+      (response as any).requiresRelogin = true;
+    }
+
+    return response;
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: string, currentUser: UserEntity): Promise<void> {
     const user = await this.userRepository.findOne({
       where: { id },
       relations: ['organization']
@@ -288,6 +363,44 @@ The application requires at least one admin user to function properly.
       throw new NotFoundException('User not found');
     }
 
+    // Verificar permisos según el rol del usuario actual
+    if (currentUser.roles.includes(Role.PI) && !currentUser.roles.includes(Role.ADMIN)) {
+      // Un PI no puede eliminar usuarios ADMIN
+      if (user.roles.includes(Role.ADMIN)) {
+        throw new BadRequestException('PI cannot delete admin users');
+      }
+      
+      // Un PI solo puede eliminar usuarios con rol COLLABORATOR (y ningún otro rol)
+      if (user.roles.length !== 1 || user.roles[0] !== Role.COLLABORATOR) {
+        throw new BadRequestException('PI can only delete users with role COLLABORATOR');
+      }
+    } else if (currentUser.roles.includes(Role.ADMIN)) {
+      // Un ADMIN no puede eliminar a otro ADMIN
+      if (user.roles.includes(Role.ADMIN)) {
+        throw new BadRequestException('Admin cannot delete another admin user');
+      }
+    }
+
     await this.userRepository.remove(user);
+  }
+
+  /**
+   * Find a user by ID
+   * This method is for general use and does not include sensitive data
+   * @param id The user ID to search for
+   * @returns The user data without sensitive information
+   */
+  async findOneById(id: string): Promise<UserGetDto> {
+    const user = await this.userRepository.findOne({
+      where: { id },
+      relations: ['organization']
+    });
+    
+    if (!user) {
+      throw new NotFoundException(`User with id ${id} not found`);
+    }
+
+    // Return user data without sensitive information
+    return this.transformToDto(user);
   }
 }

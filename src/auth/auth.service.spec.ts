@@ -10,6 +10,7 @@ import { TypeOrmTestingConfig } from '../shared/testing-utils/typeorm-testing-co
 import { faker } from '@faker-js/faker';
 import { UserService } from '../user/user.service';
 import { TokenBlacklistService } from './token-blacklist.service';
+import { Role } from '../shared/enums/role.enums';
 
 // Mock para UserService
 class MockUserService {
@@ -103,7 +104,7 @@ describe('AuthService', () => {
         username: faker.internet.username() + faker.number.int(10000), // Ensure username is unique and long enough
         email: faker.internet.email(),
         password: hashedPassword,
-        roles: ['user'], // Add roles field
+        roles: [Role.COLLABORATOR], // Use Role enum instead of string
       };
       
       const savedUser = await userRepository.save(user);
@@ -120,47 +121,46 @@ describe('AuthService', () => {
 
   describe('validateUser', () => {
     it('should return user object when credentials are valid', async () => {
-      // Configurar el mock de UserService para devolver un usuario
       const mockUser = {
         id: 'user-id',
         username: 'testuser',
         password: 'hashedPassword',
-        roles: ['user']
+        roles: [Role.COLLABORATOR]
       };
       
-      userService.findOne.mockResolvedValue(mockUser);
+      userService.findOneForAuth.mockResolvedValue(mockUser);
+      passwordService.comparePasswords = jest.fn().mockResolvedValue(true);
       
-      // Spy en el método comparePasswords
-      jest.spyOn(passwordService, 'comparePasswords').mockResolvedValue(true);
-      
-      // Llamar al método a probar
       const result = await service.validateUser('testuser', 'password');
       
-      // Verificar que se llamó a findOne con los argumentos correctos
-      expect(userService.findOne).toHaveBeenCalledWith('testuser');
-      
-      // Verificar el resultado
+      expect(userService.findOneForAuth).toHaveBeenCalledWith('testuser');
       expect(result).toEqual({
         id: 'user-id',
         username: 'testuser',
-        roles: ['user']
+        roles: [Role.COLLABORATOR]
       });
     });
 
     it('should throw an exception when user is not found', async () => {
-      userService.findOne.mockRejectedValue(new Error('User not found'));
-      await expect(() => service.validateUser('nonexistent', 'password')).rejects.toHaveProperty('message', 'Invalid credentials');
+      userService.findOneForAuth.mockRejectedValue(new Error('User not found'));
+      await expect(service.validateUser('nonexistent', 'password')).rejects.toHaveProperty(
+        'message',
+        'Invalid credentials'
+      );
     });
 
     it('should throw an exception when password is incorrect', async () => {
-      userService.findOne.mockResolvedValue({
+      userService.findOneForAuth.mockResolvedValue({
         id: 'user-id',
         username: 'testuser',
         password: 'hashedPassword',
-        roles: ['user']
+        roles: [Role.COLLABORATOR]
       });
-      jest.spyOn(passwordService, 'comparePasswords').mockResolvedValue(false);
-      await expect(() => service.validateUser('testuser', 'wrongPassword')).rejects.toHaveProperty('message', 'Invalid credentials');
+      passwordService.comparePasswords = jest.fn().mockResolvedValue(false);
+      await expect(service.validateUser('testuser', 'wrongPassword')).rejects.toHaveProperty(
+        'message',
+        'Invalid credentials'
+      );
     });
   });
 
@@ -171,7 +171,7 @@ describe('AuthService', () => {
         user: {
           id: userList[0].id,
           username: userList[0].username,
-          roles: ['admin'],
+          roles: [Role.COLLABORATOR],
           email: userList[0].email,
         },
       };
@@ -186,7 +186,7 @@ describe('AuthService', () => {
         {
           username: userList[0].username,
           sub: userList[0].id,
-          roles: ['admin'],
+          roles: [Role.COLLABORATOR],
           email: userList[0].email,
         },
         {

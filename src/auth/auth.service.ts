@@ -24,8 +24,8 @@ export class AuthService {
 
   async validateUser(username: string, password: string): Promise<any> {
     try {
-      // Look for the user in the repo with UserRepository, not the UserService
-      const user = await this.userService.findOne(username);
+      // Use the authentication-specific method that includes the password
+      const user = await this.userService.findOneForAuth(username);
       
       // Compare the provided password with the stored password
       const isMatch = await this.passwordService.comparePasswords(password, user.password);

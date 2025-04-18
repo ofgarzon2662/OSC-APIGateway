@@ -1,6 +1,8 @@
 import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
 import { OrganizationEntity } from '../organization/organization.entity';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, JoinColumn } from 'typeorm';
+import { Role } from '../shared/enums/role.enums';
+import { IsArray, IsEnum, ValidateIf } from 'class-validator';
 
 @Entity()
 export class UserEntity {
@@ -28,7 +30,10 @@ export class UserEntity {
   password: string;
 
   @Column('simple-array')
-  roles: string[];
+  @ValidateIf((object, value) => value !== undefined)
+  @IsArray()
+  @IsEnum(Role, { each: true })
+  roles: Role[];
 
   @ManyToOne(() => OrganizationEntity, { nullable: true })
   @JoinColumn()

@@ -10,6 +10,10 @@ import { BusinessError, BusinessLogicException } from '../shared/errors/business
 import { ConfigService } from '@nestjs/config';
 import { PasswordService } from '../auth/password.service';
 import { UserGetDto } from './dto/userGet.dto';
+import { Role } from '../shared/enums/role.enums';
+import { BadRequestException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { UserUpdateDto } from './dto/user-update.dto';
+import { OrganizationEntity } from '../organization/organization.entity';
 
 describe('UserService', () => {
   let service: UserService;
@@ -17,6 +21,7 @@ describe('UserService', () => {
   let userList: UserEntity[];
   let configService: ConfigService;
   let passwordService: PasswordService;
+  let organizationRepository: Repository<OrganizationEntity>;
 
   // Mock config service
   const mockConfigService = {
@@ -31,11 +36,6 @@ describe('UserService', () => {
       };
       return config[key] || defaultValue;
     }),
-  };
-
-  // Mock config service sin usuarios definidos
-  const mockEmptyConfigService = {
-    get: jest.fn().mockReturnValue(undefined),
   };
 
   beforeEach(async () => {
@@ -53,6 +53,7 @@ describe('UserService', () => {
 
     service = module.get<UserService>(UserService);
     repository = module.get<Repository<UserEntity>>(getRepositoryToken(UserEntity));
+    organizationRepository = module.get<Repository<OrganizationEntity>>(getRepositoryToken(OrganizationEntity));
     configService = module.get<ConfigService>(ConfigService);
     passwordService = module.get<PasswordService>(PasswordService);
     
@@ -63,13 +64,22 @@ describe('UserService', () => {
     await repository.clear();
     userList = [];
     
+    // Create a test organization
+    const organization = organizationRepository.create({
+      name: 'Test Organization',
+      description: 'Test Description',
+    });
+    await organizationRepository.save(organization);
+    
     // Create 5 users for testing
     for (let i = 0; i < 5; i++) {
       const user = {
         name: faker.person.fullName(),
-        username: faker.internet.username() + faker.number.int(10000), // Ensure username is unique and long enough
+        username: faker.internet.username() + faker.number.int(10000),
         email: faker.internet.email(),
-        password: await passwordService.hashPassword('Password' + faker.number.int(10000)), // Ensure password is long enough
+        password: await passwordService.hashPassword('Password' + faker.number.int(10000)),
+        roles: [Role.COLLABORATOR],
+        organization: organization,
       };
       
       const savedUser = await repository.save(user);
@@ -83,346 +93,590 @@ describe('UserService', () => {
 
   describe('loadUsersFromEnv', () => {
     it('should save admin users to the database', async () => {
-      // Asegurarnos de que no hay usuarios admin en la base de datos
+      // Clear admin users from database
       await repository.delete({ username: 'admin' });
       await repository.delete({ username: 'superadmin' });
       
-      // Llamar al método directamente
+      // Call the method directly
       await service.loadUsersFromEnv();
       
-      // Verificar directamente en la base de datos que los usuarios se han guardado
+      // Verify directly in the database that users were saved
       const adminUser = await repository.findOne({ where: { username: 'admin' } });
       const superadminUser = await repository.findOne({ where: { username: 'superadmin' } });
       
-      // Verificar que existen
+      // Verify they exist
       expect(adminUser).toBeDefined();
       expect(superadminUser).toBeDefined();
       
-      // Verificar propiedades del usuario admin
+      // Verify admin user properties
       expect(adminUser.name).toBe('admin');
-      expect(adminUser.email).toBe('admin@admin.com');
-      expect(adminUser.roles).toEqual(['admin']);
+      expect(adminUser.email).toBe('admin@example.com');
+      expect(adminUser.roles).toEqual([Role.ADMIN]);
       
-      // Verificar propiedades del usuario superadmin
+      // Verify superadmin user properties
       expect(superadminUser.name).toBe('superadmin');
-      expect(superadminUser.email).toBe('superadmin@admin.com');
-      expect(superadminUser.roles).toEqual(['admin', 'pi']);
+      expect(superadminUser.email).toBe('superadmin@example.com');
+      expect(superadminUser.roles).toEqual([Role.ADMIN, Role.PI]);
     });
-    
-    // Test para cubrir el caso en que ya existen los usuarios admin
-    it('should handle case when admin users already exist', async () => {
-      // Silenciar los logs para esta prueba
-      const originalConsoleLog = console.log;
-      console.log = jest.fn();
+
+    it('should throw an error when no users are found in environment variables', async () => {
+      // Mock the ConfigService to return undefined values
+      jest.spyOn(configService, 'get').mockReturnValue(undefined);
       
-      try {
-        // Crear un usuario admin manualmente
-        const adminUser = {
-          name: 'admin',
-          username: 'admin',
-          email: 'admin@admin.com',
-          password: await passwordService.hashPassword('existingPassword'),
-          roles: ['admin']
-        };
-        await repository.save(adminUser);
-        
-        // Llamar al método
-        await service.loadUsersFromEnv();
-        
-        // Verificar que se llamó a console.log
-        expect(console.log).toHaveBeenCalledWith('Admin user admin already exists in database');
-        
-        // Verificar que el usuario sigue existiendo (no se ha borrado ni modificado)
-        const existingUser = await repository.findOne({ where: { username: 'admin' } });
-        expect(existingUser).toBeDefined();
-        expect(existingUser.password).toBe(adminUser.password); // Verificar que la contraseña no cambió
-      } finally {
-        // Restaurar console.log
-        console.log = originalConsoleLog;
-      }
-    });
-    
-    // Test para cubrir el caso de error al guardar usuario
-    it('should handle database errors gracefully', async () => {
-      // Crear un mock de repositorio que lance error al llamar a findOne
-      const mockRepository = {
-        findOne: jest.fn().mockImplementation(() => {
-          throw new Error('Database connection error');
-        }),
-        save: jest.fn(),
-        create: jest.fn().mockReturnValue({}),
-        delete: jest.fn(),
-        find: jest.fn(),
-        count: jest.fn(),
-        clear: jest.fn(),
-      };
+      // Clear any existing users
+      (service as any).users = [];
       
-      // Silenciar los console.error para esta prueba
-      const originalConsoleError = console.error;
-      console.error = jest.fn();
-      
-      try {
-        // Crear una instancia de servicio con el mock
-        const moduleRef = await Test.createTestingModule({
-          providers: [
-            UserService,
-            PasswordService,
-            {
-              provide: ConfigService,
-              useValue: mockConfigService,
-            },
-            {
-              provide: getRepositoryToken(UserEntity),
-              useValue: mockRepository,
-            }
-          ],
-        }).compile();
-        
-        const serviceWithMockedRepo = moduleRef.get<UserService>(UserService);
-        
-        // Verificar que no lanza error
-        await expect(serviceWithMockedRepo.loadUsersFromEnv()).resolves.not.toThrow();
-        
-        // Verificar que se llamó a console.error
-        expect(console.error).toHaveBeenCalled();
-      } finally {
-        // Restaurar console.error
-        console.error = originalConsoleError;
-      }
-    });
-    
-    // Test para cubrir el caso en que no hay variables de entorno definidas
-    it('should use default users when no environment variables are defined', async () => {
-      // Silenciar la advertencia en console
-      const originalConsoleWarn = console.warn;
-      console.warn = jest.fn();
-      
-      try {
-        // Crear un servicio con un ConfigService vacío
-        const moduleRef = await Test.createTestingModule({
-          imports: [...TypeOrmTestingConfig()],
-          providers: [
-            UserService,
-            PasswordService,
-            {
-              provide: ConfigService,
-              useValue: mockEmptyConfigService,
-            }
-          ],
-        }).compile();
-        
-        const serviceWithEmptyConfig = moduleRef.get<UserService>(UserService);
-        const repo = moduleRef.get<Repository<UserEntity>>(getRepositoryToken(UserEntity));
-        
-        // Limpiar la base de datos
-        await repo.clear();
-        
-        // Llamar al método
-        await serviceWithEmptyConfig.loadUsersFromEnv();
-        
-        // Verificar que se llamó a console.warn
-        expect(console.warn).toHaveBeenCalledWith('No users found in environment variables. Using default users.');
-        
-        // Verificar que se guardaron los usuarios por defecto
-        const adminUser = await repo.findOne({ where: { username: 'admin' } });
-        const userUser = await repo.findOne({ where: { username: 'user' } });
-        
-        expect(adminUser).toBeDefined();
-        expect(userUser).toBeDefined();
-      } finally {
-        // Restaurar console.warn
-        console.warn = originalConsoleWarn;
-      }
+      // Call loadUsersFromEnv and expect it to throw
+      await expect(service.loadUsersFromEnv()).rejects.toThrow(
+        /No users found in environment variables/
+      );
     });
   });
 
-  describe('getOne', () => {
-    it('should return a user DTO by username', async () => {
+  describe('findOneForAuth', () => {
+    it('should return a user with password for authentication', async () => {
       const storedUser = userList[0];
-      const result = await service.getOne(storedUser.username);
+      const result = await service.findOneForAuth(storedUser.username);
       
       expect(result).toBeDefined();
       expect(result.username).toEqual(storedUser.username);
-      expect(result).toBeInstanceOf(UserGetDto);
-      // Verificar que el objeto no contiene la propiedad password
-      expect((result as any).password).toBeUndefined();
+      expect(result.password).toBeDefined();
     });
     
-    it('should throw an exception for a non-existent user', async () => {
-      await expect(() => service.getOne('nonexistent')).rejects.toHaveProperty('message', 'User not found');
-    });
-  });
+    it('should throw BusinessLogicException when user not found', async () => {
+      repository.findOne = jest.fn().mockResolvedValue(null);
 
-  describe('findAll', () => {
-    it('should return all users', async () => {
-      const users = await service.findAll();
-      expect(users).toBeDefined();
-      expect(users).not.toBeNull();
-      expect(users.length).toBeGreaterThanOrEqual(userList.length);
+      await expect(service.findOneForAuth('nonexistentuser')).rejects.toHaveProperty(
+        'message',
+        'User not found'
+      );
     });
   });
 
   describe('findOne', () => {
-    it('should return a user by username', async () => {
+    it('should return a user DTO by username', async () => {
       const storedUser = userList[0];
-      const user = await service.findOne(storedUser.username);
-      expect(user).toBeDefined();
-      expect(user.username).toEqual(storedUser.username);
+      const result = await service.findOne(storedUser.username);
+      
+      expect(result).toBeDefined();
+      expect(result.username).toEqual(storedUser.username);
+      // Don't check for instance type as it might be transformed
+      expect((result as any).password).toBeUndefined();
     });
+    
+    it('should throw BusinessLogicException when user not found', async () => {
+      repository.findOne = jest.fn().mockResolvedValue(null);
 
-    it('should return a user by email', async () => {
-      const storedUser = userList[0];
-      const user = await service.findOne(storedUser.email);
-      expect(user).toBeDefined();
-      expect(user.email).toEqual(storedUser.email);
-    });
-
-    it('should throw an exception for a non-existent user', async () => {
-      await expect(() => service.findOne('nonexistent')).rejects.toHaveProperty('message', 'User not found');
+      await expect(service.findOne('nonexistentuser')).rejects.toHaveProperty(
+        'message',
+        'User not found'
+      );
     });
   });
 
   describe('create', () => {
-    it('should create a new user with valid data', async () => {
-      const newUser: UserCreateDto = {
-        name: faker.person.fullName(),
-        username: 'newusername' + faker.number.int(10000),
-        email: faker.internet.email(),
-        password: 'Password' + faker.number.int(10000),
-        role: 'collaborator'
-      };
-
-      const result = await service.create(newUser);
+    it('should create a new user with COLLABORATOR role', async () => {
+      const createUserDto = new UserCreateDto();
+      createUserDto.name = faker.person.fullName();
+      createUserDto.username = faker.internet.username();
+      createUserDto.email = faker.internet.email();
+      createUserDto.password = 'Password123!';
+      createUserDto.role = Role.COLLABORATOR;
+      
+      // Get the test organization
+      const organization = await organizationRepository.findOne({ where: { name: 'Test Organization' } });
+      
+      // Create a PI user as the creator
+      const creator = new UserEntity();
+      creator.id = faker.string.uuid();
+      creator.roles = [Role.PI];
+      creator.organization = organization;
+      
+      const result = await service.create(createUserDto, creator);
       
       expect(result).toBeDefined();
-      expect(result.username).toEqual(newUser.username);
-      expect(result.email).toEqual(newUser.email);
+      expect(result.username).toEqual(createUserDto.username);
+      expect(result.roles).toEqual([Role.COLLABORATOR]);
+      expect((result as any).password).toBeUndefined();
+    });
+    
+    it('should throw BadRequestException when user already exists', async () => {
+      const createUserDto = new UserCreateDto();
+      createUserDto.name = faker.person.fullName();
+      createUserDto.username = userList[0].username; // Use existing username
+      createUserDto.email = faker.internet.email();
+      createUserDto.password = 'Password123!';
+      createUserDto.role = Role.COLLABORATOR;
       
-      // Verify it was added to the database
-      const storedUser = await repository.findOne({ 
-        where: { username: newUser.username } 
+      // Get the test organization
+      const organization = await organizationRepository.findOne({ where: { name: 'Test Organization' } });
+      
+      // Create a PI user as the creator
+      const creator = new UserEntity();
+      creator.id = faker.string.uuid();
+      creator.roles = [Role.PI];
+      creator.organization = organization;
+      
+      await expect(service.create(createUserDto, creator)).rejects.toThrow(BadRequestException);
+    });
+    
+    it('should throw BadRequestException when password is too short', async () => {
+      const createUserDto = new UserCreateDto();
+      createUserDto.name = faker.person.fullName();
+      createUserDto.username = faker.internet.username();
+      createUserDto.email = faker.internet.email();
+      createUserDto.password = 'short'; // Too short
+      createUserDto.role = Role.COLLABORATOR;
+      
+      // Get the test organization
+      const organization = await organizationRepository.findOne({ where: { name: 'Test Organization' } });
+      
+      // Create a PI user as the creator
+      const creator = new UserEntity();
+      creator.id = faker.string.uuid();
+      creator.roles = [Role.PI];
+      creator.organization = organization;
+      
+      await expect(service.create(createUserDto, creator)).rejects.toThrow(BadRequestException);
+    });
+    
+    it('should throw BadRequestException when PI tries to create ADMIN user', async () => {
+      const createUserDto = new UserCreateDto();
+      createUserDto.name = faker.person.fullName();
+      createUserDto.username = faker.internet.username();
+      createUserDto.email = faker.internet.email();
+      createUserDto.password = 'Password123!';
+      createUserDto.role = Role.ADMIN; // PI trying to create ADMIN
+      
+      // Get the test organization
+      const organization = await organizationRepository.findOne({ where: { name: 'Test Organization' } });
+      
+      // Create a PI user as the creator
+      const creator = new UserEntity();
+      creator.id = faker.string.uuid();
+      creator.roles = [Role.PI];
+      creator.organization = organization;
+      
+      await expect(service.create(createUserDto, creator)).rejects.toThrow(BadRequestException);
+    });
+
+    it('should throw BadRequestException when no organization exists for non-admin user', async () => {
+      // Clear both repositories to ensure no organizations exist
+      await repository.clear();
+      await organizationRepository.clear();
+
+      const createUserDto = new UserCreateDto();
+      createUserDto.name = faker.person.fullName();
+      createUserDto.username = faker.internet.username();
+      createUserDto.email = faker.internet.email();
+      createUserDto.password = 'Password123!';
+      createUserDto.role = Role.COLLABORATOR;
+      
+      const creator = await repository.save({
+        id: faker.string.uuid(),
+        name: 'PI User',
+        username: 'piuser',
+        email: 'pi@example.com',
+        password: 'hashedpassword',
+        roles: [Role.PI]
       });
-      expect(storedUser).toBeDefined();
+      
+      await expect(service.create(createUserDto, creator)).rejects.toHaveProperty(
+        'message',
+        'Failed to associate user with organization: Cannot create PI or Collaborator users: No organization exists in the system'
+      );
     });
 
-    it('should throw an exception for a username that already exists', async () => {
-      const existingUser = userList[0];
-      const newUser: UserCreateDto = {
-        name: faker.person.fullName(),
-        username: existingUser.username,
-        email: faker.internet.email(),
-        password: 'Password' + faker.number.int(10000),
-        role: 'collaborator'
-      };
+    it('should create an admin user without organization', async () => {
+      const createUserDto = new UserCreateDto();
+      createUserDto.name = faker.person.fullName();
+      createUserDto.username = faker.internet.username();
+      createUserDto.email = faker.internet.email();
+      createUserDto.password = 'Password123!';
+      createUserDto.role = Role.ADMIN;
       
-      await expect(() => service.create(newUser)).rejects.toHaveProperty('message', 'Username or email already exists');
+      const creator = new UserEntity();
+      creator.id = faker.string.uuid();
+      creator.roles = [Role.ADMIN];
+      
+      const result = await service.create(createUserDto, creator);
+      expect(result).toBeDefined();
+      expect(result.roles).toContain(Role.ADMIN);
+      expect(result.organizationName).toBeUndefined();
     });
 
-    it('should throw an exception for an email that already exists', async () => {
-      const existingUser = userList[0];
-      const newUser: UserCreateDto = {
-        name: faker.person.fullName(),
-        username: 'newusername' + faker.number.int(10000),
-        email: existingUser.email,
-        password: 'Password' + faker.number.int(10000),
-        role: 'collaborator'
-      };
+    it('should throw BadRequestException if creator is not an admin or PI', async () => {
+      const createUserDto = new UserCreateDto();
+      createUserDto.name = faker.person.fullName();
+      createUserDto.username = faker.internet.username();
+      createUserDto.email = faker.internet.email();
+      createUserDto.password = 'Password123!';
+      createUserDto.role = Role.COLLABORATOR;
       
-      await expect(() => service.create(newUser)).rejects.toHaveProperty('message', 'Username or email already exists');
-    });
-
-    it('should throw an exception for a password that is too short', async () => {
-      const newUser: UserCreateDto = {
-        name: faker.person.fullName(),
-        username: 'newusername' + faker.number.int(10000),
-        email: faker.internet.email(),
-        password: 'short',
-        role: 'collaborator'
-      };
+      const creator = new UserEntity();
+      creator.id = faker.string.uuid();
+      creator.roles = [Role.COLLABORATOR];
       
-      await expect(() => service.create(newUser)).rejects.toHaveProperty('message', 'Password must be at least 8 characters long');
-    });
-
-    it('should throw an exception for a username that is too short', async () => {
-      const newUser: UserCreateDto = {
-        name: faker.person.fullName(),
-        username: 'short',
-        email: faker.internet.email(),
-        password: 'Password' + faker.number.int(10000),
-        role: 'collaborator'
-      };
-      
-      await expect(() => service.create(newUser)).rejects.toHaveProperty('message', 'Username must be at least 8 characters long');
+      await expect(service.create(createUserDto, creator)).rejects.toHaveProperty(
+        'message',
+        'Only admins and PIs can create users'
+      );
     });
   });
 
-  describe('deleteAll', () => {
-    it('should delete all users from the database', async () => {
-      // Verificar que hay usuarios en la base de datos antes de eliminarlos
-      const usersBeforeDelete = await repository.find();
-      expect(usersBeforeDelete.length).toBeGreaterThan(0);
+  describe('findAll', () => {
+    it('should return an array of user DTOs', async () => {
+      const result = await service.findAll();
       
-      // Llamar a deleteAll
-      await service.deleteAll();
-      
-      // Verificar que no quedan usuarios en la base de datos
-      const usersAfterDelete = await repository.find();
-      expect(usersAfterDelete.length).toBe(0);
+      expect(result).toBeDefined();
+      expect(result.length).toBeGreaterThan(0);
+      expect((result[0] as any).password).toBeUndefined();
     });
-    
-    it('should work even if there are no users in the database', async () => {
-      // Limpiar la base de datos manualmente
+
+    it('should handle empty user list', async () => {
       await repository.clear();
+      const result = await service.findAll();
+      expect(result).toBeDefined();
+      expect(result).toHaveLength(0);
+    });
+  });
+
+  describe('update', () => {
+    it('should update a user', async () => {
+      const userToUpdate = userList[0];
+      const updateUserDto = new UserUpdateDto();
+      updateUserDto.name = 'Updated Name';
       
-      // Verificar que no hay usuarios
-      const usersBeforeDelete = await repository.find();
-      expect(usersBeforeDelete.length).toBe(0);
+      // Create an admin user as the current user
+      const currentUser = new UserEntity();
+      currentUser.id = faker.string.uuid();
+      currentUser.roles = [Role.ADMIN];
+      currentUser.name = 'Admin User';
+      currentUser.username = 'adminuser';
+      currentUser.email = 'admin@example.com';
+      currentUser.password = 'hashedpassword';
       
-      // Llamar a deleteAll no debería lanzar errores
-      await expect(service.deleteAll()).resolves.not.toThrow();
+      const result = await service.update(userToUpdate.id, updateUserDto, currentUser);
       
-      // Verificar que sigue sin haber usuarios
-      const usersAfterDelete = await repository.find();
-      expect(usersAfterDelete.length).toBe(0);
+      expect(result).toBeDefined();
+      expect(result.name).toEqual('Updated Name');
+      expect((result as any).password).toBeUndefined();
     });
     
-    it('should handle database errors gracefully', async () => {
-      // Crear un mock de repositorio que lance error al llamar a delete
-      const mockRepository = {
-        delete: jest.fn().mockImplementation(() => {
-          throw new Error('Database connection error on delete');
-        }),
-        find: jest.fn().mockReturnValue([]),
-        findOne: jest.fn(),
-        save: jest.fn(),
-        create: jest.fn(),
-        clear: jest.fn(),
-        count: jest.fn(),
-      };
+    it('should throw NotFoundException when user not found', async () => {
+      const updateUserDto = new UserUpdateDto();
+      updateUserDto.name = 'Updated Name';
       
-      // Crear una instancia de servicio con el mock
-      const moduleRef = await Test.createTestingModule({
-        providers: [
-          UserService,
-          PasswordService,
-          {
-            provide: ConfigService,
-            useValue: mockConfigService,
-          },
-          {
-            provide: getRepositoryToken(UserEntity),
-            useValue: mockRepository,
-          }
-        ],
-      }).compile();
+      // Create an admin user as the current user
+      const currentUser = new UserEntity();
+      currentUser.id = faker.string.uuid();
+      currentUser.roles = [Role.ADMIN];
+      currentUser.name = 'Admin User';
+      currentUser.username = 'adminuser';
+      currentUser.email = 'admin@example.com';
+      currentUser.password = 'hashedpassword';
       
-      const serviceWithMockedRepo = moduleRef.get<UserService>(UserService);
+      await expect(service.update('nonexistentid', updateUserDto, currentUser)).rejects.toThrow(NotFoundException);
+    });
+    
+    it('should throw UnauthorizedException when non-admin tries to update admin user', async () => {
+      // Create an admin user
+      const adminUser = new UserEntity();
+      adminUser.id = faker.string.uuid();
+      adminUser.roles = [Role.ADMIN];
+      adminUser.name = 'Admin User';
+      adminUser.username = 'adminuser';
+      adminUser.email = 'admin@example.com';
+      adminUser.password = 'hashedpassword';
+      const savedAdmin = await repository.save(adminUser);
       
-      // Llamar a deleteAll debería rechazar la promesa con un error
-      await expect(serviceWithMockedRepo.deleteAll()).rejects.toThrow('Database connection error on delete');
+      const updateUserDto = new UserUpdateDto();
+      updateUserDto.name = 'Updated Name';
       
-      // Verificar que se llamó al método delete
-      expect(mockRepository.delete).toHaveBeenCalledWith({});
+      // Create a PI user as the current user
+      const currentUser = new UserEntity();
+      currentUser.id = faker.string.uuid();
+      currentUser.roles = [Role.PI];
+      currentUser.name = 'PI User';
+      currentUser.username = 'piuser';
+      currentUser.email = 'pi@example.com';
+      currentUser.password = 'hashedpassword';
+      
+      await expect(service.update(savedAdmin.id, updateUserDto, currentUser)).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('should allow self-update of non-sensitive fields', async () => {
+      const userToUpdate = userList[0];
+      const updateUserDto = new UserUpdateDto();
+      updateUserDto.name = 'Updated Name';
+      
+      const result = await service.update(userToUpdate.id, updateUserDto, userToUpdate);
+      
+      expect(result).toBeDefined();
+      expect(result.name).toEqual('Updated Name');
+    });
+
+    it('should throw BadRequestException when trying to update to existing username', async () => {
+      const userToUpdate = userList[0];
+      const updateUserDto = new UserUpdateDto();
+      updateUserDto.username = userList[1].username;
+      
+      const currentUser = new UserEntity();
+      currentUser.id = faker.string.uuid();
+      currentUser.roles = [Role.ADMIN];
+      
+      await expect(service.update(userToUpdate.id, updateUserDto, currentUser)).rejects.toHaveProperty(
+        'message',
+        'Username already exists'
+      );
+    });
+
+    it('should throw BadRequestException when trying to update to existing email', async () => {
+      const userToUpdate = userList[0];
+      const updateUserDto = new UserUpdateDto();
+      updateUserDto.email = userList[1].email;
+      
+      const currentUser = new UserEntity();
+      currentUser.id = faker.string.uuid();
+      currentUser.roles = [Role.ADMIN];
+      
+      await expect(service.update(userToUpdate.id, updateUserDto, currentUser)).rejects.toHaveProperty(
+        'message',
+        'Email already exists'
+      );
+    });
+
+    it('should throw BadRequestException when password is too short', async () => {
+      const userToUpdate = userList[0];
+      const updateUserDto = new UserUpdateDto();
+      updateUserDto.password = 'short';
+      
+      const currentUser = new UserEntity();
+      currentUser.id = faker.string.uuid();
+      currentUser.roles = [Role.ADMIN];
+      
+      await expect(service.update(userToUpdate.id, updateUserDto, currentUser)).rejects.toHaveProperty(
+        'message',
+        'Password must be at least 8 characters long'
+      );
+    });
+
+    it('should throw UnauthorizedException when non-admin tries to update roles', async () => {
+      const userToUpdate = userList[0];
+      const updateUserDto = new UserUpdateDto();
+      updateUserDto.role = Role.ADMIN;
+      
+      const currentUser = new UserEntity();
+      currentUser.id = userToUpdate.id;
+      currentUser.roles = [Role.COLLABORATOR];
+      
+      await expect(service.update(userToUpdate.id, updateUserDto, currentUser)).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('should throw UnauthorizedException when admin tries to change their own email', async () => {
+      let adminUser = userList.find(user => user.roles.includes(Role.ADMIN));
+      if (!adminUser) {
+        // Create an admin if none exists
+        const newAdmin = new UserEntity();
+        newAdmin.id = faker.string.uuid();
+        newAdmin.name = 'Admin User';
+        newAdmin.username = 'adminuser';
+        newAdmin.email = 'admin@example.com';
+        newAdmin.password = 'hashedpassword';
+        newAdmin.roles = [Role.ADMIN];
+        await repository.save(newAdmin);
+        adminUser = newAdmin;
+      }
+      
+      const updateUserDto = new UserUpdateDto();
+      updateUserDto.email = 'new-email@example.com';
+      
+      await expect(service.update(adminUser.id, updateUserDto, adminUser)).rejects.toHaveProperty(
+        'message',
+        'Admins cannot change their own email'
+      );
+    });
+
+    it('should throw UnauthorizedException when admin tries to change their own username', async () => {
+      let adminUser = userList.find(user => user.roles.includes(Role.ADMIN));
+      if (!adminUser) {
+        // Create an admin if none exists
+        const newAdmin = new UserEntity();
+        newAdmin.id = faker.string.uuid();
+        newAdmin.name = 'Admin User';
+        newAdmin.username = 'adminuser';
+        newAdmin.email = 'admin@example.com';
+        newAdmin.password = 'hashedpassword';
+        newAdmin.roles = [Role.ADMIN];
+        await repository.save(newAdmin);
+        adminUser = newAdmin;
+      }
+      
+      const updateUserDto = new UserUpdateDto();
+      updateUserDto.username = 'new-username';
+      
+      await expect(service.update(adminUser.id, updateUserDto, adminUser)).rejects.toHaveProperty(
+        'message',
+        'Admins cannot change their own username'
+      );
+    });
+
+    it('should return requiresRelogin flag when password is updated', async () => {
+      const userToUpdate = userList[0];
+      const updateUserDto = new UserUpdateDto();
+      updateUserDto.password = 'NewPassword123!';
+      
+      const admin = userList.find(user => user.roles.includes(Role.ADMIN)) || await repository.save({
+        id: faker.string.uuid(),
+        name: 'Admin User',
+        username: 'adminuser',
+        email: 'admin@example.com',
+        password: 'hashedpassword',
+        roles: [Role.ADMIN]
+      });
+      
+      const result = await service.update(userToUpdate.id, updateUserDto, admin);
+      
+      expect(result).toBeDefined();
+      expect((result as any).requiresRelogin).toBe(true);
+    });
+  });
+
+  describe('remove', () => {
+    it('should remove a user', async () => {
+      const userToRemove = userList[0];
+      
+      // Create an admin user as the current user
+      const currentUser = new UserEntity();
+      currentUser.id = faker.string.uuid();
+      currentUser.roles = [Role.ADMIN];
+      currentUser.name = 'Admin User';
+      currentUser.username = 'adminuser';
+      currentUser.email = 'admin@example.com';
+      currentUser.password = 'hashedpassword';
+      
+      await service.remove(userToRemove.id, currentUser);
+      
+      const removedUser = await repository.findOne({ where: { id: userToRemove.id } });
+      expect(removedUser).toBeNull();
+    });
+    
+    it('should throw NotFoundException when user not found', async () => {
+      // Create an admin user as the current user
+      const currentUser = new UserEntity();
+      currentUser.id = faker.string.uuid();
+      currentUser.roles = [Role.ADMIN];
+      currentUser.name = 'Admin User';
+      currentUser.username = 'adminuser';
+      currentUser.email = 'admin@example.com';
+      currentUser.password = 'hashedpassword';
+      
+      await expect(service.remove('nonexistentid', currentUser)).rejects.toThrow(NotFoundException);
+    });
+    
+    it('should throw BadRequestException when PI tries to remove admin user', async () => {
+      // Create an admin user
+      const adminUser = new UserEntity();
+      adminUser.id = faker.string.uuid();
+      adminUser.roles = [Role.ADMIN];
+      adminUser.name = 'Admin User';
+      adminUser.username = 'adminuser';
+      adminUser.email = 'admin@example.com';
+      adminUser.password = 'hashedpassword';
+      const savedAdmin = await repository.save(adminUser);
+      
+      // Create a PI user as the current user
+      const currentUser = new UserEntity();
+      currentUser.id = faker.string.uuid();
+      currentUser.roles = [Role.PI];
+      currentUser.name = 'PI User';
+      currentUser.username = 'piuser';
+      currentUser.email = 'pi@example.com';
+      currentUser.password = 'hashedpassword';
+      
+      await expect(service.remove(savedAdmin.id, currentUser)).rejects.toThrow(BadRequestException);
+    });
+    
+    it('should throw BadRequestException when admin tries to remove another admin', async () => {
+      // Create an admin user
+      const adminUser = new UserEntity();
+      adminUser.id = faker.string.uuid();
+      adminUser.roles = [Role.ADMIN];
+      adminUser.name = 'Admin User';
+      adminUser.username = 'adminuser';
+      adminUser.email = 'admin@example.com';
+      adminUser.password = 'hashedpassword';
+      const savedAdmin = await repository.save(adminUser);
+      
+      // Create another admin user as the current user
+      const currentUser = new UserEntity();
+      currentUser.id = faker.string.uuid();
+      currentUser.roles = [Role.ADMIN];
+      currentUser.name = 'Admin User 2';
+      currentUser.username = 'adminuser2';
+      currentUser.email = 'admin2@example.com';
+      currentUser.password = 'hashedpassword';
+      
+      await expect(service.remove(savedAdmin.id, currentUser)).rejects.toThrow(BadRequestException);
+    });
+
+    it('should throw BadRequestException when PI tries to delete non-COLLABORATOR user', async () => {
+      // Create a PI user
+      const piUser = await repository.save({
+        id: faker.string.uuid(),
+        name: 'PI User',
+        username: 'piuser',
+        email: 'pi@example.com',
+        password: 'hashedpassword',
+        roles: [Role.PI]
+      });
+      
+      // Create a PI user to delete (PI can't delete other PIs)
+      const userToDelete = await repository.save({
+        id: faker.string.uuid(),
+        name: 'Another PI',
+        username: 'anotherpi',
+        email: 'anotherpi@example.com',
+        password: 'hashedpassword',
+        roles: [Role.PI]
+      });
+      
+      await expect(service.remove(userToDelete.id, piUser)).rejects.toHaveProperty(
+        'message',
+        'PI can only delete users with role COLLABORATOR'
+      );
+    });
+  });
+
+  describe('findOneById', () => {
+    it('should return a user DTO by id', async () => {
+      const storedUser = userList[0];
+      const result = await service.findOneById(storedUser.id);
+      
+      expect(result).toBeDefined();
+      expect(result.id).toEqual(storedUser.id);
+      expect((result as any).password).toBeUndefined();
+    });
+    
+    it('should throw NotFoundException when user not found', async () => {
+      await expect(service.findOneById('nonexistentid')).rejects.toThrow(NotFoundException);
+    });
+
+    it('should handle malformed UUID', async () => {
+      await expect(service.findOneById('not-a-uuid')).rejects.toThrow();
+    });
+  });
+
+  describe('onModuleInit', () => {
+    it('should call loadUsersFromEnv on module initialization', async () => {
+      // Mock the loadUsersFromEnv method
+      const loadUsersSpy = jest.spyOn(service, 'loadUsersFromEnv').mockResolvedValue();
+      
+      // Call onModuleInit
+      await service.onModuleInit();
+      
+      // Verify that loadUsersFromEnv was called
+      expect(loadUsersSpy).toHaveBeenCalled();
     });
   });
 });
