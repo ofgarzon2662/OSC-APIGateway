@@ -1,4 +1,4 @@
-import { IsString, IsUUID, IsEmail, IsArray, IsUrl, IsDate, IsBoolean, IsEnum, IsOptional } from 'class-validator';
+import { IsString, IsUUID, IsEmail, IsArray, IsUrl, IsDate, IsBoolean, IsEnum, IsOptional, IsObject } from 'class-validator';
 import { SubmissionState } from '../enums/submission-state.enum';
 import { GetOrganizationDto } from './get-organization.dto';
 
@@ -37,9 +37,11 @@ export class GetArtifactDto {
   acknowledgements: string;
 
   @IsString()
+  @IsOptional()
   fileName: string;
 
   @IsString()
+  @IsOptional()
   hash: string;
 
   @IsBoolean()
@@ -55,10 +57,21 @@ export class GetArtifactDto {
   @IsEmail()
   submitterEmail: string;
 
+  @IsString()
+  submitterUsername: string;
+
   @IsDate()
   @IsOptional()
   submittedAt: Date;
 
   @IsOptional()
   organization: GetOrganizationDto;
+
+  @IsObject()
+  @IsOptional()
+  submitter?: {
+    id: string;
+    name: string;
+    username: string;
+  };
 } 

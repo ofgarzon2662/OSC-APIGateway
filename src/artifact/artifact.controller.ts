@@ -9,6 +9,7 @@ import {
   UseInterceptors,
   UseGuards,
   Req,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { ArtifactService } from './artifact.service';
 import { ArtifactEntity } from './artifact.entity';
@@ -22,39 +23,41 @@ import { RolesGuard } from '../auth/roles/roles.guards';
 import { Roles } from '../shared/decorators/roles.decorators';
 import { Role } from '../shared/enums/role.enums';
 
-@Controller('organizations/:organizationId/artifacts')
+@Controller('artifacts')
 @UseInterceptors(BusinessErrorsInterceptor)
 export class ArtifactController {
   constructor(private readonly artifactService: ArtifactService) {}
 
   @Post()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.PI, Role.COLLABORATOR)
   async create(
     @Req() req: any,
-    @Param('organizationId') organizationId: string,
     @Body() createArtifactDto: CreateArtifactDto
   ): Promise<ListArtifactDto> {
-    if (!req.user || !req.user.email) {
-      throw new Error('Authenticated user email not found in request.');
+    if (!req.user || !req.user.username || !req.user.email) {
+      throw new UnauthorizedException('User information is missing from token');
     }
-    const submitterEmail = req.user.email;
     
-    return await this.artifactService.create(createArtifactDto, submitterEmail, organizationId);
+    // Extraer username y email directamente del token JWT
+    const submitterInfo = {
+      username: req.user.username,
+      email: req.user.email
+    };
+    
+    return await this.artifactService.create(createArtifactDto, submitterInfo);
   }
 
   @Get()
-  async findAll(
-    @Param('organizationId') organizationId: string
-  ): Promise<ListArtifactDto[]> {
-    return await this.artifactService.findAll(organizationId);
+  async findAll(): Promise<ListArtifactDto[]> {
+    return await this.artifactService.findAll();
   }
 
   @Get(':id')
   async findOne(
-    @Param('id') id: string,
-    @Param('organizationId') organizationId: string
+    @Param('id') id: string
   ): Promise<GetArtifactDto> {
-    return await this.artifactService.findOne(id, organizationId);
+    return await this.artifactService.findOne(id);
   }
 
   @Put(':id')
@@ -62,19 +65,17 @@ export class ArtifactController {
   @Roles(Role.SUBMITTER_LISTENER)
   async update(
     @Param('id') id: string,
-    @Param('organizationId') organizationId: string,
     @Body() updateArtifactDto: UpdateArtifactDto,
   ): Promise<ArtifactEntity> {
-    return await this.artifactService.update(id, updateArtifactDto, organizationId);
+    return await this.artifactService.update(id, updateArtifactDto);
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   async delete(
-    @Param('id') id: string,
-    @Param('organizationId') organizationId: string
+    @Param('id') id: string
   ): Promise<void> {
-    return await this.artifactService.delete(id, organizationId);
+    return await this.artifactService.delete(id);
   }
 }

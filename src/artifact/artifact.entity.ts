@@ -1,5 +1,5 @@
 import { OrganizationEntity } from '../organization/organization.entity';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { IsNotEmpty, IsString, IsDate, IsArray, IsUrl, IsEmail, IsBoolean, IsEnum, Length, Matches, IsOptional } from 'class-validator';
 import { SubmissionState } from './enums/submission-state.enum';
 
@@ -88,6 +88,11 @@ export class ArtifactEntity {
   @IsNotEmpty()
   submitterEmail: string;
 
+  @Column()
+  @IsString()
+  @IsNotEmpty()
+  submitterUsername: string;
+
   @Column({ 
     type: process.env.NODE_ENV === 'test' ? 'datetime' : 'timestamp',
     nullable: true 
@@ -95,6 +100,9 @@ export class ArtifactEntity {
   @IsDate()
   @IsOptional()
   submittedAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 
   @ManyToOne(
     () => OrganizationEntity,

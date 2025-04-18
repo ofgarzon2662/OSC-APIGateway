@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ArtifactEntity } from './artifact.entity';
 import { Repository } from 'typeorm';
@@ -13,6 +13,12 @@ import { GetArtifactDto } from './dto/get-artifact.dto';
 import { ListArtifactDto } from './dto/list-artifact.dto';
 import { OrganizationEntity } from '../organization/organization.entity';
 import { SubmissionState } from './enums/submission-state.enum';
+
+// Definir una interfaz para la información del creador del artefacto
+interface SubmitterInfo {
+  username: string;
+  email: string;
+}
 
 @Injectable()
 export class ArtifactService {
@@ -41,21 +47,18 @@ export class ArtifactService {
   }
 
   /**
-   * Finds an organization by ID or throws an exception if not found
-   * @param organizationId The organization ID
+   * Finds the single organization in the system or throws an exception if not found
    * @returns The organization entity
-   * @throws BusinessLogicException if the organization is not found
+   * @throws BusinessLogicException if no organization is found
    */
-  private async findOrganizationOrThrow(organizationId: string): Promise<OrganizationEntity> {
-    this.validateId(organizationId, 'organizationId');
-    
+  private async findOrganizationOrThrow(): Promise<OrganizationEntity> {
     const organization = await this.organizationRepository.findOne({
-      where: { id: organizationId }
+      where: {}
     });
     
     if (!organization) {
       throw new BusinessLogicException(
-        'The organization with the provided id does not exist',
+        'No organization exists in the system',
         BusinessError.NOT_FOUND,
       );
     }
@@ -64,25 +67,20 @@ export class ArtifactService {
   }
 
   /**
-   * Finds an artifact by ID and organization ID or throws an exception if not found
+   * Finds an artifact by ID or throws an exception if not found
    * @param id The artifact ID
-   * @param organizationId The organization ID
    * @param includeRelations Whether to include relations in the query
    * @returns The artifact entity
    * @throws BusinessLogicException if the artifact is not found
    */
   private async findArtifactOrThrow(
     id: string, 
-    organizationId: string, 
     includeRelations: boolean = false
   ): Promise<ArtifactEntity> {
     this.validateId(id, 'artifactId');
     
     const queryOptions: any = {
-      where: { 
-        id,
-        organization: { id: organizationId }
-      }
+      where: { id }
     };
     
     if (includeRelations) {
@@ -151,14 +149,13 @@ export class ArtifactService {
   /**
    * Checks if an artifact with the same title already exists in the organization
    * @param title The title to check
-   * @param organizationId The organization ID
    * @throws BusinessLogicException if an artifact with the same title exists
    */
-  private async checkTitleUniqueness(title: string, organizationId: string): Promise<void> {
+  private async checkTitleUniqueness(title: string, organization: OrganizationEntity): Promise<void> {
     const existingArtifact = await this.artifactRepository.findOne({
       where: { 
         title,
-        organization: { id: organizationId }
+        organization: { id: organization.id }
       }
     });
 
@@ -197,13 +194,13 @@ export class ArtifactService {
   }
 
   // Get All Artifacts - Return minimal fields
-  async findAll(organizationId: string): Promise<ListArtifactDto[]> {
-    // Validate organization ID and find organization
-    await this.findOrganizationOrThrow(organizationId);
+  async findAll(): Promise<ListArtifactDto[]> {
+    // Find the organization
+    const organization = await this.findOrganizationOrThrow();
     
     // Find artifacts for the organization
     const artifacts = await this.artifactRepository.find({
-      where: { organization: { id: organizationId } }
+      where: { organization: { id: organization.id } }
     });
     
     // Transform the result to include minimal fields
@@ -216,12 +213,12 @@ export class ArtifactService {
   }
 
   // Get One Artifact - Return all fields
-  async findOne(id: string, organizationId: string): Promise<GetArtifactDto> {
-    // Validate organization ID and find organization
-    await this.findOrganizationOrThrow(organizationId);
+  async findOne(id: string): Promise<GetArtifactDto> {
+    // Find the organization
+    const organization = await this.findOrganizationOrThrow();
     
     // Find the artifact with the organization relation
-    const artifact = await this.findArtifactOrThrow(id, organizationId, true);
+    const artifact = await this.findArtifactOrThrow(id, true);
     
     // Transform the result to include all fields
     return {
@@ -239,6 +236,7 @@ export class ArtifactService {
       lastTimeVerified: artifact.lastTimeVerified,
       submissionState: artifact.submissionState,
       submitterEmail: artifact.submitterEmail,
+      submitterUsername: artifact.submitterUsername,
       submittedAt: artifact.submittedAt,
       organization: {
         name: artifact.organization.name
@@ -249,31 +247,38 @@ export class ArtifactService {
   // Create one Artifact
   async create(
     createArtifactDto: CreateArtifactDto, 
-    submitterEmail: string,
-    organizationId: string
+    submitterInfo: SubmitterInfo
   ): Promise<ListArtifactDto> {
-    // Validate submitter email
-    if (!submitterEmail || !validator.isEmail(submitterEmail)) {
+    // Validar la información del creador
+    if (!submitterInfo.email || !validator.isEmail(submitterInfo.email)) {
       throw new BusinessLogicException(
         'Invalid submitter email provided.',
         BusinessError.PRECONDITION_FAILED,
       );
     }
     
-    // Validate organization ID and find organization
-    const organization = await this.findOrganizationOrThrow(organizationId);
+    if (!submitterInfo.username || submitterInfo.username.trim() === '') {
+      throw new BusinessLogicException(
+        'Invalid submitter username provided.',
+        BusinessError.PRECONDITION_FAILED,
+      );
+    }
+    
+    // Find the organization
+    const organization = await this.findOrganizationOrThrow();
     
     // Validate the create artifact DTO
     this.validateCreateArtifactDto(createArtifactDto);
     
     // Check if an artifact with the same title already exists
-    await this.checkTitleUniqueness(createArtifactDto.title, organizationId);
+    await this.checkTitleUniqueness(createArtifactDto.title, organization);
     
     // Create the artifact
     const artifact = this.artifactRepository.create({
       ...createArtifactDto,
       organization,
-      submitterEmail,
+      submitterEmail: submitterInfo.email,
+      submitterUsername: submitterInfo.username,
       submissionState: SubmissionState.PENDING
     });
     
@@ -289,12 +294,12 @@ export class ArtifactService {
   }
 
   // Update an Artifact - Only allow updating specific fields
-  async update(id: string, updateArtifactDto: UpdateArtifactDto, organizationId: string): Promise<ArtifactEntity> {
-    // Validate organization ID and find organization
-    await this.findOrganizationOrThrow(organizationId);
+  async update(id: string, updateArtifactDto: UpdateArtifactDto): Promise<ArtifactEntity> {
+    // Find the organization
+    const organization = await this.findOrganizationOrThrow();
     
     // Find the artifact with the organization relation
-    const artifact = await this.findArtifactOrThrow(id, organizationId, true);
+    const artifact = await this.findArtifactOrThrow(id, true);
     
     // Validate update fields
     this.validateUpdateArtifactDto(updateArtifactDto);
@@ -305,12 +310,12 @@ export class ArtifactService {
   }
 
   // Delete an Artifact
-  async delete(id: string, organizationId: string): Promise<void> {
-    // Validate organization ID and find organization
-    await this.findOrganizationOrThrow(organizationId);
+  async delete(id: string): Promise<void> {
+    // Find the organization
+    const organization = await this.findOrganizationOrThrow();
     
     // Find the artifact
-    const artifact = await this.findArtifactOrThrow(id, organizationId);
+    const artifact = await this.findArtifactOrThrow(id);
     
     // Delete the artifact directly
     await this.artifactRepository.remove(artifact);
