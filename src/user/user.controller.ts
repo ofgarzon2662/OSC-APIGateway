@@ -33,7 +33,9 @@ export class UserController {
     private readonly userService: UserService,
   ) {}
 
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Get('/admins/check-admin-users')
+  @Roles(Role.ADMIN)
   @HttpCode(200)
   async checkAdminUsers() {
     try {
@@ -126,6 +128,8 @@ export class UserController {
   ) {
     return this.userService.remove(id, currentUser);
   }
+
+  // Random test
 
 
 }

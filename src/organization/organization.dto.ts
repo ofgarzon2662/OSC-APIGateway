@@ -3,13 +3,10 @@ import { IsString, IsNotEmpty, MinLength, MaxLength } from 'class-validator';
 export class OrganizationDto {
   @IsString()
   @IsNotEmpty()
-  @MinLength(4)
   readonly name: string;
 
   @IsString()
   @IsNotEmpty()
-  @MinLength(20)
-  @MaxLength(250)
   readonly description: string;
 }
 

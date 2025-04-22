@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "51138fac-90e7-40d3-bb51-cd30b842c5c7",
+		"_postman_id": "d8002561-9dd7-4fe2-9f1e-8a26e2c60c7f",
 		"name": "OSC-APIGW",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "29465325"
@@ -112,6 +112,171 @@
 						"body": {
 							"mode": "raw",
 							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/organizations",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin 1 Create Org short name",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"CODE IS 400\", function() {\r",
+									"    pm.response.to.have.status(400)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Get message\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"The name of the organization is required and must have at least 4 characters\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_ADMIN1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"UCS\",\r\n    \"description\": \"This organization focuses on {{$randomLoremWords}} and its main mission in life is {{$randomLoremWords}}\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/organizations",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin 1 Create Org No Description",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"CODE IS 400\", function() {\r",
+									"    pm.response.to.have.status(400)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Get message\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"The description is required and must be at least 20 characters long\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_ADMIN1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"UCSD\",\r\n    \"description\": \"Short\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/organizations",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin 1 Create Org long Description",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"CODE IS 400\", function() {\r",
+									"    pm.response.to.have.status(400)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Obtener el mensaje de error esperado\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"The description cannot be longer than 250 characters\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_ADMIN1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"UCSD\",\r\n    \"description\": \"Founded in 1960, the University of California, San Diego (UCSD) is a renowned public research university located in La Jolla, California. Known for its innovation, academic excellence, and vibrant campus culture, UCSD offers top-ranked programs in a wide range of fields including oceanography, engineering, biological sciences, and public health. The university is home to over 38,000 students, cutting-edge research facilities, and numerous Nobel laureates and distinguished faculty members. UCSD also prioritizes sustainability, diversity, and global engagement, fostering an inclusive environment that supports groundbreaking research and community impact.\"\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -528,14 +693,67 @@
 					"response": []
 				},
 				{
-					"name": "Admin 1 Deletes Org",
+					"name": "Collaborator Logs In",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"token_PI\", pm.response.json().token);\r",
+									"\r",
+									"pm.test(\"Status code is 201 Created\", function() {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Token is present\", function() {\r",
+									"    pm.expect(pm.response.json().token).to.be.a('string').and.to.not.be.empty;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"PI login successful\", function() {\r",
+									"    // Verificar que hay un token de respuesta (indicación de login exitoso)\r",
+									"    const responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson.token).to.be.a('string').and.to.not.be.empty;\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n   \"username\": \"{{collaborator1Username}}\",\r\n   \"password\": \"{{collaborator1_password}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PI Deletes an Org - Fails",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
 									"pm.test(\"code is 204\", function() {\r",
-									"    pm.response.to.have.status(204)\r",
+									"    pm.response.to.have.status(403)\r",
 									"});"
 								],
 								"type": "text/javascript",
@@ -549,7 +767,58 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "{{token_ADMIN1}}",
+									"value": "{{token_PI}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/organizations/{{orgId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								"{{orgId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Collaborator Deletes an Org - Fails",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"code is 403\", function() {\r",
+									"    pm.response.to.have.status(403)\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_collaborator1}}",
 									"type": "string"
 								}
 							]
@@ -622,243 +891,20 @@
 							}
 						},
 						"url": {
-							"raw": "{{baseUrl}}/organizations/{{orgId}}",
+							"raw": "{{baseUrl}}/organizations/{{$randomUUID}}",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
 								"organizations",
-								"{{orgId}}"
+								"{{$randomUUID}}"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Admin 1 Create Org short name",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"CODE IS 400\", function() {\r",
-									"    pm.response.to.have.status(400)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Obtener el mensaje de error esperado\", function() {\r",
-									"   pm.expect(pm.response.json().message).to.eql(\"The name of the organization is required and must have at least 4 characters\");\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token_ADMIN1}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"UCS\",\r\n    \"description\": \"This organization focuses on {{$randomLoremWords}} and its main mission in life is {{$randomLoremWords}}\"\r\n}\r\n",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/organizations",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Admin 1 Create Org No Description",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"CODE IS 400\", function() {\r",
-									"    pm.response.to.have.status(400)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Obtener el mensaje de error esperado\", function() {\r",
-									"   pm.expect(pm.response.json().message).to.eql(\"The description is required and must be at least 20 characters long\");\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token_ADMIN1}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"UCSD\",\r\n    \"description\": \"Short\"\r\n}\r\n",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/organizations",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Admin 1 Create Org long Description",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"CODE IS 400\", function() {\r",
-									"    pm.response.to.have.status(400)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Obtener el mensaje de error esperado\", function() {\r",
-									"   pm.expect(pm.response.json().message).to.eql(\"The description cannot be longer than 250 characters\");\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token_ADMIN1}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"UCSD\",\r\n    \"description\": \"Founded in 1960, the University of California, San Diego (UCSD) is a renowned public research university located in La Jolla, California. Known for its innovation, academic excellence, and vibrant campus culture, UCSD offers top-ranked programs in a wide range of fields including oceanography, engineering, biological sciences, and public health. The university is home to over 38,000 students, cutting-edge research facilities, and numerous Nobel laureates and distinguished faculty members. UCSD also prioritizes sustainability, diversity, and global engagement, fostering an inclusive environment that supports groundbreaking research and community impact.\"\r\n}\r\n",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/organizations",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Admin 1 Create Org 2",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.environment.set(\"orgId\", pm.response.json().id);\r",
-									"\r",
-									"pm.test(\"El código de estado es 201\", function() {\r",
-									"    pm.response.to.have.status(201)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Información presente\", function() {\r",
-									"    pm.expect(pm.response.json().name).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().description).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token_ADMIN1}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"{{$randomCompanyName}}\",\r\n    \"description\": \"This organization focuses on {{$randomLoremWords}} and its main mission in life is {{$randomLoremWords}}\"\r\n}\r\n",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/organizations",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Admin 1 Creates an org",
+					"name": "Admin 1 Creates an org - Fails",
 					"event": [
 						{
 							"listen": "test",
@@ -913,60 +959,7 @@
 					"response": []
 				},
 				{
-					"name": "Collaborator2 logs",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.environment.set(\"token_COLLABORATOR2\", pm.response.json().token);\r",
-									"\r",
-									"pm.test(\"Status code is 201 Created\", function() {\r",
-									"    pm.response.to.have.status(201);\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Token is present\", function() {\r",
-									"    pm.expect(pm.response.json().token).to.be.a('string').and.to.not.be.empty;\r",
-									"});\r",
-									"\r",
-									"pm.test(\"collaborator 2 login successful\", function() {\r",
-									"    // Verificar que hay un token de respuesta (indicación de login exitoso)\r",
-									"    const responseJson = pm.response.json();\r",
-									"    pm.expect(responseJson.token).to.be.a('string').and.to.not.be.empty;\r",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n   \"username\": \"{{collaborator2_username}}\",\r\n   \"password\": \"{{collaborator2password}}\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/users/login",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"users",
-								"login"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Collaborator 2 Get All Orgs",
+					"name": "Collaborator Get All Orgs",
 					"event": [
 						{
 							"listen": "test",
@@ -994,7 +987,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "{{token_COLLABORATOR2}}",
+									"value": "{{token_collaborator1}}",
 									"type": "string"
 								}
 							]
@@ -1014,7 +1007,7 @@
 					"response": []
 				},
 				{
-					"name": "Collaborator 2 Get One Org",
+					"name": "Collaborator Get One Org",
 					"event": [
 						{
 							"listen": "test",
@@ -1044,7 +1037,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "{{token_COLLABORATOR2}}",
+									"value": "{{token_collaborator1}}",
 									"type": "string"
 								}
 							]
@@ -1059,264 +1052,6 @@
 							"path": [
 								"organizations",
 								"{{orgId}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Admin 1 Delete Org",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"code is 204\", function() {\r",
-									"    pm.response.to.have.status(204)\r",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token_ADMIN1}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "DELETE",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/organizations/{{orgId}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations",
-								"{{orgId}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Admin 1 Delete NonExistent Org",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"code is 404\", function() {\r",
-									"    pm.response.to.have.status(404)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Get error message\", function() {\r",
-									"   pm.expect(pm.response.json().message).to.eql(\"The organization with the provided id does not exist\");\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token_ADMIN2}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "DELETE",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/organizations/{{orgId}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations",
-								"{{orgId}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Collaborator 2 Get One Org No Orgs",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Code is 404\", function() {\r",
-									"    pm.response.to.have.status(404)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Get error message\", function() {\r",
-									"   pm.expect(pm.response.json().message).to.eql(\"The organization with the provided id does not exist\");\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token_COLLABORATOR2}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/organizations/{{orgId}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations",
-								"{{orgId}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Collaborator Get All Orgs No Orgs",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Code is 404\", function() {\r",
-									"    pm.response.to.have.status(404)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Get error message\", function() {\r",
-									"   pm.expect(pm.response.json().message).to.eql(\"There are no organizations in the database\");\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token_COLLABORATOR2}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/organizations",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Admin 2 Create Org 3",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.environment.set(\"orgId\", pm.response.json().id);\r",
-									"\r",
-									"pm.test(\"El código de estado es 201\", function() {\r",
-									"    pm.response.to.have.status(201)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Información presente\", function() {\r",
-									"    pm.expect(pm.response.json().name).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().description).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token_ADMIN2}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"{{$randomCompanyName}}\",\r\n    \"description\": \"This organization focuses on {{$randomLoremWords}} and its main mission in life is {{$randomLoremWords}}\"\r\n}\r\n",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/organizations",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations"
 							]
 						}
 					},
@@ -1382,25 +1117,17 @@
 					"response": []
 				},
 				{
-					"name": "Collaborator 2 Get One Org 2",
+					"name": "Collaborator 2 Get One Org - Fails",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Code is 200\", function() {\r",
-									"    pm.response.to.have.status(200)\r",
+									"pm.test(\"Code is 401\", function() {\r",
+									"    pm.response.to.have.status(401)\r",
 									"});\r",
 									"\r",
-									"pm.test(\"Non empty response\", function() {\r",
-									"    const responseData = pm.response.json();\r",
-									"    pm.expect(pm.response.json().name).to.contain('Real Madrid CF');\r",
-									"    pm.expect(pm.response.json().description).to.contain('Club de fútbol de Madrid');\r",
-									"    pm.expect(responseData.name).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.description).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.id).to.equal(pm.environment.get(\"orgId\"));\r",
-									"});\r",
+									"\r",
 									""
 								],
 								"type": "text/javascript",
@@ -1429,6 +1156,49 @@
 							"path": [
 								"organizations",
 								"{{orgId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Collaborator 2 Get All Orgs - Fails",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 401\", function() {\r",
+									"    pm.response.to.have.status(401)\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_COLLABORATOR2}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/organizations",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations"
 							]
 						}
 					},
@@ -1603,7 +1373,285 @@
 					"response": []
 				},
 				{
-					"name": "Admin 2 Delete Org",
+					"name": "Collaborator 1 Update an Org - Forbidden",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 403\", function () {\r",
+									"    pm.response.to.have.status(403);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response body contains expected error message\", function () {\r",
+									"    const jsonData = pm.response.json();\r",
+									"    \r",
+									"    pm.expect(jsonData.message).to.eql(\"Forbidden resource\");\r",
+									"    pm.expect(jsonData.error).to.eql(\"Forbidden\");\r",
+									"    pm.expect(jsonData.statusCode).to.eql(403);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_collaborator1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{$randomCompanyName}}\",\r\n    \"description\": \"This organization focuses on {{$randomLoremWords}} and its main mission in life is {{$randomLoremWords}}\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/organizations/{{orgId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								"{{orgId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PI Update an Org - Forbidden",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 403\", function () {\r",
+									"    pm.response.to.have.status(403);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response body contains expected error message\", function () {\r",
+									"    const jsonData = pm.response.json();\r",
+									"    \r",
+									"    pm.expect(jsonData.message).to.eql(\"Forbidden resource\");\r",
+									"    pm.expect(jsonData.error).to.eql(\"Forbidden\");\r",
+									"    pm.expect(jsonData.statusCode).to.eql(403);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_PI}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{$randomCompanyName}}\",\r\n    \"description\": \"This organization focuses on {{$randomLoremWords}} and its main mission in life is {{$randomLoremWords}}\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/organizations/{{orgId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations",
+								"{{orgId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Collaborator 2 Creates an Org - Forbidden",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 403\", function () {\r",
+									"    pm.response.to.have.status(403);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response body contains expected error message\", function () {\r",
+									"    const jsonData = pm.response.json();\r",
+									"    \r",
+									"    pm.expect(jsonData.message).to.eql(\"Forbidden resource\");\r",
+									"    pm.expect(jsonData.error).to.eql(\"Forbidden\");\r",
+									"    pm.expect(jsonData.statusCode).to.eql(403);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_collaborator1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{$randomCompanyName}}\",\r\n    \"description\": \"This organization focuses on {{$randomLoremWords}} and its main mission in life is {{$randomLoremWords}}\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/organizations",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PI Creates an Org - Forbidden",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 403\", function () {\r",
+									"    pm.response.to.have.status(403);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response body contains expected error message\", function () {\r",
+									"    const jsonData = pm.response.json();\r",
+									"    \r",
+									"    pm.expect(jsonData.message).to.eql(\"Forbidden resource\");\r",
+									"    pm.expect(jsonData.error).to.eql(\"Forbidden\");\r",
+									"    pm.expect(jsonData.statusCode).to.eql(403);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_PI}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{$randomCompanyName}}\",\r\n    \"description\": \"This organization focuses on {{$randomLoremWords}} and its main mission in life is {{$randomLoremWords}}\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/organizations",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin 1 Deletes Org",
 					"event": [
 						{
 							"listen": "test",
@@ -1624,460 +1672,11 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "{{token_ADMIN2}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "DELETE",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/organizations/{{orgId}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations",
-								"{{orgId}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Admin 2 Delete NonExistent Org",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"code is 404\", function() {\r",
-									"    pm.response.to.have.status(404)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Get error message\", function() {\r",
-									"   pm.expect(pm.response.json().message).to.eql(\"The organization with the provided id does not exist\");\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token_ADMIN2}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "DELETE",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/organizations/{{orgId}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations",
-								"{{orgId}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Collaborator 2 Creates an Org",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 403\", function () {\r",
-									"    pm.response.to.have.status(403);\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Response body contains expected error message\", function () {\r",
-									"    const jsonData = pm.response.json();\r",
-									"    \r",
-									"    pm.expect(jsonData.message).to.eql(\"Forbidden resource\");\r",
-									"    pm.expect(jsonData.error).to.eql(\"Forbidden\");\r",
-									"    pm.expect(jsonData.statusCode).to.eql(403);\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"packages": {},
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token_COLLABORATOR2}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"{{$randomCompanyName}}\",\r\n    \"description\": \"This organization focuses on {{$randomLoremWords}} and its main mission in life is {{$randomLoremWords}}\"\r\n}\r\n",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/organizations",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "PI Creates an Org Copy",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 403\", function () {\r",
-									"    pm.response.to.have.status(403);\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Response body contains expected error message\", function () {\r",
-									"    const jsonData = pm.response.json();\r",
-									"    \r",
-									"    pm.expect(jsonData.message).to.eql(\"Forbidden resource\");\r",
-									"    pm.expect(jsonData.error).to.eql(\"Forbidden\");\r",
-									"    pm.expect(jsonData.statusCode).to.eql(403);\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token_PI}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"{{$randomCompanyName}}\",\r\n    \"description\": \"This organization focuses on {{$randomLoremWords}} and its main mission in life is {{$randomLoremWords}}\"\r\n}\r\n",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/organizations",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Admin 1 Creates an org",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.environment.set(\"orgId\", pm.response.json().id);\r",
-									"\r",
-									"pm.test(\"El código de estado es 201\", function() {\r",
-									"    pm.response.to.have.status(201)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Información presente\", function() {\r",
-									"    pm.expect(pm.response.json().name).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().description).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
 									"value": "{{token_ADMIN1}}",
 									"type": "string"
 								}
 							]
 						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"{{$randomCompanyName}}\",\r\n    \"description\": \"This organization focuses on {{$randomLoremWords}} and its main mission in life is {{$randomLoremWords}}\"\r\n}\r\n",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/organizations",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Collaborator 2 Update an Org",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 403\", function () {\r",
-									"    pm.response.to.have.status(403);\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Response body contains expected error message\", function () {\r",
-									"    const jsonData = pm.response.json();\r",
-									"    \r",
-									"    pm.expect(jsonData.message).to.eql(\"Forbidden resource\");\r",
-									"    pm.expect(jsonData.error).to.eql(\"Forbidden\");\r",
-									"    pm.expect(jsonData.statusCode).to.eql(403);\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token_COLLABORATOR2}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "PUT",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"{{$randomCompanyName}}\",\r\n    \"description\": \"This organization focuses on {{$randomLoremWords}} and its main mission in life is {{$randomLoremWords}}\"\r\n}\r\n",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/organizations/{{orgId}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations",
-								"{{orgId}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "PI Update an Org Copy",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 403\", function () {\r",
-									"    pm.response.to.have.status(403);\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Response body contains expected error message\", function () {\r",
-									"    const jsonData = pm.response.json();\r",
-									"    \r",
-									"    pm.expect(jsonData.message).to.eql(\"Forbidden resource\");\r",
-									"    pm.expect(jsonData.error).to.eql(\"Forbidden\");\r",
-									"    pm.expect(jsonData.statusCode).to.eql(403);\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token_PI}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "PUT",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"{{$randomCompanyName}}\",\r\n    \"description\": \"This organization focuses on {{$randomLoremWords}} and its main mission in life is {{$randomLoremWords}}\"\r\n}\r\n",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/organizations/{{orgId}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations",
-								"{{orgId}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Collaborator 2 Delete Org",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 403\", function () {\r",
-									"    pm.response.to.have.status(403);\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Response body contains expected error message\", function () {\r",
-									"    const jsonData = pm.response.json();\r",
-									"    \r",
-									"    pm.expect(jsonData.message).to.eql(\"Forbidden resource\");\r",
-									"    pm.expect(jsonData.error).to.eql(\"Forbidden\");\r",
-									"    pm.expect(jsonData.statusCode).to.eql(403);\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token_COLLABORATOR2}}",
-									"type": "string"
-								}
-							]
-						},
 						"method": "DELETE",
 						"header": [],
 						"body": {
@@ -2103,113 +1702,20 @@
 					"response": []
 				},
 				{
-					"name": "PI Delete Org",
+					"name": "Admin 1 tries to get all Users",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 403\", function () {\r",
-									"    pm.response.to.have.status(403);\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Response body contains expected error message\", function () {\r",
-									"    const jsonData = pm.response.json();\r",
-									"    \r",
-									"    pm.expect(jsonData.message).to.eql(\"Forbidden resource\");\r",
-									"    pm.expect(jsonData.error).to.eql(\"Forbidden\");\r",
-									"    pm.expect(jsonData.statusCode).to.eql(403);\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token_PI}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "DELETE",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/organizations/{{orgId}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations",
-								"{{orgId}}"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "User",
-			"item": [
-				{
-					"name": "Get Admin Users",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 200 OK\", function() {",
-									"    pm.response.to.have.status(200);",
+									"pm.test('Exactly 2 admin users, no PI/Collaborator', () => {",
+									"  const users = pm.response.json();",
+									"  pm.expect(users.length).to.eql(2);                      // only two users",
+									"  users.forEach(u => pm.expect(u.roles).to.eql(['admin'])); // each has exactly [\"admin\"]",
 									"});",
 									"",
-									"pm.test(\"Response is an array of users\", function() {",
-									"    const responseData = pm.response.json();",
-									"    pm.expect(responseData).to.be.an('array');",
-									"    pm.expect(responseData.length).to.be.greaterThan(0);",
-									"});",
-									"",
-									"// Get the saved PI and collaborator usernames",
-									"const piUsername = pm.collectionVariables.get(\"pi_username\");",
-									"const collaboratorUsername = pm.collectionVariables.get(\"collaborator_username\");",
-									"const piEmail = pm.collectionVariables.get(\"pi_email\");",
-									"const collaboratorEmail = pm.collectionVariables.get(\"collaborator_email\");",
-									"",
-									"// Test that the PI user is in the users list",
-									"pm.test(\"PI user is in the users list\", function() {",
-									"    const responseData = pm.response.json();",
-									"    const piUser = responseData.find(user => user.username === piUsername);",
-									"    ",
-									"    pm.expect(piUser).to.not.be.undefined;",
-									"    pm.expect(piUser.email).to.equal(piEmail);",
-									"    pm.expect(piUser.roles).to.be.an('array');",
-									"    pm.expect(piUser.roles).to.include('pi');",
-									"});",
-									"",
-									"// Test that the collaborator user is in the users list",
-									"pm.test(\"Collaborator user is in the users list\", function() {",
-									"    const responseData = pm.response.json();",
-									"    const collaboratorUser = responseData.find(user => user.username === collaboratorUsername);",
-									"    ",
-									"    pm.expect(collaboratorUser).to.not.be.undefined;",
-									"    pm.expect(collaboratorUser.email).to.equal(collaboratorEmail);",
-									"    pm.expect(collaboratorUser.roles).to.be.an('array');",
-									"    pm.expect(collaboratorUser.roles).to.include('collaborator'); // Changed from 'collaborator' to 'collaborator'",
+									"pm.test(\"Code is 200\", function() {",
+									"    pm.response.to.have.status(200)",
 									"});"
 								],
 								"type": "text/javascript",
@@ -2226,7 +1732,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "",
+									"value": "{{token_ADMIN1}}",
 									"type": "string"
 								}
 							]
@@ -2243,19 +1749,22 @@
 							}
 						},
 						"url": {
-							"raw": "{{baseUrl}}/users/admins/check-admin-users",
+							"raw": "{{baseUrl}}/users",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"users",
-								"admins",
-								"check-admin-users"
+								"users"
 							]
 						}
 					},
 					"response": []
-				},
+				}
+			]
+		},
+		{
+			"name": "User",
+			"item": [
 				{
 					"name": "Log in as Admin 1",
 					"event": [
@@ -2307,6 +1816,501 @@
 					"response": []
 				},
 				{
+					"name": "Get Admin Users",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"/* ---------- Basic status & shape ---------- */",
+									"pm.test('Status code is 200 OK', () => {",
+									"  pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const body = pm.response.json();",
+									"",
+									"pm.test('Message is correct', () => {",
+									"  pm.expect(body.message).to.eql('Admin users found');",
+									"});",
+									"",
+									"pm.test('Count is 2 and matches array length', () => {",
+									"  pm.expect(body.users.length).to.be.at.least(2);   // ≥ 3 admins",
+									"  });",
+									"",
+									"/* ---------- Content checks ---------- */",
+									"pm.test('Both users are admins and only admins', () => {",
+									"  body.users.forEach(u => {",
+									"    pm.expect(u.roles).to.eql(['admin']);          // exactly one role === 'admin'",
+									"  });",
+									"});",
+									"",
+									"pm.test('No PI or COLLABORATOR roles present', () => {",
+									"  const forbidden = body.users.filter(u =>",
+									"    u.roles.some(r => r.toLowerCase() === 'pi' || r.toLowerCase() === 'collaborator')",
+									"  );",
+									"  pm.expect(forbidden.length).to.eql(0);",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_ADMIN1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/admins/check-admin-users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"admins",
+								"check-admin-users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete All",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_ADMIN1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/organizations",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ADMIN 1 Creates a PI - Fails",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"/* ----------  BASIC STATUS & ERROR MESSAGE ---------- */",
+									"pm.test('Status code is 400 Bad Request', () => {",
+									"  pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test('Error message is correct', () => {",
+									"  const body = pm.response.json();",
+									"  pm.expect(body).to.have.property('message',",
+									"    'Failed to associate user with organization: Cannot create PI or Collaborator users: No organization exists in the system');",
+									"  pm.expect(body).to.have.property('error', 'Bad Request');",
+									"  pm.expect(body).to.have.property('statusCode', 400);",
+									"});",
+									"",
+									"/* ----------  ENSURE NO USER OBJECT RETURNED ---------- */",
+									"pm.test('Response does not contain user data', () => {",
+									"  const body = pm.response.json();",
+									"  pm.expect(body).to.not.have.property('id');",
+									"  pm.expect(body).to.not.have.property('username');",
+									"  pm.expect(body).to.not.have.property('email');",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Generar un nombre aleatorio\r",
+									"let fullName = pm.variables.replaceIn(\"{{$randomFullName}}\");\r",
+									"// Asegurarse de que tiene al menos 8 caracteres\r",
+									"if (fullName.length < 8) {\r",
+									"    fullName = fullName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - fullName.length));\r",
+									"}\r",
+									"pm.environment.set(\"validFullName\", fullName);\r",
+									"\r",
+									"// Generar un nombre de usuario aleatorio\r",
+									"let userName = pm.variables.replaceIn(\"{{$randomUserName}}\");\r",
+									"// Asegurarse de que tiene al menos 8 caracteres\r",
+									"if (userName.length < 8) {\r",
+									"    userName = userName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - userName.length));\r",
+									"}\r",
+									"pm.environment.set(\"validUserName\", userName);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_ADMIN1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{validFullName}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"{{validUserName}}\",\r\n    \"password\": \"{{$randomPassword}}\",\r\n    \"role\": \"pi\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ADMIN 1 Creates a Collaborator - Fails Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"/* ----------  BASIC STATUS & ERROR MESSAGE ---------- */",
+									"pm.test('Status code is 400 Bad Request', () => {",
+									"  pm.response.to.have.status(400);",
+									"});",
+									"",
+									"pm.test('Error message is correct', () => {",
+									"  const body = pm.response.json();",
+									"  pm.expect(body).to.have.property('message',",
+									"    'Failed to associate user with organization: Cannot create PI or Collaborator users: No organization exists in the system');",
+									"  pm.expect(body).to.have.property('error', 'Bad Request');",
+									"  pm.expect(body).to.have.property('statusCode', 400);",
+									"});",
+									"",
+									"/* ----------  ENSURE NO USER OBJECT RETURNED ---------- */",
+									"pm.test('Response does not contain user data', () => {",
+									"  const body = pm.response.json();",
+									"  pm.expect(body).to.not.have.property('id');",
+									"  pm.expect(body).to.not.have.property('username');",
+									"  pm.expect(body).to.not.have.property('email');",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Generar un nombre aleatorio\r",
+									"let fullName = pm.variables.replaceIn(\"{{$randomFullName}}\");\r",
+									"// Asegurarse de que tiene al menos 8 caracteres\r",
+									"if (fullName.length < 8) {\r",
+									"    fullName = fullName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - fullName.length));\r",
+									"}\r",
+									"pm.environment.set(\"validFullName\", fullName);\r",
+									"\r",
+									"// Generar un nombre de usuario aleatorio\r",
+									"let userName = pm.variables.replaceIn(\"{{$randomUserName}}\");\r",
+									"// Asegurarse de que tiene al menos 8 caracteres\r",
+									"if (userName.length < 8) {\r",
+									"    userName = userName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - userName.length));\r",
+									"}\r",
+									"pm.environment.set(\"validUserName\", userName);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_ADMIN1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{validFullName}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"{{validUserName}}\",\r\n    \"password\": \"{{$randomPassword}}\",\r\n    \"role\": \"collaborator\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ADMIN 1 Creates a 3rd Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"/* ----------  STATUS 201  ---------- */",
+									"pm.test('Status code is 201 Created', () => {",
+									"  pm.response.to.have.status(201);",
+									"});",
+									"",
+									"/* ----------  ESTRUCTURA DEL OBJETO ---------- */",
+									"const user = pm.response.json();",
+									"",
+									"pm.test('Respuesta contiene los campos necesarios', () => {",
+									"  pm.expect(user).to.have.property('id').that.is.a('string').and.is.not.empty;",
+									"  pm.expect(user).to.have.property('name').that.is.a('string').and.is.not.empty;",
+									"  pm.expect(user).to.have.property('username').that.is.a('string').and.is.not.empty;",
+									"  pm.expect(user).to.have.property('roles').that.is.an('array').with.lengthOf(1);",
+									"});",
+									"",
+									"/* ----------  SOLO ROL ADMIN ---------- */",
+									"pm.test('El usuario es únicamente ADMIN', () => {",
+									"  pm.expect(user.roles).to.eql(['admin']);",
+									"});",
+									"",
+									"/* ----------  GUARDAR VARIABLES PARA OTROS TESTS (OPCIONAL) ---------- */",
+									"pm.environment.set('createdAdminId', user.id);",
+									"pm.environment.set('createdAdminUsername', user.username);",
+									"pm.environment.set('createdAdminName', user.name);",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Generar un nombre aleatorio\r",
+									"let fullName = pm.variables.replaceIn(\"{{$randomFullName}}\");\r",
+									"// Asegurarse de que tiene al menos 8 caracteres\r",
+									"if (fullName.length < 8) {\r",
+									"    fullName = fullName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - fullName.length));\r",
+									"}\r",
+									"pm.environment.set(\"validFullName\", fullName);\r",
+									"\r",
+									"// Generar un nombre de usuario aleatorio\r",
+									"let userName = pm.variables.replaceIn(\"{{$randomUserName}}\");\r",
+									"// Asegurarse de que tiene al menos 8 caracteres\r",
+									"if (userName.length < 8) {\r",
+									"    userName = userName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - userName.length));\r",
+									"}\r",
+									"pm.environment.set(\"validUserName\", userName);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_ADMIN1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{validFullName}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"{{validUserName}}\",\r\n    \"password\": \"{{$randomPassword}}\",\r\n    \"role\": \"admin\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get 3 Admin Users",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"/* ----------  BASIC STATUS & SHAPE ---------- */",
+									"pm.test('Status code is 200 OK', () => {",
+									"  pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const body = pm.response.json();",
+									"",
+									"pm.test('Message is correct', () => {",
+									"  pm.expect(body.message).to.eql('Admin users found');",
+									"});",
+									"",
+									"pm.test('Count matches array length', () => {",
+									"  pm.expect(body.count).to.eql(body.users.length);",
+									"  pm.expect(body.users.length).to.be.at.least(3);",
+									"",
+									"});",
+									"",
+									"/* ----------  CONTENT CHECKS ---------- */",
+									"pm.test('All returned users son solo ADMIN', () => {",
+									"  body.users.forEach(u => {",
+									"    pm.expect(u.roles).to.eql(['admin']);   // exactamente [\"admin\"]",
+									"  });",
+									"});",
+									"",
+									"pm.test('No roles PI o COLLABORATOR presentes', () => {",
+									"  const forbidden = body.users.filter(u =>",
+									"    u.roles.some(r => r.toLowerCase() === 'pi' || r.toLowerCase() === 'collaborator')",
+									"  );",
+									"  pm.expect(forbidden.length).to.eql(0);",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_ADMIN1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/admins/check-admin-users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"admins",
+								"check-admin-users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Admin 1 Creates an org",
 					"event": [
 						{
@@ -2314,6 +2318,7 @@
 							"script": {
 								"exec": [
 									"pm.environment.set(\"orgId\", pm.response.json().id);\r",
+									"pm.environment.set(\"orgName\", pm.response.json().name);\r",
 									"\r",
 									"pm.test(\"El código de estado es 201\", function() {\r",
 									"    pm.response.to.have.status(201)\r",
@@ -2423,13 +2428,11 @@
 									"",
 									"// Guardar los valores enviados para comparar después",
 									"const sentName = requestData.name;",
-									"const sentEmail = requestData.email;",
 									"const sentUsername = requestData.username;",
 									"const sentRole = requestData.role",
 									"",
 									"// Guardar variables de entorno",
 									"pm.environment.set(\"userId1\", pm.response.json().id);",
-									"pm.environment.set(\"emailUser1\", pm.response.json().email);",
 									"pm.environment.set(\"usernameUser1\", pm.response.json().username);",
 									"pm.environment.set(\"nameOfUser1\", pm.response.json().name);",
 									"pm.environment.set(\"pi_password\", requestData.password); // Save PI password for later use",
@@ -2442,7 +2445,6 @@
 									"pm.test(\"User information is valid\", function() {",
 									"    const responseData = pm.response.json();",
 									"    pm.expect(responseData.name).to.be.a('string').and.to.not.be.empty;",
-									"    pm.expect(responseData.email).to.be.a('string').and.to.not.be.empty;",
 									"    pm.expect(responseData.username).to.be.a('string').and.to.not.be.empty;",
 									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;",
 									"});",
@@ -2453,9 +2455,6 @@
 									"    ",
 									"    // Verificar que el nombre coincide",
 									"    pm.expect(responseData.name).to.equal(sentName, \"Name in response should match sent name\");",
-									"    ",
-									"    // Verificar que el email coincide",
-									"    pm.expect(responseData.email).to.equal(sentEmail, \"Email in response should match sent email\");",
 									"    ",
 									"    // Verificar que el username coincide",
 									"    pm.expect(responseData.username).to.equal(sentUsername, \"Username in response should match sent username\");",
@@ -2468,10 +2467,16 @@
 									"    pm.expect(responseData.roles).to.include(sentRole, \"Role in response should match sent role\");",
 									"});",
 									"",
+									"// Verificar que el usuario está asociado con la organización correcta",
+									"pm.test(\"User is associated with correct organization\", function () {",
+									"    const responseData = pm.response.json();",
+									"    pm.expect(responseData.organizationName).to.equal(pm.environment.get(\"orgName\"), \"Organization name in response should match organization ID\");",
+									"});",
+									"",
 									"// Guardar datos del usuario para verificación posterior",
 									"pm.collectionVariables.set(\"pi_user_id\", pm.response.json().id);",
 									"pm.collectionVariables.set(\"pi_username\", pm.response.json().username);",
-									"pm.collectionVariables.set(\"pi_email\", pm.response.json().email);"
+									""
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -2549,13 +2554,11 @@
 									"",
 									"// Guardar los valores enviados para comparar después",
 									"const sentName = requestData.name;",
-									"const sentEmail = requestData.email;",
 									"const sentUsername = requestData.username;",
 									"const sentRole = requestData.role",
 									"",
 									"// Guardar variables de entorno",
 									"pm.environment.set(\"collaboratorId\", pm.response.json().id);",
-									"pm.environment.set(\"collaboratorEmail\", pm.response.json().email);",
 									"pm.environment.set(\"collaborator1Username\", pm.response.json().username);",
 									"pm.environment.set(\"collaborator1_password\", requestData.password); // Save PI password for later use",
 									"",
@@ -2569,7 +2572,6 @@
 									"pm.test(\"collaborator user information is valid\", function() {",
 									"    const responseData = pm.response.json();",
 									"    pm.expect(responseData.name).to.be.a('string').and.to.not.be.empty;",
-									"    pm.expect(responseData.email).to.be.a('string').and.to.not.be.empty;",
 									"    pm.expect(responseData.username).to.be.a('string').and.to.not.be.empty;",
 									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;",
 									"});",
@@ -2580,9 +2582,6 @@
 									"    ",
 									"    // Verificar que el nombre coincide",
 									"    pm.expect(responseData.name).to.equal(sentName, \"Name in response should match sent name\");",
-									"    ",
-									"    // Verificar que el email coincide",
-									"    pm.expect(responseData.email).to.equal(sentEmail, \"Email in response should match sent email\");",
 									"    ",
 									"    // Verificar que el username coincide",
 									"    pm.expect(responseData.username).to.equal(sentUsername, \"Username in response should match sent username\");",
@@ -2595,10 +2594,16 @@
 									"    pm.expect(responseData.roles).to.include(sentRole, \"Role in response should match sent role\");",
 									"});",
 									"",
+									"// Verificar que el usuario está asociado con la organización correcta",
+									"pm.test(\"User is associated with correct organization\", function () {",
+									"    const responseData = pm.response.json();",
+									"    pm.expect(responseData.organizationName).to.equal(pm.environment.get(\"orgName\"), \"Organization name in response should match organization ID\");",
+									"});",
+									"",
 									"// Guardar datos del usuario collaborator para verificación posterior",
 									"pm.collectionVariables.set(\"collaborator_user_id\", pm.response.json().id);",
 									"pm.collectionVariables.set(\"collaborator_username\", pm.response.json().username);",
-									"pm.collectionVariables.set(\"collaborator_email\", pm.response.json().email);"
+									""
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -2644,7 +2649,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"{{validFullName2}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"{{validUserName2}}\",\r\n    \"password\": \"{{$randomPassword}}\",\r\n    \"role\": \"collaborator\"\r\n}",
+							"raw": "{\r\n    \"name\": \"{{validFullName2}}\",\r\n    \"email\": \"colaborator@email.com\",\r\n    \"username\": \"{{validUserName2}}\",\r\n    \"password\": \"{{$randomPassword}}\",\r\n    \"role\": \"collaborator\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2671,12 +2676,12 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Code is 412\", function() {",
-									"    pm.response.to.have.status(412)",
+									"pm.test(\"Code is 400\", function() {",
+									"    pm.response.to.have.status(400)",
 									"});",
 									"",
 									"pm.test(\"Message is correct\", function () {",
-									"    pm.expect(pm.response.text()).to.include(\"Username or email already exists\")",
+									"    pm.expect(pm.response.text()).to.include(\"User with this username or email already exists\")",
 									"})"
 								],
 								"type": "text/javascript",
@@ -2750,12 +2755,12 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Code is 412\", function() {",
-									"    pm.response.to.have.status(412)",
+									"pm.test(\"Code is 400\", function() {",
+									"    pm.response.to.have.status(400)",
 									"});",
 									"",
 									"pm.test(\"Message is correct\", function () {",
-									"    pm.expect(pm.response.text()).to.include(\"Username or email already exists\")",
+									"    pm.expect(pm.response.text()).to.include(\"User with this username or email already exists\")",
 									"})"
 								],
 								"type": "text/javascript",
@@ -2802,7 +2807,86 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"{{validFullName2}}\",\r\n    \"email\": \"{{collaboratorEmail}}\",\r\n    \"username\": \"{{collaborator1Username}}\",\r\n    \"password\": \"{{$randomPassword}}\",\r\n    \"role\": \"collaborator\"\r\n}",
+							"raw": "{\r\n    \"name\": \"{{validFullName2}}\",\r\n    \"email\": \"colaborator@email.com\",\r\n    \"username\": \"{{collaborator1Username}}\",\r\n    \"password\": \"{{$randomPassword}}\",\r\n    \"role\": \"collaborator\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin 2 Creates a Collaborator short Password",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 400\", function() {",
+									"    pm.response.to.have.status(400)",
+									"});",
+									"",
+									"pm.test(\"Message is correct\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"Password must be at least 8 characters long\")",
+									"})"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Generar un nombre aleatorio\r",
+									"let fullName = pm.variables.replaceIn(\"{{$randomFullName}}\");\r",
+									"// Asegurarse de que tiene al menos 8 caracteres\r",
+									"if (fullName.length < 8) {\r",
+									"    fullName = fullName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - fullName.length));\r",
+									"}\r",
+									"pm.environment.set(\"validFullName2\", fullName);\r",
+									"\r",
+									"// Generar un nombre de usuario aleatorio\r",
+									"let userName = pm.variables.replaceIn(\"{{$randomUserName}}\");\r",
+									"// Asegurarse de que tiene al menos 8 caracteres\r",
+									"if (userName.length < 8) {\r",
+									"    userName = userName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - userName.length));\r",
+									"}\r",
+									"pm.environment.set(\"validUserName2\", userName);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_ADMIN2}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Pepito Gonzalez}\",\r\n    \"email\": \"anothercollaborator@email.com\",\r\n    \"username\": \"PepiGonzo\",\r\n    \"password\": \"pas\",\r\n    \"role\": \"collaborator\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2842,8 +2926,6 @@
 									"// Get the saved PI and collaborator usernames",
 									"const piUsername = pm.collectionVariables.get(\"pi_username\");",
 									"const collaboratorUsername = pm.collectionVariables.get(\"collaborator_username\");",
-									"const piEmail = pm.collectionVariables.get(\"pi_email\");",
-									"const collaboratorEmail = pm.collectionVariables.get(\"collaborator_email\");",
 									"",
 									"// Test that the PI user is in the users list",
 									"pm.test(\"PI user is in the users list\", function() {",
@@ -2851,7 +2933,6 @@
 									"    const piUser = responseData.find(user => user.username === piUsername);",
 									"    ",
 									"    pm.expect(piUser).to.not.be.undefined;",
-									"    pm.expect(piUser.email).to.equal(piEmail);",
 									"    pm.expect(piUser.roles).to.be.an('array');",
 									"    pm.expect(piUser.roles).to.include('pi');",
 									"});",
@@ -2862,7 +2943,6 @@
 									"    const collaboratorUser = responseData.find(user => user.username === collaboratorUsername);",
 									"    ",
 									"    pm.expect(collaboratorUser).to.not.be.undefined;",
-									"    pm.expect(collaboratorUser.email).to.equal(collaboratorEmail);",
 									"    pm.expect(collaboratorUser.roles).to.be.an('array');",
 									"    pm.expect(collaboratorUser.roles).to.include('collaborator'); // Changed from 'collaborator' to 'collaborator'",
 									"});"
@@ -2930,7 +3010,6 @@
 									"    ",
 									"    pm.expect(responseData.id).to.equal(piUserId);",
 									"    pm.expect(responseData.username).to.equal(piUsername);",
-									"    pm.expect(responseData.email).to.equal(piEmail);",
 									"    pm.expect(responseData.name).to.be.a('string').and.to.not.be.empty;",
 									"});",
 									"",
@@ -2972,13 +3051,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{baseUrl}}/users/{{pi_username}}",
+							"raw": "{{baseUrl}}/users/{{pi_user_id}}",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
 								"users",
-								"{{pi_username}}"
+								"{{pi_user_id}}"
 							]
 						}
 					},
@@ -3102,13 +3181,11 @@
 									"",
 									"// Guardar los valores enviados para comparar después",
 									"const sentName = requestData.name;",
-									"const sentEmail = requestData.email;",
 									"const sentUsername = requestData.username;",
 									"const sentRole = requestData.role",
 									"",
 									"// Guardar variables de entorno",
 									"pm.environment.set(\"collaborator2Id\", pm.response.json().id);",
-									"pm.environment.set(\"collaborator2Email\", pm.response.json().email);",
 									"pm.environment.set(\"collaborator2Username\", pm.response.json().username);",
 									"pm.environment.set(\"collaborator2password\", requestData.password)",
 									"",
@@ -3121,7 +3198,6 @@
 									"pm.test(\"collaborator 2 user information is valid\", function() {",
 									"    const responseData = pm.response.json();",
 									"    pm.expect(responseData.name).to.be.a('string').and.to.not.be.empty;",
-									"    pm.expect(responseData.email).to.be.a('string').and.to.not.be.empty;",
 									"    pm.expect(responseData.username).to.be.a('string').and.to.not.be.empty;",
 									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;",
 									"});",
@@ -3132,9 +3208,6 @@
 									"    ",
 									"    // Verificar que el nombre coincide",
 									"    pm.expect(responseData.name).to.equal(sentName, \"Name in response should match sent name\");",
-									"    ",
-									"    // Verificar que el email coincide",
-									"    pm.expect(responseData.email).to.equal(sentEmail, \"Email in response should match sent email\");",
 									"    ",
 									"    // Verificar que el username coincide",
 									"    pm.expect(responseData.username).to.equal(sentUsername, \"Username in response should match sent username\");",
@@ -3147,10 +3220,17 @@
 									"    pm.expect(responseData.roles).to.include(sentRole, \"Role in response should match sent role\");",
 									"});",
 									"",
+									"// Verificar que el usuario está asociado con la organización correcta",
+									"pm.test(\"User is associated with correct organization\", function () {",
+									"    const responseData = pm.response.json();",
+									"    pm.expect(responseData.organizationName).to.equal(pm.environment.get(\"orgName\"), \"Organization name in response should match organization ID\");",
+									"});",
+									"",
 									"// Guardar datos del usuario collaborator para verificación posterior",
 									"pm.collectionVariables.set(\"collaborator2_user_id\", pm.response.json().id);",
 									"pm.collectionVariables.set(\"collaborator2_username\", pm.response.json().username);",
-									"pm.collectionVariables.set(\"collaborator2_email\", pm.response.json().email);"
+									"",
+									""
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -3201,6 +3281,228 @@
 						"body": {
 							"mode": "raw",
 							"raw": "{\r\n    \"name\": \"{{validFullName3}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"{{validUserName3}}\",\r\n    \"password\": \"{{contributor2_password}}\",\r\n    \"role\": \"collaborator\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PI Creates PI",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Capturar los datos enviados en la solicitud",
+									"const requestData = pm.request.body.raw ? JSON.parse(pm.request.body.raw) : {};",
+									"",
+									"// Guardar los valores enviados para comparar después",
+									"const sentName = requestData.name;",
+									"const sentUsername = requestData.username;",
+									"const sentRole = requestData.role",
+									"",
+									"// Guardar variables de entorno",
+									"pm.environment.set(\"collaborator2Id\", pm.response.json().id);",
+									"pm.environment.set(\"collaborator2Username\", pm.response.json().username);",
+									"pm.environment.set(\"collaborator2password\", requestData.password)",
+									"",
+									"// Verificar código de estado",
+									"pm.test(\"Status code is 201 Created\", function() {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"// Verificar información del usuario",
+									"pm.test(\"collaborator 2 user information is valid\", function() {",
+									"    const responseData = pm.response.json();",
+									"    pm.expect(responseData.name).to.be.a('string').and.to.not.be.empty;",
+									"    pm.expect(responseData.username).to.be.a('string').and.to.not.be.empty;",
+									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;",
+									"});",
+									"",
+									"// Verificar que los datos de respuesta coinciden con los enviados",
+									"pm.test(\"collaborator 2 data in response matches request data\", function() {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    // Verificar que el nombre coincide",
+									"    pm.expect(responseData.name).to.equal(sentName, \"Name in response should match sent name\");",
+									"    ",
+									"    // Verificar que el username coincide",
+									"    pm.expect(responseData.username).to.equal(sentUsername, \"Username in response should match sent username\");",
+									"});",
+									"",
+									"// Verificar que el usuario tiene el rol de collaborator",
+									"pm.test(\"User has correct collaborator role\", function() {",
+									"    const responseData = pm.response.json();",
+									"    pm.expect(responseData.roles).to.be.an('array');",
+									"    pm.expect(responseData.roles).to.include(sentRole, \"Role in response should match sent role\");",
+									"});",
+									"",
+									"// Verificar que el usuario está asociado con la organización correcta",
+									"pm.test(\"User is associated with correct organization\", function () {",
+									"    const responseData = pm.response.json();",
+									"    pm.expect(responseData.organizationName).to.equal(pm.environment.get(\"orgName\"), \"Organization name in response should match organization ID\");",
+									"});",
+									"",
+									"// Guardar datos del usuario collaborator para verificación posterior",
+									"pm.collectionVariables.set(\"collaborator2_user_id\", pm.response.json().id);",
+									"pm.collectionVariables.set(\"collaborator2_username\", pm.response.json().username);",
+									"",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Generar un nombre aleatorio\r",
+									"let fullName = pm.variables.replaceIn(\"{{$randomFullName}}\");\r",
+									"// Asegurarse de que tiene al menos 8 caracteres\r",
+									"if (fullName.length < 8) {\r",
+									"    fullName = fullName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - fullName.length));\r",
+									"}\r",
+									"pm.environment.set(\"validFullName3\", fullName);\r",
+									"\r",
+									"// Generar un nombre de usuario aleatorio\r",
+									"let userName = pm.variables.replaceIn(\"{{$randomUserName}}\");\r",
+									"// Asegurarse de que tiene al menos 8 caracteres\r",
+									"if (userName.length < 8) {\r",
+									"    userName = userName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - userName.length));\r",
+									"}\r",
+									"pm.environment.set(\"validUserName3\", userName);\r",
+									"\r",
+									"// Guardar la contraseña para uso posterior en login\r",
+									"const password = pm.variables.replaceIn(\"{{$randomPassword}}\");\r",
+									"pm.environment.set(\"contributor2_password\", password);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_PI}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{validFullName3}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"{{validUserName3}}\",\r\n    \"password\": \"{{contributor2_password}}\",\r\n    \"role\": \"pi\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PI Creates Admin - Fails",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"/* ----------  STATUS & ERROR PAYLOAD ---------- */",
+									"pm.test('Status code is 400 Bad Request', () => {",
+									"  pm.response.to.have.status(400);",
+									"});",
+									"",
+									"const body = pm.response.json();",
+									"",
+									"pm.test('Error message is correct', () => {",
+									"  pm.expect(body).to.eql({",
+									"    message: 'PI can only create PI or COLLABORATOR users',",
+									"    error:   'Bad Request',",
+									"    statusCode: 400",
+									"  });",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Generar un nombre aleatorio\r",
+									"let fullName = pm.variables.replaceIn(\"{{$randomFullName}}\");\r",
+									"// Asegurarse de que tiene al menos 8 caracteres\r",
+									"if (fullName.length < 8) {\r",
+									"    fullName = fullName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - fullName.length));\r",
+									"}\r",
+									"pm.environment.set(\"validFullName3\", fullName);\r",
+									"\r",
+									"// Generar un nombre de usuario aleatorio\r",
+									"let userName = pm.variables.replaceIn(\"{{$randomUserName}}\");\r",
+									"// Asegurarse de que tiene al menos 8 caracteres\r",
+									"if (userName.length < 8) {\r",
+									"    userName = userName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - userName.length));\r",
+									"}\r",
+									"pm.environment.set(\"validUserName3\", userName);\r",
+									"\r",
+									"// Guardar la contraseña para uso posterior en login\r",
+									"const password = pm.variables.replaceIn(\"{{$randomPassword}}\");\r",
+									"pm.environment.set(\"contributor2_password\", password);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_PI}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{validFullName3}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"{{$randomUserName}}\",\r\n    \"password\": \"{{contributor2_password}}\",\r\n    \"role\": \"admin\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -3366,40 +3668,16 @@
 					"response": []
 				},
 				{
-					"name": "Collaborator2 gets info of collaborator1",
+					"name": "Collaborator2 gets info of collaborator1 - Fails",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"// Get the saved collaborator 1 user data\r",
-									"const collaboratorUserId = pm.collectionVariables.get(\"collaborator_user_id\");\r",
-									"const collaboratorUsername = pm.collectionVariables.get(\"collaborator_username\");\r",
-									"const collaboratorEmail = pm.collectionVariables.get(\"collaborator_email\");\r",
-									"\r",
-									"pm.test(\"Status code is 200 OK\", function() {\r",
-									"    pm.response.to.have.status(200);\r",
+									"pm.test(\"Status code is 401\", function() {\r",
+									"    pm.response.to.have.status(401);\r",
 									"});\r",
-									"\r",
-									"pm.test(\"collaborator 1 user information is correct\", function() {\r",
-									"    const responseData = pm.response.json();\r",
-									"    \r",
-									"    pm.expect(responseData.id).to.equal(collaboratorUserId);\r",
-									"    pm.expect(responseData.username).to.equal(collaboratorUsername);\r",
-									"    pm.expect(responseData.email).to.equal(collaboratorEmail);\r",
-									"    pm.expect(responseData.name).to.be.a('string').and.to.not.be.empty;\r",
-									"});\r",
-									"\r",
-									"pm.test(\"collaborator 1 user has correct role\", function() {\r",
-									"    const responseData = pm.response.json();\r",
-									"    \r",
-									"    pm.expect(responseData.roles).to.be.an('array');\r",
-									"    pm.expect(responseData.roles).to.include('collaborator');\r",
-									"});\r",
-									"\r",
-									"pm.test(\"collaborators can view other users' information\", function() {\r",
-									"    pm.expect(pm.response.code).to.equal(200);\r",
-									"});"
+									""
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -3420,71 +3698,29 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/users/{{collaborator1Username}}",
+							"raw": "{{baseUrl}}/users/{{collaborator_user_id}}",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
 								"users",
-								"{{collaborator1Username}}"
+								"{{collaborator_user_id}}"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Collaborator 2 gets all users",
+					"name": "Collaborator 2 gets all users - Fails",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 200 OK\", function() {\r",
-									"    pm.response.to.have.status(200);\r",
+									"pm.test(\"Status code is 401\", function() {\r",
+									"    pm.response.to.have.status(401);\r",
 									"});\r",
-									"\r",
-									"pm.test(\"Response is an array of users\", function() {\r",
-									"    const responseData = pm.response.json();\r",
-									"    pm.expect(responseData).to.be.an('array');\r",
-									"    pm.expect(responseData.length).to.be.greaterThan(0);\r",
-									"});\r",
-									"\r",
-									"// Get the saved users' usernames\r",
-									"const piUsername = pm.collectionVariables.get(\"pi_username\");\r",
-									"const collaborator1Username = pm.collectionVariables.get(\"collaborator_username\");\r",
-									"const collaborator2Username = pm.collectionVariables.get(\"collaborator2_username\");\r",
-									"\r",
-									"// Test that all users are in the users list\r",
-									"pm.test(\"PI user is in the users list\", function() {\r",
-									"    const responseData = pm.response.json();\r",
-									"    const piUser = responseData.find(user => user.username === piUsername);\r",
-									"    \r",
-									"    pm.expect(piUser).to.not.be.undefined;\r",
-									"    pm.expect(piUser.roles).to.be.an('array');\r",
-									"    pm.expect(piUser.roles).to.include('pi');\r",
-									"});\r",
-									"\r",
-									"pm.test(\"collaborator 1 is in the users list\", function() {\r",
-									"    const responseData = pm.response.json();\r",
-									"    const collaborator1User = responseData.find(user => user.username === collaborator1Username);\r",
-									"    \r",
-									"    pm.expect(collaborator1User).to.not.be.undefined;\r",
-									"    pm.expect(collaborator1User.roles).to.be.an('array');\r",
-									"    pm.expect(collaborator1User.roles).to.include('collaborator');\r",
-									"});\r",
-									"\r",
-									"pm.test(\"collaborator 2 (self) is in the users list\", function() {\r",
-									"    const responseData = pm.response.json();\r",
-									"    const collaborator2User = responseData.find(user => user.username === collaborator2Username);\r",
-									"    \r",
-									"    pm.expect(collaborator2User).to.not.be.undefined;\r",
-									"    pm.expect(collaborator2User.roles).to.be.an('array');\r",
-									"    pm.expect(collaborator2User.roles).to.include('collaborator');\r",
-									"});\r",
-									"\r",
-									"pm.test(\"collaborators can view all users\", function() {\r",
-									"    pm.expect(pm.response.code).to.equal(200);\r",
-									"});"
+									""
 								],
 								"type": "text/javascript",
 								"packages": {}
