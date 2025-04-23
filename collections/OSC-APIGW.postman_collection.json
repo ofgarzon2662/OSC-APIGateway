@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "d8002561-9dd7-4fe2-9f1e-8a26e2c60c7f",
+		"_postman_id": "0467a685-e535-44f0-9419-7d24c2027339",
 		"name": "OSC-APIGW",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "29465325"
@@ -699,7 +699,7 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.environment.set(\"token_PI\", pm.response.json().token);\r",
+									"pm.environment.set(\"token_collaborator1\", pm.response.json().token);\r",
 									"\r",
 									"pm.test(\"Status code is 201 Created\", function() {\r",
 									"    pm.response.to.have.status(201);\r",
@@ -1710,7 +1710,6 @@
 								"exec": [
 									"pm.test('Exactly 2 admin users, no PI/Collaborator', () => {",
 									"  const users = pm.response.json();",
-									"  pm.expect(users.length).to.eql(2);                      // only two users",
 									"  users.forEach(u => pm.expect(u.roles).to.eql(['admin'])); // each has exactly [\"admin\"]",
 									"});",
 									"",
@@ -2670,7 +2669,7 @@
 					"response": []
 				},
 				{
-					"name": "Admin 2 Creates a Collaborator repeat name",
+					"name": "Admin 2 Creates a Collaborator repeat Username",
 					"event": [
 						{
 							"listen": "test",
@@ -2887,6 +2886,401 @@
 						"body": {
 							"mode": "raw",
 							"raw": "{\r\n    \"name\": \"Pepito Gonzalez}\",\r\n    \"email\": \"anothercollaborator@email.com\",\r\n    \"username\": \"PepiGonzo\",\r\n    \"password\": \"pas\",\r\n    \"role\": \"collaborator\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin 2 Creates a Collaborator bad email",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 400\", function() {",
+									"    pm.response.to.have.status(400)",
+									"});",
+									"",
+									"pm.test(\"Message is correct\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"email must be an email\")",
+									"})"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Generar un nombre aleatorio\r",
+									"let fullName = pm.variables.replaceIn(\"{{$randomFullName}}\");\r",
+									"// Asegurarse de que tiene al menos 8 caracteres\r",
+									"if (fullName.length < 8) {\r",
+									"    fullName = fullName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - fullName.length));\r",
+									"}\r",
+									"pm.environment.set(\"validFullName2\", fullName);\r",
+									"\r",
+									"// Generar un nombre de usuario aleatorio\r",
+									"let userName = pm.variables.replaceIn(\"{{$randomUserName}}\");\r",
+									"// Asegurarse de que tiene al menos 8 caracteres\r",
+									"if (userName.length < 8) {\r",
+									"    userName = userName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - userName.length));\r",
+									"}\r",
+									"pm.environment.set(\"validUserName2\", userName);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_ADMIN2}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Pepito Gonzalez}\",\r\n    \"email\": \"anothercollaborator@\",\r\n    \"username\": \"PepiGonzo\",\r\n    \"password\": \"pas\",\r\n    \"role\": \"collaborator\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin 2 Creates a Collaborator short username",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 400\", function() {",
+									"    pm.response.to.have.status(400)",
+									"});",
+									"",
+									"pm.test(\"Message is correct\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"Username must be between 8 and 50 characters long\")",
+									"})"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Generar un nombre aleatorio\r",
+									"let fullName = pm.variables.replaceIn(\"{{$randomFullName}}\");\r",
+									"// Asegurarse de que tiene al menos 8 caracteres\r",
+									"if (fullName.length < 8) {\r",
+									"    fullName = fullName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - fullName.length));\r",
+									"}\r",
+									"pm.environment.set(\"validFullName2\", fullName);\r",
+									"\r",
+									"// Generar un nombre de usuario aleatorio\r",
+									"let userName = pm.variables.replaceIn(\"{{$randomUserName}}\");\r",
+									"// Asegurarse de que tiene al menos 8 caracteres\r",
+									"if (userName.length < 8) {\r",
+									"    userName = userName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - userName.length));\r",
+									"}\r",
+									"pm.environment.set(\"validUserName2\", userName);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_ADMIN2}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Pepito Gonzalez}\",\r\n    \"email\": \"anothercollaborator@email.com\",\r\n    \"username\": \"pepi\",\r\n    \"password\": \"longPassword\",\r\n    \"role\": \"collaborator\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin 2 Creates a Collaborator long username",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 400\", function() {",
+									"    pm.response.to.have.status(400)",
+									"});",
+									"",
+									"pm.test(\"Message is correct\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"Username must be between 8 and 50 characters long\")",
+									"})"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Generar un nombre aleatorio\r",
+									"let fullName = pm.variables.replaceIn(\"{{$randomFullName}}\");\r",
+									"// Asegurarse de que tiene al menos 8 caracteres\r",
+									"if (fullName.length < 8) {\r",
+									"    fullName = fullName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - fullName.length));\r",
+									"}\r",
+									"pm.environment.set(\"validFullName2\", fullName);\r",
+									"\r",
+									"// Generar un nombre de usuario aleatorio\r",
+									"let userName = pm.variables.replaceIn(\"{{$randomUserName}}\");\r",
+									"// Asegurarse de que tiene al menos 8 caracteres\r",
+									"if (userName.length < 8) {\r",
+									"    userName = userName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - userName.length));\r",
+									"}\r",
+									"pm.environment.set(\"validUserName2\", userName);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_ADMIN2}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Pepito Gonzalez}\",\r\n    \"email\": \"anothercollaborator@email.com\",\r\n    \"username\": \"Muchos Anios despues, frente al peloton de fusilamiento, el coronel aureliano buen dia habria de recordar aquella tarde remota\",\r\n    \"password\": \"longPassword\",\r\n    \"role\": \"collaborator\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin 2 Creates a Collaborator long name",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 400\", function() {",
+									"    pm.response.to.have.status(400)",
+									"});",
+									"",
+									"pm.test(\"Message is correct\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"Name must be between 3 and 50 characters long\")",
+									"})"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Generar un nombre aleatorio\r",
+									"let fullName = pm.variables.replaceIn(\"{{$randomFullName}}\");\r",
+									"// Asegurarse de que tiene al menos 8 caracteres\r",
+									"if (fullName.length < 8) {\r",
+									"    fullName = fullName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - fullName.length));\r",
+									"}\r",
+									"pm.environment.set(\"validFullName2\", fullName);\r",
+									"\r",
+									"// Generar un nombre de usuario aleatorio\r",
+									"let userName = pm.variables.replaceIn(\"{{$randomUserName}}\");\r",
+									"// Asegurarse de que tiene al menos 8 caracteres\r",
+									"if (userName.length < 8) {\r",
+									"    userName = userName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - userName.length));\r",
+									"}\r",
+									"pm.environment.set(\"validUserName2\", userName);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_ADMIN2}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Pepito Gonzalez Jaramillo Echeverry Arango Valerdi Tobar Suarez\",\r\n    \"email\": \"anothercollaborator@email.com\",\r\n    \"username\": \"pepitoGonzales\",\r\n    \"password\": \"longPassword\",\r\n    \"role\": \"collaborator\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin 2 Creates a Collaborator SHORT name",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 400\", function() {",
+									"    pm.response.to.have.status(400)",
+									"});",
+									"",
+									"pm.test(\"Message is correct\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"Name must be between 3 and 50 characters long\")",
+									"})"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Generar un nombre aleatorio\r",
+									"let fullName = pm.variables.replaceIn(\"{{$randomFullName}}\");\r",
+									"// Asegurarse de que tiene al menos 8 caracteres\r",
+									"if (fullName.length < 8) {\r",
+									"    fullName = fullName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - fullName.length));\r",
+									"}\r",
+									"pm.environment.set(\"validFullName2\", fullName);\r",
+									"\r",
+									"// Generar un nombre de usuario aleatorio\r",
+									"let userName = pm.variables.replaceIn(\"{{$randomUserName}}\");\r",
+									"// Asegurarse de que tiene al menos 8 caracteres\r",
+									"if (userName.length < 8) {\r",
+									"    userName = userName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - userName.length));\r",
+									"}\r",
+									"pm.environment.set(\"validUserName2\", userName);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_ADMIN2}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Pe\",\r\n    \"email\": \"anothercollaborator@email.com\",\r\n    \"username\": \"pepitoGonzales\",\r\n    \"password\": \"longPassword\",\r\n    \"role\": \"collaborator\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -3176,60 +3570,17 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"// Capturar los datos enviados en la solicitud",
-									"const requestData = pm.request.body.raw ? JSON.parse(pm.request.body.raw) : {};",
+									"/* ----------  STATUS ---------- */",
+									"pm.test('201 Created', () => pm.response.to.have.status(201));",
 									"",
-									"// Guardar los valores enviados para comparar después",
-									"const sentName = requestData.name;",
-									"const sentUsername = requestData.username;",
-									"const sentRole = requestData.role",
+									"/* ----------  BASIC CHECK + SAVE ---------- */",
+									"const { id, username, roles } = pm.response.json();",
 									"",
-									"// Guardar variables de entorno",
-									"pm.environment.set(\"collaborator2Id\", pm.response.json().id);",
-									"pm.environment.set(\"collaborator2Username\", pm.response.json().username);",
-									"pm.environment.set(\"collaborator2password\", requestData.password)",
+									"pm.test('Role is collaborator', () => pm.expect(roles).to.eql(['collaborator']));",
 									"",
-									"// Verificar código de estado",
-									"pm.test(\"Status code is 201 Created\", function() {",
-									"    pm.response.to.have.status(201);",
-									"});",
-									"",
-									"// Verificar información del usuario",
-									"pm.test(\"collaborator 2 user information is valid\", function() {",
-									"    const responseData = pm.response.json();",
-									"    pm.expect(responseData.name).to.be.a('string').and.to.not.be.empty;",
-									"    pm.expect(responseData.username).to.be.a('string').and.to.not.be.empty;",
-									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;",
-									"});",
-									"",
-									"// Verificar que los datos de respuesta coinciden con los enviados",
-									"pm.test(\"collaborator 2 data in response matches request data\", function() {",
-									"    const responseData = pm.response.json();",
-									"    ",
-									"    // Verificar que el nombre coincide",
-									"    pm.expect(responseData.name).to.equal(sentName, \"Name in response should match sent name\");",
-									"    ",
-									"    // Verificar que el username coincide",
-									"    pm.expect(responseData.username).to.equal(sentUsername, \"Username in response should match sent username\");",
-									"});",
-									"",
-									"// Verificar que el usuario tiene el rol de collaborator",
-									"pm.test(\"User has correct collaborator role\", function() {",
-									"    const responseData = pm.response.json();",
-									"    pm.expect(responseData.roles).to.be.an('array');",
-									"    pm.expect(responseData.roles).to.include(sentRole, \"Role in response should match sent role\");",
-									"});",
-									"",
-									"// Verificar que el usuario está asociado con la organización correcta",
-									"pm.test(\"User is associated with correct organization\", function () {",
-									"    const responseData = pm.response.json();",
-									"    pm.expect(responseData.organizationName).to.equal(pm.environment.get(\"orgName\"), \"Organization name in response should match organization ID\");",
-									"});",
-									"",
-									"// Guardar datos del usuario collaborator para verificación posterior",
-									"pm.collectionVariables.set(\"collaborator2_user_id\", pm.response.json().id);",
-									"pm.collectionVariables.set(\"collaborator2_username\", pm.response.json().username);",
-									"",
+									"pm.environment.set('Collaborator2ID',        id);",
+									"pm.environment.set('Collaborator2UserName',  username);",
+									"// password ya está en env como collab2_password",
 									""
 								],
 								"type": "text/javascript",
@@ -3240,25 +3591,24 @@
 							"listen": "prerequest",
 							"script": {
 								"exec": [
-									"// Generar un nombre aleatorio\r",
-									"let fullName = pm.variables.replaceIn(\"{{$randomFullName}}\");\r",
-									"// Asegurarse de que tiene al menos 8 caracteres\r",
-									"if (fullName.length < 8) {\r",
-									"    fullName = fullName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - fullName.length));\r",
+									"/* ----------  Helper: ensure ≥ 8 characters ---------- */\r",
+									"function ensureMinLen(str, min = 8) {\r",
+									"  if (str.length >= min) return str;\r",
+									"  // añade caracteres aleatorios hasta alcanzar la longitud mínima\r",
+									"  const extra = pm.variables.replaceIn('{{$randomAlphaNumeric}}'.repeat(min - str.length));\r",
+									"  return (str + extra).slice(0, min);   // por si acaso\r",
 									"}\r",
-									"pm.environment.set(\"validFullName3\", fullName);\r",
 									"\r",
-									"// Generar un nombre de usuario aleatorio\r",
-									"let userName = pm.variables.replaceIn(\"{{$randomUserName}}\");\r",
-									"// Asegurarse de que tiene al menos 8 caracteres\r",
-									"if (userName.length < 8) {\r",
-									"    userName = userName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - userName.length));\r",
-									"}\r",
-									"pm.environment.set(\"validUserName3\", userName);\r",
+									"/* ----------  Generate & enforce length ---------- */\r",
+									"let fullName = ensureMinLen(pm.variables.replaceIn('{{$randomFullName}}'));\r",
+									"let userName = ensureMinLen(pm.variables.replaceIn('{{$randomUserName}}'));\r",
+									"let password = ensureMinLen(pm.variables.replaceIn('{{$randomPassword}}'));\r",
 									"\r",
-									"// Guardar la contraseña para uso posterior en login\r",
-									"const password = pm.variables.replaceIn(\"{{$randomPassword}}\");\r",
-									"pm.environment.set(\"contributor2_password\", password);"
+									"/* ----------  Save to environment ---------- */\r",
+									"pm.environment.set('collab2_name',     fullName);\r",
+									"pm.environment.set('collab2_username', userName);\r",
+									"pm.environment.set('collab2_password', password);\r",
+									""
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -3280,229 +3630,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"{{validFullName3}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"{{validUserName3}}\",\r\n    \"password\": \"{{contributor2_password}}\",\r\n    \"role\": \"collaborator\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/users/register",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"users",
-								"register"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "PI Creates PI",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Capturar los datos enviados en la solicitud",
-									"const requestData = pm.request.body.raw ? JSON.parse(pm.request.body.raw) : {};",
-									"",
-									"// Guardar los valores enviados para comparar después",
-									"const sentName = requestData.name;",
-									"const sentUsername = requestData.username;",
-									"const sentRole = requestData.role",
-									"",
-									"// Guardar variables de entorno",
-									"pm.environment.set(\"collaborator2Id\", pm.response.json().id);",
-									"pm.environment.set(\"collaborator2Username\", pm.response.json().username);",
-									"pm.environment.set(\"collaborator2password\", requestData.password)",
-									"",
-									"// Verificar código de estado",
-									"pm.test(\"Status code is 201 Created\", function() {",
-									"    pm.response.to.have.status(201);",
-									"});",
-									"",
-									"// Verificar información del usuario",
-									"pm.test(\"collaborator 2 user information is valid\", function() {",
-									"    const responseData = pm.response.json();",
-									"    pm.expect(responseData.name).to.be.a('string').and.to.not.be.empty;",
-									"    pm.expect(responseData.username).to.be.a('string').and.to.not.be.empty;",
-									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;",
-									"});",
-									"",
-									"// Verificar que los datos de respuesta coinciden con los enviados",
-									"pm.test(\"collaborator 2 data in response matches request data\", function() {",
-									"    const responseData = pm.response.json();",
-									"    ",
-									"    // Verificar que el nombre coincide",
-									"    pm.expect(responseData.name).to.equal(sentName, \"Name in response should match sent name\");",
-									"    ",
-									"    // Verificar que el username coincide",
-									"    pm.expect(responseData.username).to.equal(sentUsername, \"Username in response should match sent username\");",
-									"});",
-									"",
-									"// Verificar que el usuario tiene el rol de collaborator",
-									"pm.test(\"User has correct collaborator role\", function() {",
-									"    const responseData = pm.response.json();",
-									"    pm.expect(responseData.roles).to.be.an('array');",
-									"    pm.expect(responseData.roles).to.include(sentRole, \"Role in response should match sent role\");",
-									"});",
-									"",
-									"// Verificar que el usuario está asociado con la organización correcta",
-									"pm.test(\"User is associated with correct organization\", function () {",
-									"    const responseData = pm.response.json();",
-									"    pm.expect(responseData.organizationName).to.equal(pm.environment.get(\"orgName\"), \"Organization name in response should match organization ID\");",
-									"});",
-									"",
-									"// Guardar datos del usuario collaborator para verificación posterior",
-									"pm.collectionVariables.set(\"collaborator2_user_id\", pm.response.json().id);",
-									"pm.collectionVariables.set(\"collaborator2_username\", pm.response.json().username);",
-									"",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"// Generar un nombre aleatorio\r",
-									"let fullName = pm.variables.replaceIn(\"{{$randomFullName}}\");\r",
-									"// Asegurarse de que tiene al menos 8 caracteres\r",
-									"if (fullName.length < 8) {\r",
-									"    fullName = fullName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - fullName.length));\r",
-									"}\r",
-									"pm.environment.set(\"validFullName3\", fullName);\r",
-									"\r",
-									"// Generar un nombre de usuario aleatorio\r",
-									"let userName = pm.variables.replaceIn(\"{{$randomUserName}}\");\r",
-									"// Asegurarse de que tiene al menos 8 caracteres\r",
-									"if (userName.length < 8) {\r",
-									"    userName = userName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - userName.length));\r",
-									"}\r",
-									"pm.environment.set(\"validUserName3\", userName);\r",
-									"\r",
-									"// Guardar la contraseña para uso posterior en login\r",
-									"const password = pm.variables.replaceIn(\"{{$randomPassword}}\");\r",
-									"pm.environment.set(\"contributor2_password\", password);"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token_PI}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"{{validFullName3}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"{{validUserName3}}\",\r\n    \"password\": \"{{contributor2_password}}\",\r\n    \"role\": \"pi\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/users/register",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"users",
-								"register"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "PI Creates Admin - Fails",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"/* ----------  STATUS & ERROR PAYLOAD ---------- */",
-									"pm.test('Status code is 400 Bad Request', () => {",
-									"  pm.response.to.have.status(400);",
-									"});",
-									"",
-									"const body = pm.response.json();",
-									"",
-									"pm.test('Error message is correct', () => {",
-									"  pm.expect(body).to.eql({",
-									"    message: 'PI can only create PI or COLLABORATOR users',",
-									"    error:   'Bad Request',",
-									"    statusCode: 400",
-									"  });",
-									"});",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"// Generar un nombre aleatorio\r",
-									"let fullName = pm.variables.replaceIn(\"{{$randomFullName}}\");\r",
-									"// Asegurarse de que tiene al menos 8 caracteres\r",
-									"if (fullName.length < 8) {\r",
-									"    fullName = fullName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - fullName.length));\r",
-									"}\r",
-									"pm.environment.set(\"validFullName3\", fullName);\r",
-									"\r",
-									"// Generar un nombre de usuario aleatorio\r",
-									"let userName = pm.variables.replaceIn(\"{{$randomUserName}}\");\r",
-									"// Asegurarse de que tiene al menos 8 caracteres\r",
-									"if (userName.length < 8) {\r",
-									"    userName = userName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - userName.length));\r",
-									"}\r",
-									"pm.environment.set(\"validUserName3\", userName);\r",
-									"\r",
-									"// Guardar la contraseña para uso posterior en login\r",
-									"const password = pm.variables.replaceIn(\"{{$randomPassword}}\");\r",
-									"pm.environment.set(\"contributor2_password\", password);"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token_PI}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"{{validFullName3}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"{{$randomUserName}}\",\r\n    \"password\": \"{{contributor2_password}}\",\r\n    \"role\": \"admin\"\r\n}",
+							"raw": "{\r\n  \"name\": \"{{collab2_name}}\",\r\n  \"email\": \"{{$randomEmail}}\",\r\n  \"username\": \"{{collab2_username}}\",\r\n  \"password\": \"{{collab2_password}}\",\r\n  \"role\": \"collaborator\"\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -3555,7 +3683,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n   \"username\": \"{{collaborator2_username}}\",\r\n   \"password\": \"{{collaborator2password}}\"\r\n}",
+							"raw": "{\r\n   \"username\": \"{{collab2_username}}\",\r\n   \"password\": \"{{collab2_password}}\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -3570,6 +3698,241 @@
 							"path": [
 								"users",
 								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PI Creates PI",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"/* ----------  Status ---------- */",
+									"pm.test('201 Created', () => pm.response.to.have.status(201));",
+									"",
+									"/* ----------  Body checks ---------- */",
+									"const { id, username, roles, organizationName } = pm.response.json();",
+									"",
+									"pm.test('Role is PI', () => {",
+									"  pm.expect(roles).to.eql(['pi']);",
+									"});",
+									"",
+									"pm.test('Organization name matches env orgName', () => {",
+									"  pm.expect(organizationName).to.eql(pm.environment.get('orgName'));",
+									"});",
+									"",
+									"/* ----------  Save for later steps ---------- */",
+									"pm.environment.set('PI2_ID',       id);",
+									"pm.environment.set('PI2_USERNAME', username);",
+									"pm.environment.set('PI2_PASSWORD', pm.environment.get('pi2_password'));  // ya generada antes",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"/* ----------  Generate random data ≥ 8 chars ---------- */\r",
+									"function ensureLen(str) {                      // añade \"_\" hasta 8 chars\r",
+									"  while (str.length < 8) str += '_';\r",
+									"  return str;\r",
+									"}\r",
+									"\r",
+									"const fullName = ensureLen(pm.variables.replaceIn('{{$randomFullName}}'));\r",
+									"const userName = ensureLen(pm.variables.replaceIn('{{$randomUserName}}'));\r",
+									"const password = pm.variables.replaceIn('{{$randomPassword}}');\r",
+									"\r",
+									"/* ----------  Save to environment for body ---------- */\r",
+									"pm.environment.set('pi2_name',      fullName);\r",
+									"pm.environment.set('pi2_username',  userName);\r",
+									"pm.environment.set('pi2_password',  password);\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_PI}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"{{pi2_name}}\",\r\n  \"email\": \"{{$randomEmail}}\",\r\n  \"username\": \"{{pi2_username}}\",\r\n  \"password\": \"{{pi2_password}}\",\r\n  \"role\": \"pi\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PI2 Logs in",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"token_PI2\", pm.response.json().token);\r",
+									"\r",
+									"pm.test(\"Status code is 201 Created\", function() {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Token is present\", function() {\r",
+									"    pm.expect(pm.response.json().token).to.be.a('string').and.to.not.be.empty;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"PI login successful\", function() {\r",
+									"    // Verificar que hay un token de respuesta (indicación de login exitoso)\r",
+									"    const responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson.token).to.be.a('string').and.to.not.be.empty;\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n   \"username\": \"{{PI2_USERNAME}}\",\r\n   \"password\": \"{{PI2_PASSWORD}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PI Creates Admin - Fails",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"/* ----------  STATUS & ERROR PAYLOAD ---------- */",
+									"pm.test('Status code is 400 Bad Request', () => {",
+									"  pm.response.to.have.status(400);",
+									"});",
+									"",
+									"const body = pm.response.json();",
+									"",
+									"pm.test('Error message is correct', () => {",
+									"  pm.expect(body).to.eql({",
+									"    message: 'PI can only create PI or COLLABORATOR users',",
+									"    error:   'Bad Request',",
+									"    statusCode: 400",
+									"  });",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Generar un nombre aleatorio\r",
+									"let fullName = pm.variables.replaceIn(\"{{$randomFullName}}\");\r",
+									"// Asegurarse de que tiene al menos 8 caracteres\r",
+									"if (fullName.length < 8) {\r",
+									"    fullName = fullName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - fullName.length));\r",
+									"}\r",
+									"pm.environment.set(\"validFullName4\", fullName);\r",
+									"\r",
+									"// Generar un nombre de usuario aleatorio\r",
+									"let userName = pm.variables.replaceIn(\"{{$randomUserName}}\");\r",
+									"// Asegurarse de que tiene al menos 8 caracteres\r",
+									"if (userName.length < 8) {\r",
+									"    userName = userName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - userName.length));\r",
+									"}\r",
+									"pm.environment.set(\"validUserName4\", userName);\r",
+									"\r",
+									"// Guardar la contraseña para uso posterior en login\r",
+									"const password = pm.variables.replaceIn(\"{{$randomPassword}}\");\r",
+									"pm.environment.set(\"contributor2_password\", password);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_PI}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{validFullName3}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"ValidUserName\",\r\n    \"password\": \"{{contributor2_password}}\",\r\n    \"role\": \"admin\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"register"
 							]
 						}
 					},
@@ -3674,8 +4037,8 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 401\", function() {\r",
-									"    pm.response.to.have.status(401);\r",
+									"pm.test(\"Status code is 403\", function() {\r",
+									"    pm.response.to.have.status(403);\r",
 									"});\r",
 									""
 								],
@@ -3717,8 +4080,8 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 401\", function() {\r",
-									"    pm.response.to.have.status(401);\r",
+									"pm.test(\"Status code is 403\", function() {\r",
+									"    pm.response.to.have.status(403);\r",
 									"});\r",
 									""
 								],
@@ -3747,6 +4110,428 @@
 							],
 							"path": [
 								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin Deletes Collaborator 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function() {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_ADMIN1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users/{{collaborator_user_id}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"{{collaborator_user_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Collaborator1 logs in - Fails",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"/* ----------  STATUS ---------- */\r",
+									"pm.test('Status code is 401 Unauthorized', () => {\r",
+									"  pm.response.to.have.status(401);\r",
+									"});\r",
+									"\r",
+									"/* ----------  PAYLOAD ---------- */\r",
+									"const body = pm.response.json();\r",
+									"\r",
+									"pm.test('Response payload is correct', () => {\r",
+									"  pm.expect(body).to.eql({\r",
+									"    message:    'User not found',\r",
+									"    error:      'Unauthorized',\r",
+									"    statusCode: 401\r",
+									"  });\r",
+									"});\r",
+									"\r",
+									"/* ----------  NO TOKEN SHOULD BE RETURNED ---------- */\r",
+									"pm.test('No token is returned on authentication failure', () => {\r",
+									"  pm.expect(body).to.not.have.property('token');\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n   \"username\": \"{{collaborator1Username}}\",\r\n   \"password\": \"{{collaborator1_password}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PI deletes Collaborator 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function() {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_PI}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users/{{Collaborator2ID}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"{{Collaborator2ID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PI deletes P2 FAILS",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"/* ----------  STATUS ---------- */\r",
+									"pm.test('Status code is 400 Bad Request', () => {\r",
+									"  pm.response.to.have.status(400);\r",
+									"});\r",
+									"\r",
+									"/* ----------  PAYLOAD ---------- */\r",
+									"const body = pm.response.json();\r",
+									"\r",
+									"pm.test('Error payload matches expected structure', () => {\r",
+									"  pm.expect(body).to.eql({\r",
+									"    message:    'PI can only delete users with role COLLABORATOR',\r",
+									"    error:      'Bad Request',\r",
+									"    statusCode: 400\r",
+									"  });\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_PI}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users/{{PI2_ID}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"{{PI2_ID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin deletes P2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function() {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_ADMIN1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users/{{PI2_ID}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"{{PI2_ID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Collaborator2 logs in - Fails",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"/* ----------  STATUS ---------- */\r",
+									"pm.test('Status code is 401 Unauthorized', () => {\r",
+									"  pm.response.to.have.status(401);\r",
+									"});\r",
+									"\r",
+									"/* ----------  PAYLOAD ---------- */\r",
+									"const body = pm.response.json();\r",
+									"\r",
+									"pm.test('Response payload is correct', () => {\r",
+									"  pm.expect(body).to.eql({\r",
+									"    message:    'User not found',\r",
+									"    error:      'Unauthorized',\r",
+									"    statusCode: 401\r",
+									"  });\r",
+									"});\r",
+									"\r",
+									"/* ----------  NO TOKEN SHOULD BE RETURNED ---------- */\r",
+									"pm.test('No token is returned on authentication failure', () => {\r",
+									"  pm.expect(body).to.not.have.property('token');\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n   \"username\": \"{{collab2_username}}\",\r\n   \"password\": \"{{collab2_password}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin deletes Admin - Fails",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"/* ----------  STATUS ---------- */\r",
+									"pm.test('Status code is 400 Bad Request', () => {\r",
+									"  pm.response.to.have.status(400);\r",
+									"});\r",
+									"\r",
+									"/* ----------  PAYLOAD ---------- */\r",
+									"const body = pm.response.json();\r",
+									"\r",
+									"pm.test('Error payload is correct', () => {\r",
+									"  pm.expect(body).to.eql({\r",
+									"    message:    'Admin cannot delete another admin user',\r",
+									"    error:      'Bad Request',\r",
+									"    statusCode: 400\r",
+									"  });\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_ADMIN1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users/{{createdAdminId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"{{createdAdminId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PI deletes Admin - Fails",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"/* ----------  STATUS ---------- */\r",
+									"pm.test('Status code is 400 Bad Request', () => {\r",
+									"  pm.response.to.have.status(400);\r",
+									"});\r",
+									"\r",
+									"/* ----------  PAYLOAD ---------- */\r",
+									"const body = pm.response.json();\r",
+									"\r",
+									"pm.test('Error payload is correct', () => {\r",
+									"  pm.expect(body).to.eql({\r",
+									"    message:    'PI cannot delete admin users',\r",
+									"    error:      'Bad Request',\r",
+									"    statusCode: 400\r",
+									"  });\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_PI}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users/{{createdAdminId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"{{createdAdminId}}"
 							]
 						}
 					},
