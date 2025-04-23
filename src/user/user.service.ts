@@ -167,20 +167,10 @@ The application requires at least one admin user to function properly.
     };
   }
 
-  // Create a new user
-  async create(createUserDto: UserCreateDto, creator: UserEntity): Promise<UserGetDto> {
-    // Check if user already exists
-    const existingUser = await this.userRepository.findOne({
-      where: [
-        { username: createUserDto.username },
-        { email: createUserDto.email },
-      ],
-    });
-
-    if (existingUser) {
-      throw new BadRequestException('User with this username or email already exists');
-    }
-
+  /**
+   * Validate user input data (username, email, name, password)
+   */
+  private validateUserInputData(createUserDto: UserCreateDto): void {
     // Validate username length
     if (!createUserDto.username || createUserDto.username.length < 8 || createUserDto.username.length > 50) {
       throw new BadRequestException('Username must be between 8 and 50 characters long');
@@ -200,64 +190,102 @@ The application requires at least one admin user to function properly.
     if (createUserDto.password.length < 8) {
       throw new BadRequestException('Password must be at least 8 characters long');
     }
+  }
 
-    // Convert single role string to array
-    const roles = [createUserDto.role];
-
+  /**
+   * Validate creator permissions for creating a user with the specified role
+   */
+  private validateCreatorPermissions(creator: UserEntity, requestedRole: Role): void {
     // Check if creator is an admin or PI
     if (!creator.roles.includes(Role.ADMIN) && !creator.roles.includes(Role.PI)) {
       throw new BadRequestException('Only admins and PIs can create users');
     }
 
-    // If creator is a PI, they can only create PI or COLLABORATOR users
+    // If creator is a PI and not an admin, they can only create PI or COLLABORATOR users
     if (creator.roles.includes(Role.PI) && !creator.roles.includes(Role.ADMIN)) {
-      if (createUserDto.role !== Role.PI && createUserDto.role !== Role.COLLABORATOR) {
+      if (requestedRole !== Role.PI && requestedRole !== Role.COLLABORATOR) {
         throw new BadRequestException('PI can only create PI or COLLABORATOR users');
       }
     }
+  }
 
-    // Check if creating non-admin users (PI or COLLABORATOR)
-    const isCreatingNonAdmin = createUserDto.role !== Role.ADMIN;
+  /**
+   * Check if user with the same username or email already exists
+   */
+  private async checkUserExists(username: string, email: string): Promise<void> {
+    const existingUser = await this.userRepository.findOne({
+      where: [
+        { username },
+        { email },
+      ],
+    });
 
-    if (isCreatingNonAdmin) {
-      try {
-        // For non-admin users, we need to associate them with the existing organization
-        const organization = await this.organizationRepository.findOne({
-          where: {} // This will get the first (and only) organization
+    if (existingUser) {
+      throw new BadRequestException('User with this username or email already exists');
+    }
+  }
+
+  /**
+   * Create a user entity and save it to the database
+   */
+  private async createAndSaveUser(
+    createUserDto: UserCreateDto, 
+    roles: Role[], 
+    organization: OrganizationEntity | null
+  ): Promise<UserEntity> {
+    const hashedPassword = await this.passwordService.hashPassword(createUserDto.password);
+    
+    const user = this.userRepository.create({
+      ...createUserDto,
+      password: hashedPassword,
+      roles,
+      organization
+    });
+    
+    return await this.userRepository.save(user);
+  }
+
+  // Create a new user
+  async create(createUserDto: UserCreateDto, creator: UserEntity): Promise<UserGetDto> {
+    // Check if user already exists
+    await this.checkUserExists(createUserDto.username, createUserDto.email);
+    
+    // Validate input data
+    this.validateUserInputData(createUserDto);
+    
+    // Validate creator permissions
+    this.validateCreatorPermissions(creator, createUserDto.role);
+
+    // Convert single role string to array
+    const roles = [createUserDto.role];
+
+    try {
+      let organization = null;
+      
+      // For non-admin users, associate with organization
+      if (createUserDto.role !== Role.ADMIN) {
+        organization = await this.organizationRepository.findOne({
+          where: {} // Get the first (and only) organization
         });
 
         if (!organization) {
           throw new BadRequestException('Cannot create PI or Collaborator users: No organization exists in the system');
         }
-
-        // Hash the password
-        const hashedPassword = await this.passwordService.hashPassword(createUserDto.password);
-
-        // Create user entity with organization
-        const user = this.userRepository.create({
-          ...createUserDto,
-          password: hashedPassword,
-          roles,
-          organization
-        });
-        const savedUser = await this.userRepository.save(user);
-        return this.transformToDto(savedUser);
-      } catch (error) {
-        throw new BadRequestException(`Failed to associate user with organization: ${error.message}`);
       }
-    } else {
-      // For admin users, don't associate with any organization
-      // Hash the password
-      const hashedPassword = await this.passwordService.hashPassword(createUserDto.password);
 
-      const user = this.userRepository.create({
-        ...createUserDto,
-        password: hashedPassword,
-        roles,
-        organization: null
-      });
-      const savedUser = await this.userRepository.save(user);
+      // Create and save the user
+      const savedUser = await this.createAndSaveUser(createUserDto, roles, organization);
+      
+      // Transform to DTO for response
       return this.transformToDto(savedUser);
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        if (error.message === 'Cannot create PI or Collaborator users: No organization exists in the system') {
+          throw new BadRequestException(`Failed to associate user with organization: ${error.message}`);
+        }
+        throw error;
+      }
+      throw new BadRequestException(`Failed to create user: ${error.message}`);
     }
   }
 
