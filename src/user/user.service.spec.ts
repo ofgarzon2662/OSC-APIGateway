@@ -267,7 +267,7 @@ describe('UserService', () => {
 
       const createUserDto = new UserCreateDto();
       createUserDto.name = faker.person.fullName();
-      createUserDto.username = faker.internet.username();
+      createUserDto.username = 'validusername123'; // Asegurar que tiene al menos 8 caracteres
       createUserDto.email = faker.internet.email();
       createUserDto.password = 'Password123!';
       createUserDto.role = Role.COLLABORATOR;
@@ -275,7 +275,7 @@ describe('UserService', () => {
       const creator = await repository.save({
         id: faker.string.uuid(),
         name: 'PI User',
-        username: 'piuser',
+        username: 'piuser123', // Asegurar que tiene al menos 8 caracteres
         email: 'pi@example.com',
         password: 'hashedpassword',
         roles: [Role.PI]
@@ -308,7 +308,7 @@ describe('UserService', () => {
     it('should throw BadRequestException if creator is not an admin or PI', async () => {
       const createUserDto = new UserCreateDto();
       createUserDto.name = faker.person.fullName();
-      createUserDto.username = faker.internet.username();
+      createUserDto.username = 'validusername123'; // Asegurar que tiene al menos 8 caracteres
       createUserDto.email = faker.internet.email();
       createUserDto.password = 'Password123!';
       createUserDto.role = Role.COLLABORATOR;
