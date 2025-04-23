@@ -75,7 +75,7 @@ describe('UserService', () => {
     for (let i = 0; i < 5; i++) {
       const user = {
         name: faker.person.fullName(),
-        username: faker.internet.username() + faker.number.int(10000),
+        username: `testuser${i}_${faker.number.int(10000)}`, // Garantizar que el username tenga al menos 8 caracteres
         email: faker.internet.email(),
         password: await passwordService.hashPassword('Password' + faker.number.int(10000)),
         roles: [Role.COLLABORATOR],
@@ -178,7 +178,7 @@ describe('UserService', () => {
     it('should create a new user with COLLABORATOR role', async () => {
       const createUserDto = new UserCreateDto();
       createUserDto.name = faker.person.fullName();
-      createUserDto.username = faker.internet.username();
+      createUserDto.username = 'collaborator123'; // Usar un nombre de usuario fijo que cumpla con la validación
       createUserDto.email = faker.internet.email();
       createUserDto.password = 'Password123!';
       createUserDto.role = Role.COLLABORATOR;
@@ -223,7 +223,7 @@ describe('UserService', () => {
     it('should throw BadRequestException when password is too short', async () => {
       const createUserDto = new UserCreateDto();
       createUserDto.name = faker.person.fullName();
-      createUserDto.username = faker.internet.username();
+      createUserDto.username = 'validusername123'; // Usar un nombre de usuario fijo que cumpla con la validación
       createUserDto.email = faker.internet.email();
       createUserDto.password = 'short'; // Too short
       createUserDto.role = Role.COLLABORATOR;
@@ -243,7 +243,7 @@ describe('UserService', () => {
     it('should throw BadRequestException when PI tries to create ADMIN user', async () => {
       const createUserDto = new UserCreateDto();
       createUserDto.name = faker.person.fullName();
-      createUserDto.username = faker.internet.username();
+      createUserDto.username = 'adminattempt123'; // Usar un nombre de usuario fijo que cumpla con la validación
       createUserDto.email = faker.internet.email();
       createUserDto.password = 'Password123!';
       createUserDto.role = Role.ADMIN; // PI trying to create ADMIN
@@ -290,7 +290,7 @@ describe('UserService', () => {
     it('should create an admin user without organization', async () => {
       const createUserDto = new UserCreateDto();
       createUserDto.name = faker.person.fullName();
-      createUserDto.username = faker.internet.username();
+      createUserDto.username = 'adminusername123'; // Usar un username fijo que cumpla con la validación de longitud
       createUserDto.email = faker.internet.email();
       createUserDto.password = 'Password123!';
       createUserDto.role = Role.ADMIN;
