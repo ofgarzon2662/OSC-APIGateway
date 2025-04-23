@@ -147,7 +147,7 @@ describe('UserService', () => {
       repository.findOne = jest.fn().mockResolvedValue(null);
 
       await expect(service.findOneForAuth('nonexistentuser')).rejects.toHaveProperty(
-        'message',
+      'message',
         'User not found'
       );
     });
@@ -282,10 +282,10 @@ describe('UserService', () => {
       });
       
       await expect(service.create(createUserDto, creator)).rejects.toHaveProperty(
-        'message',
+      'message',
         'Failed to associate user with organization: Cannot create PI or Collaborator users: No organization exists in the system'
-      );
-    });
+    );
+  });
 
     it('should create an admin user without organization', async () => {
       const createUserDto = new UserCreateDto();
@@ -318,8 +318,125 @@ describe('UserService', () => {
       creator.roles = [Role.COLLABORATOR];
       
       await expect(service.create(createUserDto, creator)).rejects.toHaveProperty(
-        'message',
+      'message',
         'Only admins and PIs can create users'
+      );
+    });
+
+    it('should throw BadRequestException when username is too short', async () => {
+      const createUserDto = new UserCreateDto();
+      createUserDto.name = faker.person.fullName();
+      createUserDto.username = 'short'; // Too short (less than 8 characters)
+      createUserDto.email = faker.internet.email();
+      createUserDto.password = 'Password123!';
+      createUserDto.role = Role.COLLABORATOR;
+      
+      // Get the test organization
+      const organization = await organizationRepository.findOne({ where: { name: 'Test Organization' } });
+      
+      // Create a PI user as the creator
+      const creator = new UserEntity();
+      creator.id = faker.string.uuid();
+      creator.roles = [Role.PI];
+      creator.organization = organization;
+      
+      await expect(service.create(createUserDto, creator)).rejects.toHaveProperty(
+        'message',
+        'Username must be between 8 and 50 characters long'
+      );
+    });
+    
+    it('should throw BadRequestException when username is too long', async () => {
+      const createUserDto = new UserCreateDto();
+      createUserDto.name = faker.person.fullName();
+      // Create a username that is longer than 50 characters
+      createUserDto.username = 'a'.repeat(51);
+      createUserDto.email = faker.internet.email();
+      createUserDto.password = 'Password123!';
+      createUserDto.role = Role.COLLABORATOR;
+      
+      // Get the test organization
+      const organization = await organizationRepository.findOne({ where: { name: 'Test Organization' } });
+      
+      // Create a PI user as the creator
+      const creator = new UserEntity();
+      creator.id = faker.string.uuid();
+      creator.roles = [Role.PI];
+      creator.organization = organization;
+      
+      await expect(service.create(createUserDto, creator)).rejects.toHaveProperty(
+        'message',
+        'Username must be between 8 and 50 characters long'
+      );
+    });
+    
+    it('should throw BadRequestException when email is invalid', async () => {
+      const createUserDto = new UserCreateDto();
+      createUserDto.name = faker.person.fullName();
+      createUserDto.username = 'validusername123';
+      createUserDto.email = 'invalid-email'; // Invalid email format
+      createUserDto.password = 'Password123!';
+      createUserDto.role = Role.COLLABORATOR;
+      
+      // Get the test organization
+      const organization = await organizationRepository.findOne({ where: { name: 'Test Organization' } });
+      
+      // Create a PI user as the creator
+      const creator = new UserEntity();
+      creator.id = faker.string.uuid();
+      creator.roles = [Role.PI];
+      creator.organization = organization;
+      
+      await expect(service.create(createUserDto, creator)).rejects.toHaveProperty(
+        'message',
+        'Email must be a valid email address'
+      );
+    });
+    
+    it('should throw BadRequestException when name is too short', async () => {
+      const createUserDto = new UserCreateDto();
+      createUserDto.name = 'AB'; // Too short (less than 3 characters)
+      createUserDto.username = 'validusername123';
+      createUserDto.email = faker.internet.email();
+      createUserDto.password = 'Password123!';
+      createUserDto.role = Role.COLLABORATOR;
+      
+      // Get the test organization
+      const organization = await organizationRepository.findOne({ where: { name: 'Test Organization' } });
+      
+      // Create a PI user as the creator
+      const creator = new UserEntity();
+      creator.id = faker.string.uuid();
+      creator.roles = [Role.PI];
+      creator.organization = organization;
+      
+      await expect(service.create(createUserDto, creator)).rejects.toHaveProperty(
+        'message',
+        'Name must be between 3 and 50 characters long'
+      );
+    });
+    
+    it('should throw BadRequestException when name is too long', async () => {
+      const createUserDto = new UserCreateDto();
+      // Create a name that is longer than 50 characters
+      createUserDto.name = 'a'.repeat(51);
+      createUserDto.username = 'validusername123';
+      createUserDto.email = faker.internet.email();
+      createUserDto.password = 'Password123!';
+      createUserDto.role = Role.COLLABORATOR;
+      
+      // Get the test organization
+      const organization = await organizationRepository.findOne({ where: { name: 'Test Organization' } });
+      
+      // Create a PI user as the creator
+      const creator = new UserEntity();
+      creator.id = faker.string.uuid();
+      creator.roles = [Role.PI];
+      creator.organization = organization;
+      
+      await expect(service.create(createUserDto, creator)).rejects.toHaveProperty(
+        'message',
+        'Name must be between 3 and 50 characters long'
       );
     });
   });
@@ -426,10 +543,10 @@ describe('UserService', () => {
       currentUser.roles = [Role.ADMIN];
       
       await expect(service.update(userToUpdate.id, updateUserDto, currentUser)).rejects.toHaveProperty(
-        'message',
+      'message',
         'Username already exists'
-      );
-    });
+    );
+  });
 
     it('should throw BadRequestException when trying to update to existing email', async () => {
       const userToUpdate = userList[0];
@@ -441,10 +558,10 @@ describe('UserService', () => {
       currentUser.roles = [Role.ADMIN];
       
       await expect(service.update(userToUpdate.id, updateUserDto, currentUser)).rejects.toHaveProperty(
-        'message',
+      'message',
         'Email already exists'
-      );
-    });
+    );
+  });
 
     it('should throw BadRequestException when password is too short', async () => {
       const userToUpdate = userList[0];
@@ -456,10 +573,10 @@ describe('UserService', () => {
       currentUser.roles = [Role.ADMIN];
       
       await expect(service.update(userToUpdate.id, updateUserDto, currentUser)).rejects.toHaveProperty(
-        'message',
+      'message',
         'Password must be at least 8 characters long'
-      );
-    });
+    );
+  });
 
     it('should throw UnauthorizedException when non-admin tries to update roles', async () => {
       const userToUpdate = userList[0];
@@ -492,10 +609,10 @@ describe('UserService', () => {
       updateUserDto.email = 'new-email@example.com';
       
       await expect(service.update(adminUser.id, updateUserDto, adminUser)).rejects.toHaveProperty(
-        'message',
+      'message',
         'Admins cannot change their own email'
-      );
-    });
+    );
+  });
 
     it('should throw UnauthorizedException when admin tries to change their own username', async () => {
       let adminUser = userList.find(user => user.roles.includes(Role.ADMIN));
@@ -516,10 +633,10 @@ describe('UserService', () => {
       updateUserDto.username = 'new-username';
       
       await expect(service.update(adminUser.id, updateUserDto, adminUser)).rejects.toHaveProperty(
-        'message',
+      'message',
         'Admins cannot change their own username'
-      );
-    });
+    );
+  });
 
     it('should return requiresRelogin flag when password is updated', async () => {
       const userToUpdate = userList[0];
@@ -642,10 +759,10 @@ describe('UserService', () => {
       });
       
       await expect(service.remove(userToDelete.id, piUser)).rejects.toHaveProperty(
-        'message',
+      'message',
         'PI can only delete users with role COLLABORATOR'
-      );
-    });
+    );
+  });
   });
 
   describe('findOneById', () => {

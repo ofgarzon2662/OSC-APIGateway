@@ -15,6 +15,7 @@ import { plainToClass } from 'class-transformer';
 import { User } from './user';
 import { Role } from '../shared/enums/role.enums';
 import { OrganizationEntity } from '../organization/organization.entity';
+import * as validator from 'validator';
 
 
 
@@ -178,6 +179,21 @@ The application requires at least one admin user to function properly.
 
     if (existingUser) {
       throw new BadRequestException('User with this username or email already exists');
+    }
+
+    // Validate username length
+    if (!createUserDto.username || createUserDto.username.length < 8 || createUserDto.username.length > 50) {
+      throw new BadRequestException('Username must be between 8 and 50 characters long');
+    }
+
+    // Validate email format
+    if (!createUserDto.email || !validator.isEmail(createUserDto.email)) {
+      throw new BadRequestException('Email must be a valid email address');
+    }
+
+    // Validate name length
+    if (!createUserDto.name || createUserDto.name.length < 3 || createUserDto.name.length > 50) {
+      throw new BadRequestException('Name must be between 3 and 50 characters long');
     }
 
     // Validate password length
@@ -459,5 +475,5 @@ The application requires at least one admin user to function properly.
 
     // Return user data without sensitive information
     return this.transformToDto(user);
-  }
+   }
 }
