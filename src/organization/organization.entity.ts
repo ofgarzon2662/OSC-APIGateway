@@ -1,6 +1,6 @@
-import { UserEntity } from '../user/user.entity';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { ArtifactEntity } from '../artifact/artifact.entity';
+import type { UserEntity }      from '../user/user.entity';          // <- type-only
+import type { ArtifactEntity }  from '../artifact/artifact.entity';  // <- type-only
 
 @Entity()
 export class OrganizationEntity {
@@ -13,15 +13,19 @@ export class OrganizationEntity {
   @Column()
   description: string;
 
-  @OneToMany(() => UserEntity, (user: UserEntity) => user.organization, {
-    cascade: true,
-    onDelete: 'CASCADE'
-  })
+  /* ---------- relación con usuarios ---------- */
+  @OneToMany(
+    () => require('../user/user.entity').UserEntity,
+    (user: UserEntity) => user.organization,
+    { cascade: true, onDelete: 'CASCADE' },
+  )
   users: UserEntity[];
 
-  @OneToMany(() => ArtifactEntity, (artifact) => artifact.organization, {
-    cascade: true,
-    onDelete: 'CASCADE'
-  })
+  /* ---------- relación con artefactos ---------- */
+  @OneToMany(
+    () => require('../artifact/artifact.entity').ArtifactEntity,
+    (artifact: ArtifactEntity) => artifact.organization,
+    { cascade: true, onDelete: 'CASCADE' },
+  )
   artifacts: ArtifactEntity[];
 }

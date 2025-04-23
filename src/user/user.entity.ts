@@ -1,6 +1,19 @@
-import { IsEmail, IsNotEmpty, IsString, IsArray, IsEnum, ValidateIf } from 'class-validator';
-import { OrganizationEntity } from '../organization/organization.entity';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, JoinColumn } from 'typeorm';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsString,
+  IsArray,
+  IsEnum,
+  ValidateIf,
+} from 'class-validator';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  JoinColumn,
+} from 'typeorm';
+import type { OrganizationEntity } from '../organization/organization.entity';   // <- type-only
 import { Role } from '../shared/enums/role.enums';
 
 @Entity()
@@ -29,15 +42,18 @@ export class UserEntity {
   password: string;
 
   @Column('simple-array')
-  @ValidateIf((object, value) => value !== undefined)
+  @ValidateIf((o, v) => v !== undefined)
   @IsArray()
   @IsEnum(Role, { each: true })
   roles: Role[];
 
-  @ManyToOne(() => OrganizationEntity, { 
-    nullable: true,
-    onDelete: 'CASCADE'
-  })
+  /* ---------- relación (lado MANY) ---------- */
+  @ManyToOne(
+    // usamos require para evitar import estático
+    () => require('../organization/organization.entity').OrganizationEntity,
+    (org: OrganizationEntity) => org.users,
+    { nullable: true, onDelete: 'CASCADE' },
+  )
   @JoinColumn()
-  organization: OrganizationEntity;
+  organization: OrganizationEntity | null;
 }

@@ -1,12 +1,32 @@
-import { OrganizationEntity } from '../organization/organization.entity';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
-import { IsNotEmpty, IsString, IsDate, IsArray, IsUrl, IsEmail, IsBoolean, IsEnum, Length, Matches, IsOptional } from 'class-validator';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import {
+  IsNotEmpty,
+  IsString,
+  IsDate,
+  IsArray,
+  IsUrl,
+  IsEmail,
+  IsBoolean,
+  IsEnum,
+  Length,
+  Matches,
+  IsOptional,
+} from 'class-validator';
+import type { OrganizationEntity } from '../organization/organization.entity';   // <- type-only
 import { SubmissionState } from './enums/submission-state.enum';
 
 @Entity()
 export class ArtifactEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  /* --------------- Core fields --------------- */
 
   @Column()
   @IsString()
@@ -63,13 +83,15 @@ export class ArtifactEntity {
   @Matches(/^[a-f0-9]{64}$/)
   hash: string;
 
+  /* --------------- States & dates --------------- */
+
   @Column({ default: false })
   @IsBoolean()
   verified: boolean;
 
-  @Column({ 
+  @Column({
     type: process.env.NODE_ENV === 'test' ? 'datetime' : 'timestamp',
-    nullable: true 
+    nullable: true,
   })
   @IsDate()
   @IsOptional()
@@ -78,7 +100,7 @@ export class ArtifactEntity {
   @Column({
     type: 'text',
     enum: SubmissionState,
-    default: SubmissionState.PENDING
+    default: SubmissionState.PENDING,
   })
   @IsEnum(SubmissionState)
   submissionState: SubmissionState;
@@ -93,9 +115,9 @@ export class ArtifactEntity {
   @IsNotEmpty()
   submitterUsername: string;
 
-  @Column({ 
+  @Column({
     type: process.env.NODE_ENV === 'test' ? 'datetime' : 'timestamp',
-    nullable: true 
+    nullable: true,
   })
   @IsDate()
   @IsOptional()
@@ -104,13 +126,12 @@ export class ArtifactEntity {
   @UpdateDateColumn()
   updatedAt: Date;
 
+  /* --------------- Relationship --------------- */
+
   @ManyToOne(
-    () => OrganizationEntity,
-    (organization) => organization.artifacts,
-    { 
-      onDelete: 'CASCADE',
-      nullable: false
-    }
+    () => require('../organization/organization.entity').OrganizationEntity, // runtime import
+    (org: OrganizationEntity) => org.artifacts,
+    { onDelete: 'CASCADE', nullable: false },
   )
   @IsNotEmpty()
   organization: OrganizationEntity;
