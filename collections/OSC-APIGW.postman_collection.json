@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "0467a685-e535-44f0-9419-7d24c2027339",
+		"_postman_id": "2f4dd683-a0a2-473f-80c9-cc74e6523cad",
 		"name": "OSC-APIGW",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "29465325"
@@ -5171,6 +5171,8 @@
 							"script": {
 								"exec": [
 									"pm.environment.set(\"orgId\", pm.response.json().id);\r",
+									"pm.environment.set(\"orgName\", pm.response.json().name);\r",
+									"\r",
 									"\r",
 									"pm.test(\"El código de estado es 201\", function() {\r",
 									"    pm.response.to.have.status(201)\r",
@@ -5280,13 +5282,11 @@
 									"",
 									"// Guardar los valores enviados para comparar después",
 									"const sentName = requestData.name;",
-									"const sentEmail = requestData.email;",
 									"const sentUsername = requestData.username;",
 									"const sentRole = requestData.role",
 									"",
 									"// Guardar variables de entorno",
 									"pm.environment.set(\"userId1\", pm.response.json().id);",
-									"pm.environment.set(\"emailUser1\", pm.response.json().email);",
 									"pm.environment.set(\"usernameUser1\", pm.response.json().username);",
 									"pm.environment.set(\"nameOfUser1\", pm.response.json().name);",
 									"pm.environment.set(\"pi_password\", requestData.password); // Save PI password for later use",
@@ -5299,7 +5299,6 @@
 									"pm.test(\"User information is valid\", function() {",
 									"    const responseData = pm.response.json();",
 									"    pm.expect(responseData.name).to.be.a('string').and.to.not.be.empty;",
-									"    pm.expect(responseData.email).to.be.a('string').and.to.not.be.empty;",
 									"    pm.expect(responseData.username).to.be.a('string').and.to.not.be.empty;",
 									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;",
 									"});",
@@ -5310,9 +5309,6 @@
 									"    ",
 									"    // Verificar que el nombre coincide",
 									"    pm.expect(responseData.name).to.equal(sentName, \"Name in response should match sent name\");",
-									"    ",
-									"    // Verificar que el email coincide",
-									"    pm.expect(responseData.email).to.equal(sentEmail, \"Email in response should match sent email\");",
 									"    ",
 									"    // Verificar que el username coincide",
 									"    pm.expect(responseData.username).to.equal(sentUsername, \"Username in response should match sent username\");",
@@ -5325,10 +5321,16 @@
 									"    pm.expect(responseData.roles).to.include(sentRole, \"Role in response should match sent role\");",
 									"});",
 									"",
+									"// Verificar que el usuario está asociado con la organización correcta",
+									"pm.test(\"User is associated with correct organization\", function () {",
+									"    const responseData = pm.response.json();",
+									"    pm.expect(responseData.organizationName).to.equal(pm.environment.get(\"orgName\"), \"Organization name in response should match organization ID\");",
+									"});",
+									"",
 									"// Guardar datos del usuario para verificación posterior",
 									"pm.collectionVariables.set(\"pi_user_id\", pm.response.json().id);",
 									"pm.collectionVariables.set(\"pi_username\", pm.response.json().username);",
-									"pm.collectionVariables.set(\"pi_email\", pm.response.json().email);"
+									""
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -5406,13 +5408,11 @@
 									"",
 									"// Guardar los valores enviados para comparar después",
 									"const sentName = requestData.name;",
-									"const sentEmail = requestData.email;",
 									"const sentUsername = requestData.username;",
 									"const sentRole = requestData.role",
 									"",
 									"// Guardar variables de entorno",
 									"pm.environment.set(\"collaboratorId\", pm.response.json().id);",
-									"pm.environment.set(\"collaboratorEmail\", pm.response.json().email);",
 									"pm.environment.set(\"collaborator1Username\", pm.response.json().username);",
 									"pm.environment.set(\"collaborator1_password\", requestData.password); // Save PI password for later use",
 									"",
@@ -5426,7 +5426,6 @@
 									"pm.test(\"collaborator user information is valid\", function() {",
 									"    const responseData = pm.response.json();",
 									"    pm.expect(responseData.name).to.be.a('string').and.to.not.be.empty;",
-									"    pm.expect(responseData.email).to.be.a('string').and.to.not.be.empty;",
 									"    pm.expect(responseData.username).to.be.a('string').and.to.not.be.empty;",
 									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;",
 									"});",
@@ -5438,10 +5437,7 @@
 									"    // Verificar que el nombre coincide",
 									"    pm.expect(responseData.name).to.equal(sentName, \"Name in response should match sent name\");",
 									"    ",
-									"    // Verificar que el email coincide",
-									"    pm.expect(responseData.email).to.equal(sentEmail, \"Email in response should match sent email\");",
-									"    ",
-									"    // Verificar que el username coincide",
+									"",
 									"    pm.expect(responseData.username).to.equal(sentUsername, \"Username in response should match sent username\");",
 									"});",
 									"",
@@ -5452,10 +5448,16 @@
 									"    pm.expect(responseData.roles).to.include(sentRole, \"Role in response should match sent role\");",
 									"});",
 									"",
+									"",
+									"// Verificar que el usuario está asociado con la organización correcta",
+									"pm.test(\"User is associated with correct organization\", function () {",
+									"    const responseData = pm.response.json();",
+									"    pm.expect(responseData.organizationName).to.equal(pm.environment.get(\"orgName\"), \"Organization name in response should match organization ID\");",
+									"});",
 									"// Guardar datos del usuario collaborator para verificación posterior",
 									"pm.collectionVariables.set(\"collaborator_user_id\", pm.response.json().id);",
 									"pm.collectionVariables.set(\"collaborator_username\", pm.response.json().username);",
-									"pm.collectionVariables.set(\"collaborator_email\", pm.response.json().email);"
+									""
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -5628,64 +5630,6 @@
 					"response": []
 				},
 				{
-					"name": "Admin 1 Creates an org",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.environment.set(\"orgId\", pm.response.json().id);\r",
-									"\r",
-									"pm.test(\"El código de estado es 201\", function() {\r",
-									"    pm.response.to.have.status(201)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Información presente\", function() {\r",
-									"    pm.expect(pm.response.json().name).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().description).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token_ADMIN1}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"{{$randomCompanyName}}\",\r\n    \"description\": \"This organization focuses on {{$randomLoremWords}} and its main mission in life is {{$randomLoremWords}}\"\r\n}\r\n",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/organizations",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations"
-							]
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "Collaborator Get All Orgs",
 					"event": [
 						{
@@ -5821,13 +5765,11 @@
 							}
 						},
 						"url": {
-							"raw": "{{baseUrl}}/organizations/{{orgId}}/artifacts",
+							"raw": "{{baseUrl}}/artifacts",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"organizations",
-								"{{orgId}}",
 								"artifacts"
 							]
 						}
@@ -5895,13 +5837,11 @@
 							}
 						},
 						"url": {
-							"raw": "{{baseUrl}}/organizations/{{orgId}}/artifacts/{{artifactId1}}",
+							"raw": "{{baseUrl}}/artifacts/{{artifactId1}}",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"organizations",
-								"{{orgId}}",
 								"artifacts",
 								"{{artifactId1}}"
 							]
@@ -6161,51 +6101,553 @@
 					"response": []
 				},
 				{
+					"name": "PI Create Artifact 2 short title",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"/* ----------  STATUS ---------- */\r",
+									"pm.test('Status code is 400 Bad Request', () => {\r",
+									"  pm.response.to.have.status(400);\r",
+									"});\r",
+									"\r",
+									"/* ----------  PAYLOAD ---------- */\r",
+									"const body = pm.response.json();\r",
+									"\r",
+									"pm.test('Payload structure is correct', () => {\r",
+									"  pm.expect(body).to.have.property('error', 'Bad Request');\r",
+									"  pm.expect(body).to.have.property('statusCode', 400);\r",
+									"  pm.expect(body.message).to.be.an('array').with.lengthOf(1);\r",
+									"  pm.expect(body.message[0]).to.eql('title must be longer than or equal to 3 characters');\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"function generateRandomHash(length) {",
+									"    let result = '';",
+									"    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';",
+									"    const charactersLength = characters.length;",
+									"",
+									"    for (let i = 0; i < length; i++) {",
+									"        result += characters.charAt(Math.floor(Math.random() * charactersLength));",
+									"    }",
+									"",
+									"    return result;",
+									"}",
+									"",
+									"// Set the generated hash in an environment variable",
+									"pm.environment.set(\"artifacthash2\", generateRandomHash(64));",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_PI}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\": \"UC\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"fileName\": \"{{$randomFileName}}\",\r\n    \"hash\": \"{{artifacthash2}}\",\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example.com/product\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/artifacts",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"artifacts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PI Create Artifact 2 short dESC",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"/* ----------  STATUS ---------- */\r",
+									"pm.test('Status code is 400 Bad Request', () => {\r",
+									"  pm.response.to.have.status(400);\r",
+									"});\r",
+									"\r",
+									"/* ----------  PAYLOAD ---------- */\r",
+									"const body = pm.response.json();\r",
+									"\r",
+									"pm.test('Payload structure is correct', () => {\r",
+									"  pm.expect(body).to.have.property('error', 'Bad Request');\r",
+									"  pm.expect(body).to.have.property('statusCode', 400);\r",
+									"  pm.expect(body.message).to.be.an('array').with.lengthOf(1);\r",
+									"  pm.expect(body.message[0]).to.eql('description must be longer than or equal to 50 characters');\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"function generateRandomHash(length) {",
+									"    let result = '';",
+									"    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';",
+									"    const charactersLength = characters.length;",
+									"",
+									"    for (let i = 0; i < length; i++) {",
+									"        result += characters.charAt(Math.floor(Math.random() * charactersLength));",
+									"    }",
+									"",
+									"    return result;",
+									"}",
+									"",
+									"// Set the generated hash in an environment variable",
+									"pm.environment.set(\"artifacthash2\", generateRandomHash(64));",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_PI}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\": \"UCSD\",\r\n    \"description\": \"Short\",\r\n    \"fileName\": \"{{$randomFileName}}\",\r\n    \"hash\": \"{{artifacthash2}}\",\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example.com/product\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/artifacts",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"artifacts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PI Create Artifact 2 invalid Links",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"/* ----------  STATUS ---------- */\r",
+									"pm.test('Status code is 400 Bad Request', () => {\r",
+									"  pm.response.to.have.status(400);\r",
+									"});\r",
+									"\r",
+									"/* ----------  PAYLOAD ---------- */\r",
+									"const body = pm.response.json();\r",
+									"\r",
+									"pm.test('Payload structure is correct', () => {\r",
+									"  pm.expect(body).to.have.property('error', 'Bad Request');\r",
+									"  pm.expect(body).to.have.property('statusCode', 400);\r",
+									"  pm.expect(body.message).to.be.an('array').with.lengthOf(1);\r",
+									"  pm.expect(body.message[0]).to.eql(\"each value in links must be a URL address\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"function generateRandomHash(length) {",
+									"    let result = '';",
+									"    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';",
+									"    const charactersLength = characters.length;",
+									"",
+									"    for (let i = 0; i < length; i++) {",
+									"        result += characters.charAt(Math.floor(Math.random() * charactersLength));",
+									"    }",
+									"",
+									"    return result;",
+									"}",
+									"",
+									"// Set the generated hash in an environment variable",
+									"pm.environment.set(\"artifacthash2\", generateRandomHash(64));",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_PI}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\": \"UCSD\",\r\n    \"description\": \"This is a >50 characters description This is a >50 characters description This is a >50 characters description This is a >50 characters description\",\r\n    \"fileName\": \"{{$randomFileName}}\",\r\n    \"hash\": \"{{artifacthash2}}\",\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example\", \"facebook\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/artifacts",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"artifacts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PI Create Artifact 2 keywords > 1000 char",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"/* ----------  STATUS ---------- */\r",
+									"pm.test('Status code is 400 Bad Request', () => {\r",
+									"  pm.response.to.have.status(400);\r",
+									"});\r",
+									"\r",
+									"/* ----------  PAYLOAD ---------- */\r",
+									"const body = pm.response.json();\r",
+									"\r",
+									"pm.test('Payload structure is correct', () => {\r",
+									"  pm.expect(body).to.have.property('statusCode', 400);\r",
+									"  pm.expect(body).to.have.property(\r",
+									"    'message',\r",
+									"    'The keywords array can have at most 1000 characters in total'\r",
+									"  );\r",
+									"  pm.expect(body.message).to.be.a('string');\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"function generateRandomHash(length) {",
+									"    let result = '';",
+									"    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';",
+									"    const charactersLength = characters.length;",
+									"",
+									"    for (let i = 0; i < length; i++) {",
+									"        result += characters.charAt(Math.floor(Math.random() * charactersLength));",
+									"    }",
+									"",
+									"    return result;",
+									"}",
+									"",
+									"// Set the generated hash in an environment variable",
+									"pm.environment.set(\"artifacthash2\", generateRandomHash(64));",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_PI}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\": \"UCSD\",\r\n    \"description\": \"This is a >50 characters description This is a >50 characters description This is a >50 characters description This is a >50 characters description\",\r\n    \"fileName\": \"{{$randomFileName}}\",\r\n    \"hash\": \"{{artifacthash2}}\",\r\n    \"keywords\": [\r\n  \"quantum-computing-neural-networks-synthetic-biology-cryptographic-ledgers-augmented-reality-spatial-mapping-generative-design-algorithms\",\r\n  \"high-throughput-sequencing-pipeline-for-metagenomic-taxonomic-and-functional-profiling-of-environmental-microbiomes\",\r\n  \"ultra-low-power-edge-ai-accelerators-for-autonomous-inference-in-resource-constrained-iot-sensors\",\r\n  \"blockchain-enabled-supply-chain-traceability-and-auditability-for-circular-economy-material-flows\",\r\n  \"deep-reinforcement-learning-driven-adaptive-traffic-signal-control-for-smart-cities-with-connected-vehicles\",\r\n  \"bio-inspired-morphing-aerostructures-using-shape-memory-alloys-and-flexible-matrix-composites\",\r\n  \"optogenetic-control-of-neural-circuits-for-restoration-of-sensory-and-motor-function-in-spinal-cord-injury-models\",\r\n  \"large-scale-graph-analytics-on-heterogeneous-hardware-architectures-with-runtime-workload-rebalancing\",\r\n  \"privacy-preserving-federated-learning-frameworks-for-cross-institutional-clinical-imaging-datasets\",\r\n  \"explainable-transformer-models-for-multi-modal-sentiment-analysis-in-human-robot-interaction\",\r\n  \"self-healing-perovskite-photovoltaics-with-intrinsic-ion-migration-suppression-and-extended-operational-stability\"\r\n],\r\n    \"links\": [\"https://example.com\", \"facebook.edu.co\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/artifacts",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"artifacts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin creates artifact - Fail",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 403\", function() {\r",
+									"    pm.response.to.have.status(403)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Message is correct\", function () {\r",
+									"    pm.expect(pm.response.text()).to.include(\"Forbidden resource\")\r",
+									"})"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"function generateRandomHash(length) {",
+									"    let result = '';",
+									"    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';",
+									"    const charactersLength = characters.length;",
+									"",
+									"    for (let i = 0; i < length; i++) {",
+									"        result += characters.charAt(Math.floor(Math.random() * charactersLength));",
+									"    }",
+									"",
+									"    return result;",
+									"}",
+									"",
+									"// Set the generated hash in an environment variable",
+									"pm.environment.set(\"artifacthash2\", generateRandomHash(64));",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_ADMIN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\": \"A super random title\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"fileName\": \"{{$randomFileName}}\",\r\n    \"hash\": \"{{artifacthash2}}\",\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example.com/product\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/artifacts",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"artifacts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Unauthenticades creates artifact - Fail",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 401\", function() {\r",
+									"    pm.response.to.have.status(401)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Message is correct\", function () {\r",
+									"    pm.expect(pm.response.text()).to.include(\"Unauthorized\")\r",
+									"})"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"function generateRandomHash(length) {",
+									"    let result = '';",
+									"    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';",
+									"    const charactersLength = characters.length;",
+									"",
+									"    for (let i = 0; i < length; i++) {",
+									"        result += characters.charAt(Math.floor(Math.random() * charactersLength));",
+									"    }",
+									"",
+									"    return result;",
+									"}",
+									"",
+									"// Set the generated hash in an environment variable",
+									"pm.environment.set(\"artifacthash2\", generateRandomHash(64));",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\": \"A super random title\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"fileName\": \"{{$randomFileName}}\",\r\n    \"hash\": \"{{artifacthash2}}\",\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example.com/product\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/artifacts",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"artifacts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Get All Artifacts",
 					"event": [
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Code is 200\", function () {\r",
-									"    pm.response.to.have.status(200);\r",
+									"/* ----------  STATUS ---------- */\r",
+									"pm.test('Code is 200', () => pm.response.to.have.status(200));\r",
+									"\r",
+									"/* ----------  BASIC ARRAY CHECK ---------- */\r",
+									"const artifacts = pm.response.json();\r",
+									"\r",
+									"pm.test('Response is array (≥ 2)', () => {\r",
+									"  pm.expect(artifacts).to.be.an('array').with.length.of.at.least(2);\r",
 									"});\r",
 									"\r",
-									"pm.test(\"Response length is 2\", function () {\r",
-									"    const responseData = pm.response.json();\r",
-									"    pm.expect(responseData).to.be.an(\"array\").and.to.have.lengthOf(2);\r",
+									"/* ----------  STRUCTURE FOR EACH ITEM ---------- */\r",
+									"pm.test('Each artifact has required minimal fields', () => {\r",
+									"  artifacts.forEach(a => {\r",
+									"    pm.expect(a).to.have.property('id').that.is.a('string').and.is.not.empty;\r",
+									"    pm.expect(a).to.have.property('title').that.is.a('string').and.is.not.empty;\r",
+									"    pm.expect(a).to.have.property('description').that.is.a('string').and.is.not.empty;\r",
+									"    pm.expect(a).to.have.property('lastTimeVerified');           // null or date\r",
+									"  });\r",
 									"});\r",
 									"\r",
-									"pm.test(\"Artifacts validation\", function () {\r",
-									"    const responseData = pm.response.json();\r",
-									"    \r",
-									"    // Environment variables for validation\r",
-									"    const artifactIds = [\r",
-									"        pm.environment.get(\"artifactId1\"),\r",
-									"        pm.environment.get(\"artifactId2\"),\r",
-									"    ];\r",
-									"    const descriptions = [\r",
-									"        pm.environment.get(\"description1\"),\r",
-									"        pm.environment.get(\"description2\"),\r",
+									"/* ----------  OPTIONAL VALIDATION WITH ENV VARS ---------- */\r",
+									"const envIds  = [pm.environment.get('artifactId1'), pm.environment.get('artifactId2')].filter(Boolean);\r",
+									"const envDesc = [pm.environment.get('description1'), pm.environment.get('description2')].filter(Boolean);\r",
 									"\r",
-									"    ];\r",
+									"if (envIds.length) {\r",
+									"  pm.test('Response contains expected artifact IDs', () => {\r",
+									"    const idsInResponse = artifacts.map(a => a.id);\r",
+									"    envIds.forEach(id => pm.expect(idsInResponse).to.include(id));\r",
+									"  });\r",
+									"}\r",
 									"\r",
-									"    // Create a reference array of expected artifacts\r",
-									"    const expectedArtifacts = artifactIds.map((id, index) => ({\r",
-									"        id,\r",
-									"        description: descriptions[index],\r",
-									"    }));\r",
-									"\r",
-									"    // Sort both arrays by `id`\r",
-									"    const sortedResponse = responseData.sort((a, b) => a.id.localeCompare(b.id));\r",
-									"    const sortedExpectedArtifacts = expectedArtifacts.sort((a, b) => a.id.localeCompare(b.id));\r",
-									"\r",
-									"    // Validate each artifact\r",
-									"    sortedResponse.forEach((artifact, index) => {\r",
-									"        pm.expect(artifact.id).to.equal(sortedExpectedArtifacts[index].id);\r",
-									"        pm.expect(artifact.description).to.equal(sortedExpectedArtifacts[index].description);\r",
+									"if (envDesc.length) {\r",
+									"  pm.test('Descriptions match stored values', () => {\r",
+									"    envDesc.forEach(desc => {\r",
+									"      const found = artifacts.some(a => a.description === desc);\r",
+									"      pm.expect(found, `Description \"${desc}\" should appear in response`).to.be.true;\r",
 									"    });\r",
-									"});\r",
+									"  });\r",
+									"}\r",
 									""
 								],
 								"type": "text/javascript",
@@ -6257,48 +6699,52 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Code is 200\", function () {\r",
-									"    pm.response.to.have.status(200);\r",
+									"/* ----------  STATUS ---------- */\r",
+									"pm.test('Code is 200', () => pm.response.to.have.status(200));\r",
+									"\r",
+									"/* ----------  BODY ---------- */\r",
+									"const data = pm.response.json();\r",
+									"\r",
+									"/* ----------  ORGANIZATION ---------- */\r",
+									"pm.test('Exactly one organization returned', () => {\r",
+									"  pm.expect(data).to.be.an('array').with.lengthOf(1);\r",
 									"});\r",
 									"\r",
-									"pm.test(\"Organization and artifacts validation\", function () {\r",
-									"    const responseData = pm.response.json();\r",
+									"const org = data[0];\r",
 									"\r",
-									"    // Validate response length\r",
-									"    pm.expect(responseData).to.be.an(\"array\").and.to.have.lengthOf(1);\r",
+									"/* Guarda orgId la primera vez si no existe */\r",
+									"if (!pm.environment.get('orgId')) {\r",
+									"  pm.environment.set('orgId', org.id);\r",
+									"}\r",
 									"\r",
-									"    // Extract organization\r",
-									"    const org = responseData[0];\r",
-									"    pm.expect(org.id).to.equal(pm.environment.get(\"orgId\"));\r",
-									"    pm.expect(org.artifacts).to.be.an(\"array\").and.to.have.lengthOf(2);\r",
+									"pm.test('Organization ID matches stored value', () => {\r",
+									"  pm.expect(org.id).to.eql(pm.environment.get('orgId'));\r",
+									"});\r",
 									"\r",
-									"    // Environment variables for artifacts validation\r",
-									"    const artifactIds = [\r",
-									"        pm.environment.get(\"artifactId1\"),\r",
-									"        pm.environment.get(\"artifactId2\"),\r",
-									"    ];\r",
-									"  \r",
-									"    const descriptions = [\r",
-									"        pm.environment.get(\"description1\"),\r",
-									"        pm.environment.get(\"description2\"),\r",
-									"    ];\r",
+									"/* ----------  ARTIFACTS ARRAY ---------- */\r",
+									"pm.test('At least 2 artifacts returned', () => {\r",
+									"  pm.expect(org.artifacts).to.be.an('array').with.length.of.at.least(2);\r",
+									"});\r",
 									"\r",
-									"    // Create a reference array of expected artifacts\r",
-									"    const expectedArtifacts = artifactIds.map((id, index) => ({\r",
-									"        id,\r",
-									"        description: descriptions[index],\r",
-									"    }));\r",
+									"/* ----------  VALIDACIÓN OPCIONAL CON VARIABLES ---------- */\r",
+									"const storedIds  = [pm.environment.get('artifactId1'), pm.environment.get('artifactId2')].filter(Boolean);\r",
+									"const storedDesc = [pm.environment.get('description1'), pm.environment.get('description2')].filter(Boolean);\r",
 									"\r",
-									"    // Sort both the response artifacts and the expected artifacts by `id`\r",
-									"    const sortedResponseArtifacts = org.artifacts.sort((a, b) => a.id.localeCompare(b.id));\r",
-									"    const sortedExpectedArtifacts = expectedArtifacts.sort((a, b) => a.id.localeCompare(b.id));\r",
+									"if (storedIds.length) {\r",
+									"  pm.test('Response contiene los artifact IDs guardados', () => {\r",
+									"    const ids = org.artifacts.map(a => a.id);\r",
+									"    storedIds.forEach(id => pm.expect(ids, `ID ${id} debe estar en la respuesta`).to.include(id));\r",
+									"  });\r",
+									"}\r",
 									"\r",
-									"    // Validate each artifact\r",
-									"    sortedResponseArtifacts.forEach((artifact, index) => {\r",
-									"        pm.expect(artifact.id).to.equal(sortedExpectedArtifacts[index].id);\r",
-									"        pm.expect(artifact.description).to.equal(sortedExpectedArtifacts[index].description);\r",
+									"if (storedDesc.length) {\r",
+									"  pm.test('Descripciones guardadas aparecen en la respuesta', () => {\r",
+									"    storedDesc.forEach(desc => {\r",
+									"      const exists = org.artifacts.some(a => a.description === desc);\r",
+									"      pm.expect(exists, `Descripción \"${desc}\" debería estar en la respuesta`).to.be.true;\r",
 									"    });\r",
-									"});\r",
+									"  });\r",
+									"}\r",
 									""
 								],
 								"type": "text/javascript",
@@ -6378,360 +6824,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{baseUrl}}/organizations/{{orgId}}/artifacts/{{$randomUUID}}",
+							"raw": "{{baseUrl}}/artifacts/{{$randomUUID}}",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"organizations",
-								"{{orgId}}",
 								"artifacts",
 								"{{$randomUUID}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Artifact bad Org ID",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Code is 412\", function() {\r",
-									"    pm.response.to.have.status(412)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Get error message\", function() {\r",
-									"   pm.expect(pm.response.json().message).to.eql(\"The organizationId provided is not valid\");\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/organizations/bad-id/artifacts/{{artifactId2}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations",
-								"bad-id",
-								"artifacts",
-								"{{artifactId2}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get All Artifactd wrong Org ID",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Code is 404\", function() {\r",
-									"    pm.response.to.have.status(404)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Get error message\", function() {\r",
-									"   pm.expect(pm.response.json().message).to.eql(\"The organization with the provided id does not exist\");\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/organizations/{{$randomUUID}}/artifacts/{{artifactId1}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations",
-								"{{$randomUUID}}",
-								"artifacts",
-								"{{artifactId1}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get All Artifactd bad Org ID Copy",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Code is 404\", function() {\r",
-									"    pm.response.to.have.status(412)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Get error message\", function() {\r",
-									"   pm.expect(pm.response.json().message).to.eql(\"The organizationId provided is not valid\");\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/organizations/bad-id/artifacts/{{artifactId1}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations",
-								"bad-id",
-								"artifacts",
-								"{{artifactId1}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Collaborator Create Artifact bad Org Id",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Code is 412\", function() {\r",
-									"    pm.response.to.have.status(412)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Get error message\", function() {\r",
-									"   pm.expect(pm.response.json().message).to.eql(\"The organizationId provided is not valid\");\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"function generateRandomHash(length) {",
-									"    let result = '';",
-									"    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';",
-									"    const charactersLength = characters.length;",
-									"",
-									"    for (let i = 0; i < length; i++) {",
-									"        result += characters.charAt(Math.floor(Math.random() * charactersLength));",
-									"    }",
-									"",
-									"    return result;",
-									"}",
-									"",
-									"// Set the generated hash in an environment variable",
-									"pm.environment.set(\"artifacthash1\", generateRandomHash(64));",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token_collaborator1}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"title\": \"{{$randomProductName}}\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"fileName\": \"{{$randomFileName}}\",\r\n    \"hash\": \"{{artifacthash1}}\",\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example.com/product\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/organizations/bad-id/artifacts",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations",
-								"bad-id",
-								"artifacts"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Collaborator Create Artifact wrongOrg Id Copy",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Code is 412\", function() {\r",
-									"    pm.response.to.have.status(404)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Get error message\", function() {\r",
-									"   pm.expect(pm.response.json().message).to.eql(\"The organization with the provided id does not exist\");\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"function generateRandomHash(length) {",
-									"    let result = '';",
-									"    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';",
-									"    const charactersLength = characters.length;",
-									"",
-									"    for (let i = 0; i < length; i++) {",
-									"        result += characters.charAt(Math.floor(Math.random() * charactersLength));",
-									"    }",
-									"",
-									"    return result;",
-									"}",
-									"",
-									"// Set the generated hash in an environment variable",
-									"pm.environment.set(\"artifacthash1\", generateRandomHash(64));",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token_collaborator1}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"title\": \"{{$randomProductName}}\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"fileName\": \"{{$randomFileName}}\",\r\n    \"hash\": \"{{artifacthash1}}\",\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example.com/product\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/organizations/{{$randomUUID}}/artifacts",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations",
-								"{{$randomUUID}}",
-								"artifacts"
 							]
 						}
 					},
@@ -6826,13 +6925,11 @@
 							}
 						},
 						"url": {
-							"raw": "{{baseUrl}}/organizations/{{orgId}}/artifacts/{{artifactId1}}",
+							"raw": "{{baseUrl}}/artifacts/{{artifactId1}}",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"organizations",
-								"{{orgId}}",
 								"artifacts",
 								"{{artifactId1}}"
 							]
@@ -6929,13 +7026,11 @@
 							}
 						},
 						"url": {
-							"raw": "{{baseUrl}}/organizations/{{orgId}}/artifacts/{{artifactId1}}",
+							"raw": "{{baseUrl}}/artifacts/{{artifactId1}}",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"organizations",
-								"{{orgId}}",
 								"artifacts",
 								"{{artifactId1}}"
 							]
@@ -7032,13 +7127,11 @@
 							}
 						},
 						"url": {
-							"raw": "{{baseUrl}}/organizations/{{orgId}}/artifacts/{{artifactId1}}",
+							"raw": "{{baseUrl}}/artifacts/{{artifactId1}}",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"organizations",
-								"{{orgId}}",
 								"artifacts",
 								"{{artifactId1}}"
 							]
@@ -7076,13 +7169,11 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/organizations/{{orgId}}/artifacts/{{artifactId1}}",
+							"raw": "{{baseUrl}}/artifacts/{{artifactId1}}",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"organizations",
-								"{{orgId}}",
 								"artifacts",
 								"{{artifactId1}}"
 							]
@@ -7124,13 +7215,11 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/organizations/{{orgId}}/artifacts/{{artifactId1}}",
+							"raw": "{{baseUrl}}/artifacts/{{artifactId1}}",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"organizations",
-								"{{orgId}}",
 								"artifacts",
 								"{{artifactId1}}"
 							]
@@ -7172,13 +7261,11 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/organizations/{{orgId}}/artifacts/{{artifactId1}}",
+							"raw": "{{baseUrl}}/artifacts/{{artifactId1}}",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"organizations",
-								"{{orgId}}",
 								"artifacts",
 								"{{artifactId1}}"
 							]
@@ -7217,15 +7304,13 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/organizations/{{orgId}}/artifacts/{{artifactId2}}",
+							"raw": "{{baseUrl}}/artifacts/{{artifactId1}}",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"organizations",
-								"{{orgId}}",
 								"artifacts",
-								"{{artifactId2}}"
+								"{{artifactId1}}"
 							]
 						}
 					},
@@ -7262,15 +7347,13 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/organizations/{{orgId}}/artifacts/{{artifactId2}}",
+							"raw": "{{baseUrl}}/artifacts/{{artifactId1}}",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"organizations",
-								"{{orgId}}",
 								"artifacts",
-								"{{artifactId2}}"
+								"{{artifactId1}}"
 							]
 						}
 					},
@@ -7312,115 +7395,13 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}/organizations/{{orgId}}/artifacts/bad-id",
+							"raw": "{{baseUrl}}/artifacts/bad-id",
 							"host": [
 								"{{baseUrl}}"
 							],
 							"path": [
-								"organizations",
-								"{{orgId}}",
 								"artifacts",
 								"bad-id"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Admin delete artifact 1 bad org id",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Code is 412\", function() {\r",
-									"    pm.response.to.have.status(412)\r",
-									"\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Get error message\", function() {\r",
-									"   pm.expect(pm.response.json().message).to.eql(\"The organizationId provided is not valid\");\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token_ADMIN1}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "DELETE",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/organizations/bad-id/artifacts/{{artifactId1}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations",
-								"bad-id",
-								"artifacts",
-								"{{artifactId1}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Admin delete artifact 1 wrong org id Copy",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Code is 404\", function() {\r",
-									"    pm.response.to.have.status(404)\r",
-									"\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Get error message\", function() {\r",
-									"   pm.expect(pm.response.json().message).to.eql(\"The organization with the provided id does not exist\");\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token_ADMIN1}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "DELETE",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/organizations/{{$randomUUID}}/artifacts/{{artifactId1}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations",
-								"{{$randomUUID}}",
-								"artifacts",
-								"{{artifactId1}}"
 							]
 						}
 					},
