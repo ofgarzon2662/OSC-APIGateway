@@ -18,7 +18,6 @@ import {
   Matches,
   IsOptional,
 } from 'class-validator';
-import type { OrganizationEntity } from '../organization/organization.entity';   // <- type-only
 import { SubmissionState } from './enums/submission-state.enum';
 
 @Entity()
@@ -134,5 +133,5 @@ export class ArtifactEntity {
     { onDelete: 'CASCADE', nullable: false },
   )
   @IsNotEmpty()
-  organization: OrganizationEntity;
+  organization: any;
 }

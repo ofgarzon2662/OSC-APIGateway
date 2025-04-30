@@ -13,7 +13,6 @@ import {
   PrimaryGeneratedColumn,
   JoinColumn,
 } from 'typeorm';
-import type { OrganizationEntity } from '../organization/organization.entity';   // <- type-only
 import { Role } from '../shared/enums/role.enums';
 
 @Entity()
@@ -55,5 +54,5 @@ export class UserEntity {
     { nullable: true, onDelete: 'CASCADE' },
   )
   @JoinColumn()
-  organization: OrganizationEntity | null;
+  organization: any | null;
 }
