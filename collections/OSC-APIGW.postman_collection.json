@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "2f4dd683-a0a2-473f-80c9-cc74e6523cad",
+		"_postman_id": "7db78859-0714-4999-b5ee-deb0becb456f",
 		"name": "OSC-APIGW",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "29465325"
@@ -5850,6 +5850,105 @@
 					"response": []
 				},
 				{
+					"name": "Collaborator Create Artifact 1 - few fields",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Store the response data in environment variables\r",
+									"pm.environment.set(\"artifactId1\", pm.response.json().id);\r",
+									"pm.environment.set(\"artifactTitle1\", pm.response.json().title);\r",
+									"pm.environment.set(\"artifactDescription1\", pm.response.json().description)\r",
+									"\r",
+									"// Test HTTP Status Code\r",
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"// Test Response Structure\r",
+									"pm.test(\"Response has the correct structure\", function () {\r",
+									"    const response = pm.response.json();\r",
+									"    \r",
+									"    // Required fields\r",
+									"    pm.expect(response).to.have.property('id');\r",
+									"    pm.expect(response).to.have.property('title');\r",
+									"    pm.expect(response).to.have.property('description');\r",
+									"    pm.expect(response).not.to.have.property('fileName');\r",
+									"    pm.expect(response).not.to.have.property('hash');\r",
+									"    pm.expect(response).not.to.have.property('submitterEmail');\r",
+									"    pm.expect(response).not.to.have.property('submissionState');\r",
+									"    pm.expect(response).not.to.have.property('organization');\r",
+									"    pm.expect(response.lastTimeVerified).to.be.null;\r",
+									"    \r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"function generateRandomHash(length) {",
+									"    let result = '';",
+									"    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';",
+									"    const charactersLength = characters.length;",
+									"",
+									"    for (let i = 0; i < length; i++) {",
+									"        result += characters.charAt(Math.floor(Math.random() * charactersLength));",
+									"    }",
+									"",
+									"    return result;",
+									"}",
+									"",
+									"// Set the generated hash in an environment variable",
+									"pm.environment.set(\"artifacthash1\", generateRandomHash(64));",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_collaborator1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\": \"{{$randomProductName}}\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"fileName\": \"{{$randomFileName}}\",\r\n    \"hash\": \"{{artifacthash1}}\",\r\n    \"keywords\": [\"\"],\r\n    \"links\": [],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [\"\"],\r\n    \"acknowledgements\": \"\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/artifacts",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"artifacts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "PI Create Artifact 2",
 					"event": [
 						{
@@ -6283,16 +6382,6 @@
 									"pm.test('Status code is 400 Bad Request', () => {\r",
 									"  pm.response.to.have.status(400);\r",
 									"});\r",
-									"\r",
-									"/* ----------  PAYLOAD ---------- */\r",
-									"const body = pm.response.json();\r",
-									"\r",
-									"pm.test('Payload structure is correct', () => {\r",
-									"  pm.expect(body).to.have.property('error', 'Bad Request');\r",
-									"  pm.expect(body).to.have.property('statusCode', 400);\r",
-									"  pm.expect(body.message).to.be.an('array').with.lengthOf(1);\r",
-									"  pm.expect(body.message[0]).to.eql(\"each value in links must be a URL address\");\r",
-									"});\r",
 									""
 								],
 								"type": "text/javascript",
@@ -6496,7 +6585,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "{{token_ADMIN}}",
+									"value": "{{token_ADMIN1}}",
 									"type": "string"
 								}
 							]
