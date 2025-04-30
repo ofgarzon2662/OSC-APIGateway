@@ -129,8 +129,8 @@ export class ArtifactEntity {
   /* --------------- Relationship --------------- */
 
   @ManyToOne(
-    () => require('../organization/organization.entity').OrganizationEntity, // runtime import
-    (org: OrganizationEntity) => org.artifacts,
+    () => require('../organization/organization.entity').OrganizationEntity,
+    (org: any) => org.artifacts,
     { onDelete: 'CASCADE', nullable: false },
   )
   @IsNotEmpty()

@@ -1,6 +1,7 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import type { UserEntity }      from '../user/user.entity';          // <- type-only
-import type { ArtifactEntity }  from '../artifact/artifact.entity';  // <- type-only
+// We need these type imports for TypeScript type checking
+import type { UserEntity } from '../user/user.entity';
+import type { ArtifactEntity } from '../artifact/artifact.entity';
 
 @Entity()
 export class OrganizationEntity {
@@ -16,7 +17,7 @@ export class OrganizationEntity {
   /* ---------- relación con usuarios ---------- */
   @OneToMany(
     () => require('../user/user.entity').UserEntity,
-    (user: UserEntity) => user.organization,
+    (user: any) => user.organization,
     { cascade: true, onDelete: 'CASCADE' },
   )
   users: UserEntity[];
@@ -24,7 +25,7 @@ export class OrganizationEntity {
   /* ---------- relación con artefactos ---------- */
   @OneToMany(
     () => require('../artifact/artifact.entity').ArtifactEntity,
-    (artifact: ArtifactEntity) => artifact.organization,
+    (artifact: any) => artifact.organization,
     { cascade: true, onDelete: 'CASCADE' },
   )
   artifacts: ArtifactEntity[];

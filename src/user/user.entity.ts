@@ -51,7 +51,7 @@ export class UserEntity {
   @ManyToOne(
     // usamos require para evitar import estático
     () => require('../organization/organization.entity').OrganizationEntity,
-    (org: OrganizationEntity) => org.users,
+    (org: any) => org.users,
     { nullable: true, onDelete: 'CASCADE' },
   )
   @JoinColumn()
