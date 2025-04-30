@@ -1141,7 +1141,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "{{token_COLLABORATOR2}}",
+									"value": "",
 									"type": "string"
 								}
 							]
@@ -1185,7 +1185,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "{{token_COLLABORATOR2}}",
+									"value": "",
 									"type": "string"
 								}
 							]
