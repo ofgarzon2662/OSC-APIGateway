@@ -18,7 +18,7 @@ export class CreateArtifactDto {
   keywords: string[];
 
   @IsArray()
-  @IsUrl({}, { each: true })
+  @IsString({ each: true })
   @IsOptional()
   links: string[];
 

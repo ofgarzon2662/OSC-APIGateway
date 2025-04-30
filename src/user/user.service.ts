@@ -44,13 +44,17 @@ export class UserService {
       'ADMIN1_ROLES',
       'admin',
     );
+    const admin1Email = this.configService.get<string>(
+      'ADMIN1_EMAIL',
+      `${admin1Username}@example.com`,
+    );
     const admin1Roles = admin1RolesStr ? admin1RolesStr.split(',') : ['admin'];
 
     if (admin1Username && admin1Password) {
       this.users.push(new User(1, admin1Username, admin1Password, admin1Roles));
 
       // Save admin1 to database if it doesn't exist
-      await this.saveAdminUserToDb(admin1Username, admin1Password, admin1Roles);
+      await this.saveAdminUserToDb(admin1Username, admin1Password, admin1Roles, admin1Email);
     }
 
     // Load Admin User 2
@@ -60,13 +64,17 @@ export class UserService {
       'ADMIN2_ROLES',
       'admin',
     );
+    const admin2Email = this.configService.get<string>(
+      'ADMIN2_EMAIL',
+      `${admin2Username}@example.com`,
+    );
     const admin2Roles = admin2RolesStr ? admin2RolesStr.split(',') : ['admin'];
 
     if (admin2Username && admin2Password) {
       this.users.push(new User(2, admin2Username, admin2Password, admin2Roles));
 
       // Save admin2 to database if it doesn't exist
-      await this.saveAdminUserToDb(admin2Username, admin2Password, admin2Roles);
+      await this.saveAdminUserToDb(admin2Username, admin2Password, admin2Roles, admin2Email);
     }
 
     // Check if any users were loaded
@@ -78,11 +86,13 @@ No users found in environment variables. Please create a .env file with the foll
 ADMIN1_USERNAME=your_admin1_username
 ADMIN1_PASSWORD=your_admin1_password
 ADMIN1_ROLES=admin
+ADMIN1_EMAIL=your_admin1_email (optional)
 
 # Admin User 2
 ADMIN2_USERNAME=your_admin2_username
 ADMIN2_PASSWORD=your_admin2_password
 ADMIN2_ROLES=admin
+ADMIN2_EMAIL=your_admin2_email (optional)
 
 The application requires at least one admin user to function properly.
 `;
@@ -90,13 +100,13 @@ The application requires at least one admin user to function properly.
     }
   }
 
-  private async saveAdminUserToDb(username: string, password: string, roles: string[]): Promise<void> {
+  private async saveAdminUserToDb(username: string, password: string, roles: string[], email: string = `${username}@example.com`): Promise<void> {
     const hashedPassword = await this.passwordService.hashPassword(password);
     const user = this.userRepository.create({
       username,
       password: hashedPassword,
       name: username,
-      email: `${username}@example.com`,
+      email,
       roles: roles as Role[]
     });
     await this.userRepository.save(user);
