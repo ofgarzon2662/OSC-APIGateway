@@ -1,16 +1,16 @@
 import { Module } from '@nestjs/common';
 import { ArtifactService } from './artifact.service';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { ArtifactController } from './artifact.controller';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { ArtifactEntity } from './artifact.entity';
-import { OrganizationArtifactModule } from '../organization-artifact/organization-artifact.module';
+import { OrganizationEntity } from '../organization/organization.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([ArtifactEntity]), // Solo necesitamos la entidad de artefactos
-    OrganizationArtifactModule, // Importamos el nuevo módulo de relaciones
+    TypeOrmModule.forFeature([ArtifactEntity, OrganizationEntity])
   ],
-  providers: [ArtifactService],
   controllers: [ArtifactController],
+  providers: [ArtifactService],
+  exports: [ArtifactService]
 })
 export class ArtifactModule {}

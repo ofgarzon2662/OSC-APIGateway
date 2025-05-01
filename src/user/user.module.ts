@@ -1,20 +1,20 @@
-import { Module, forwardRef } from '@nestjs/common';
-import { UserService } from './user.service';
+import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from './user.entity';
 import { UserController } from './user.controller';
-import { OrganizationEntity } from '../organization/organization.entity';
-import { OrganizationModule } from '../organization/organization.module';
+import { UserService } from './user.service';
 import { AuthModule } from '../auth/auth.module';
+import { OrganizationModule } from '../organization/organization.module';
+import { OrganizationEntity } from '../organization/organization.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UserEntity, OrganizationEntity]), // Ensure both entities are available
-    OrganizationModule, // Import OrganizationModule if needed
-    forwardRef(() => AuthModule), // Use forwardRef to resolve circular dependency
+    TypeOrmModule.forFeature([UserEntity, OrganizationEntity]),
+    AuthModule,
+    OrganizationModule
   ],
-  providers: [UserService],
   controllers: [UserController],
-  exports: [UserService], // Export UserService to make it available to other modules
+  providers: [UserService],
+  exports: [UserService]
 })
 export class UserModule {}

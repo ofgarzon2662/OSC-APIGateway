@@ -1,5 +1,5 @@
 import { Expose } from 'class-transformer';
-import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class UserGetDto {
   @Expose()
@@ -13,17 +13,11 @@ export class UserGetDto {
   @Expose()
   @IsString()
   @IsNotEmpty()
-  @IsEmail()
-  email: string;
-
-  @Expose()
-  @IsString()
-  @IsNotEmpty()
   username: string;
 
   @Expose()
   roles: string[];
 
   @Expose()
-  organization: any;
+  organizationName: string;
 }

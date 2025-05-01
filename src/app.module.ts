@@ -8,7 +8,6 @@ import { UserEntity } from './user/user.entity';
 import { OrganizationEntity } from './organization/organization.entity';
 import { ArtifactEntity } from './artifact/artifact.entity';
 import { ArtifactModule } from './artifact/artifact.module';
-import { OrganizationArtifactModule } from './organization-artifact/organization-artifact.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 
@@ -20,7 +19,6 @@ import { ConfigModule } from '@nestjs/config';
     UserModule,
     OrganizationModule,
     ArtifactModule,
-    OrganizationArtifactModule,
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: 'localhost',
