@@ -1,160 +1,87 @@
-# Artifact API Documentation
+# Artifact API
 
-This document describes the available endpoints for managing artifacts in the API.
+> **Base URL:** `{{baseUrl}}/artifacts`  
+> Only the _endpoints that modify data_ are protected with **JWT**.  
+> Send the token like this:
+> ```text
+> Authorization: Bearer <jwt>
+> ```
 
-## Base URL
+---
 
-All endpoints are relative to: `{{baseUrl}}/organizations/{organizationId}/artifacts`
+## Common Schemas
 
-## Authentication
+| Name | JSON Shape |
+|------|------------|
+| **ListArtifactDto** | ```json { "id": "uuid", "title": "string", "description": "string", "lastTimeVerified": "2025-04-23T22:37:14.700Z" }``` |
+| **GetArtifactDto** | ```json { "id": "uuid", "title": "string", "description": "string", "keywords": ["kw"], "links": ["https://…"], "dois": ["10.…"], "fundingAgencies": ["agency"], "acknowledgements": "string", "fileName": "file.tif", "hash": "64-hex", "verified": false, "lastTimeVerified": "2025-04-23T22:37:14.700Z", "submissionState": "PENDING", "submitterEmail": "user@mail", "submitterUsername": "uname", "submittedAt": "2025-04-23T22:35:00.000Z", "organization": { "name": "Org" } }``` |
+| **SubmissionState enum** | PENDING, FAILED , SUCCESS |
 
-Most endpoints require JWT authentication. Include the JWT token in the Authorization header:
-```
-Authorization: Bearer <your_jwt_token>
-```
+---
 
 ## Endpoints
 
-### Get All Artifacts
-- **Method**: GET
-- **URL**: `/`
-- **Auth Required**: No
-- **Roles Required**: None
-- **Parameters**:
-  - `organizationId`: UUID of the organization
-- **Response**: 
-  ```json
-  [
-    {
-      "id": "uuid",
-      "title": "string",
-      "description": "string",
-      "lastTimeVerified": "date"
-    }
-  ]
-  ```
-- **Error Responses**:
-  - 404: "Organization not found"
-  - 412: "The organizationId provided is not valid"
+| Action | Method · Path | Auth | Role(s) | Body / Params | Success | Business-Error Codes* |
+|--------|---------------|------|---------|---------------|---------|-----------------------|
+| **Create artifact** | `POST /` | ✔ | `PI`, `COLLABORATOR` | **CreateArtifactDto** (see rules) | **201** → **ListArtifactDto** | **412** duplicate title • **400** validation |
+| **List artifacts** | `GET /` | ✖ | — | — | **200** → `ListArtifactDto[]` | **404** no organization |
+| **Get by ID** | `GET /:id` | ✖ | — | `id` (UUID) | **200** → **GetArtifactDto** | **404** id not found |
+| **Update** | `PUT /:id` | ✔ | `SUBMITTER_LISTENER` | **UpdateArtifactDto** | **200** → full `ArtifactEntity` | **400** forbidden fields |
+| **Delete** | `DELETE /:id` | ✔ | `ADMIN` | — | **204** No Content | **404** id not found |
 
-### Get One Artifact
-- **Method**: GET
-- **URL**: `/:artifactId`
-- **Auth Required**: No
-- **Roles Required**: None
-- **Parameters**: 
-  - `organizationId`: UUID of the organization
-  - `artifactId`: UUID of the artifact
-- **Response**: 
-  ```json
-  {
-    "id": "uuid",
-    "title": "string",
-    "description": "string",
-    "keywords": ["string"],
-    "links": ["string"],
-    "dois": ["string"],
-    "fundingAgencies": ["string"],
-    "acknowledgements": "string",
-    "fileName": "string",
-    "hash": "string",
-    "verified": boolean,
-    "lastTimeVerified": "date",
-    "submissionState": "PENDING|FAILED|SUCCESS",
-    "submitterEmail": "string",
-    "submittedAt": "date",
-    "organization": {
-      "name": "string"
-    }
-  }
-  ```
-- **Error Responses**:
-  - 404: "Organization not found"
-  - 404: "Artifact not found"
-  - 412: "The organizationId provided is not valid"
-  - 412: "The artifactId provided is not valid"
+\* Errors are returned as:
 
-### Create Artifact
-- **Method**: POST
-- **URL**: `/`
-- **Auth Required**: Yes
-- **Roles Required**: None
-- **Parameters**:
-  - `organizationId`: UUID of the organization
-- **Request Body**:
-  ```json
-  {
-    "title": "string (min 3 chars, max 200)",
-    "description": "string (min 50 chars, max 3000)",
-    "keywords": ["string"],
-    "links": ["string (valid URLs)"],
-    "dois": ["string"],
-    "fundingAgencies": ["string"],
-    "acknowledgements": "string (max 3000)",
-    "fileName": "string (min 1 char, max 1000)",
-    "hash": "string",
-    "submittedAt": "date (optional)",
-    "verified": boolean (optional),
-    "lastTimeVerified": "date (optional)",
-    "submissionState": "PENDING|FAILED|SUCCESS (optional)"
-  }
-  ```
-- **Response**: 
-  ```json
-  {
-    "id": "uuid",
-    "title": "string",
-    "description": "string",
-    "lastTimeVerified": "date"
-  }
-  ```
-- **Error Responses**:
-  - 404: "Organization not found"
-  - 412: "The title of the artifact is required and must be at least 3 characters long"
-  - 412: "The description must be at least 50 characters long"
-  - 412: "The keywords array can have at most 1000 characters in total"
-  - 412: "The links array can have at most 2000 characters in total"
-  - 412: "Each link in the links array must be a valid URL"
-  - 412: "An artifact with this title already exists in this organization"
-  - 412: "Invalid submitter email provided"
-  - 412: "The organizationId provided is not valid"
+```json
+{
+  "message": "text describing the problem",
+  "error": "Bad Request | Not Found | Precondition Failed",
+  "statusCode": 400 | 404 | 412
+}
+```
 
-### Update Artifact
-- **Method**: PUT
-- **URL**: `/:artifactId`
-- **Auth Required**: Yes
-- **Roles Required**: submitter_listener
-- **Parameters**: 
-  - `organizationId`: UUID of the organization
-  - `artifactId`: UUID of the artifact
-- **Request Body**:
-  ```json
-  {
-    "verified": boolean (optional),
-    "lastTimeVerified": "date (optional)",
-    "submissionState": "PENDING|FAILED|SUCCESS (optional)",
-    "submittedAt": "date (optional)"
-  }
-  ```
-- **Response**: Updated artifact object
-- **Error Responses**:
-  - 404: "Organization not found"
-  - 404: "Artifact not found"
-  - 412: "Cannot update title, contributor, or submittedAt fields"
-  - 412: "The organizationId provided is not valid"
-  - 412: "The artifactId provided is not valid"
+---
 
-### Delete Artifact
-- **Method**: DELETE
-- **URL**: `/:artifactId`
-- **Auth Required**: Yes
-- **Roles Required**: admin
-- **Parameters**: 
-  - `organizationId`: UUID of the organization
-  - `artifactId`: UUID of the artifact
-- **Response**: 204 No Content
-- **Error Responses**:
-  - 404: "Organization not found"
-  - 404: "Artifact not found"
-  - 412: "The organizationId provided is not valid"
-  - 412: "The artifactId provided is not valid" 
+## DTO Validation Rules
+
+### CreateArtifactDto
+
+| Field               | Rule / Constraint                                                                          |
+|---------------------|--------------------------------------------------------------------------------------------|
+| `title`             | **required** · 3 – 200 chars                                                               |
+| `description`       | **required** · 50 – 3000 chars                                                             |
+| `keywords[]`        | optional · array of strings · **total** concatenated length ≤ 1000 chars                   |
+| `links[]`           | optional · array of **valid URLs** · total concatenated length ≤ 2000 chars                |
+| `dois[]`            | optional · each matches `^10\.\d{4,9}/[-_.;()/:]\\w+$`                                     |
+| `fundingAgencies[]` | optional · array of strings                                                                |
+| `acknowledgements`  | optional · ≤ 3000 chars                                                                    |
+| `fileName`          | **required** · 1 – 1000 chars                                                              |
+| `hash`              | **required** · 64-hex SHA-256 string                                                       |
+| `submittedAt`       | optional · ISO-8601 date                                                                   |
+| `verified`          | optional · boolean                                                                         |
+| `lastTimeVerified`  | optional · ISO-8601 date                                                                   |
+| `submissionState`   | optional · enum `PENDING | FAILED | SUCCESS`                                               |
+
+---
+
+### UpdateArtifactDto  
+Only the following fields are **allowed** when updating; any other keys trigger **400 Bad Request**.
+
+| Field               | Type / Constraint      |
+|---------------------|------------------------|
+| `verified`          | boolean                |
+| `lastTimeVerified`  | ISO-8601 date          |
+| `submissionState`   | enum `SubmissionState` |
+| `submittedAt`       | ISO-8601 date          |
+
+---
+
+### Behaviour Notes
+
+* The system holds **exactly one organization**. Every artifact operation first checks that this single org exists.
+* `title` must be **unique inside the organization**. Attempting to reuse a title returns **412 PRECONDITION_FAILED**.
+* Deleting an organization cascades (`ON DELETE CASCADE`) and removes its artifacts automatically.
+* Passwords are never exposed; the `submitter*` fields only include username & email.
+
+---
+
+_Last updated: 2025-04-24_
