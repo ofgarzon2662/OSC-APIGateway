@@ -1,117 +1,67 @@
-# Organization API Documentation
+# Organization API
 
-This document describes the available endpoints for managing organizations in the API.
+> **Base URL:** `{{baseUrl}}/organizations`  
+> All routes require JWT authentication.  
+> Send the token in the header:
+>
+> ```text
+> Authorization: Bearer <jwt>
+> ```
 
-## Base URL
+---
 
-All endpoints are relative to: `{{baseUrl}}/organizations`
+## Common Schemas
 
-## Authentication
+| Name | JSON Shape |
+|------|------------|
+| **UserForOrganizationDto** | ```json { "id": "uuid", "name": "string", "username": "string", "email": "string", "roles": ["pi"] }``` |
+| **Artifact (minimal)** | ```json { "id": "uuid", "title": "string", "description": "string", "lastTimeVerified": "2025-04-23T22:37:14.700Z" }``` |
+| **OrganizationResponseDto** | ```json { "id": "uuid", "name": "string", "description": "string", "users": [UserForOrganizationDto …], "artifacts": [Artifact …] }``` |
 
-Most endpoints require JWT authentication. Include the JWT token in the Authorization header:
-```
-Authorization: Bearer <your_jwt_token>
-```
+---
 
 ## Endpoints
 
-### Get All Organizations
-- **Method**: GET
-- **URL**: `/`
-- **Auth Required**: Yes
-- **Roles Required**: None
-- **Description**: Retrieves all organizations (note: system is designed to have only one organization)
-- **Response**: 
-  ```json
-  [
-    {
-      "id": "uuid",
-      "name": "string",
-      "description": "string",
-      "users": [...],
-      "artifacts": [...]
-    }
-  ]
-  ```
-- **Error Responses**:
-  - 404: "There are no organizations in the database"
-  - 412: "There is more than one organization in the database. This should not happen"
+| Action | Method · Path | Auth | Role(s) | Body / Params | Success Response | Business-Error Codes* |
+|--------|---------------|------|---------|---------------|------------------|-----------------------|
+| List organization (only one should exist) | `GET /` | ✔ | — | — | **200** → `OrganizationResponseDto[]` (size 1) | **404** no orgs · **412** >1 org |
+| Get by ID | `GET /:organizationId` | ✔ | — | `organizationId` (UUID) | **200** → `OrganizationResponseDto` | **404** id not found |
+| Create | `POST /` | ✔ | `ADMIN` | ```json { "name":"min 4", "description":"20-250" }``` | **201** → `OrganizationResponseDto` | **412** already exists · **400** validation |
+| Update | `PUT /:organizationId` | ✔ | `ADMIN` | same as **Create** | **200** → `OrganizationResponseDto` | **404** id not found · **400** validation |
+| Delete by ID | `DELETE /:organizationId` | ✔ | `ADMIN` | — | **204** No Content | **404** id not found |
+| Delete ALL | `DELETE /` | ✔ | `ADMIN` | — | **204** No Content | **404** no orgs |
 
-### Get One Organization
-- **Method**: GET
-- **URL**: `/:organizationId`
-- **Auth Required**: Yes
-- **Roles Required**: None
-- **Parameters**: 
-  - `organizationId`: UUID of the organization
-- **Response**: 
-  ```json
-  {
-    "id": "uuid",
-    "name": "string",
-    "description": "string",
-    "users": [...],
-    "artifacts": [...]
-  }
-  ```
-- **Error Responses**:
-  - 404: "The organization with the provided id does not exist"
+\* Business errors are returned as:
 
-### Create Organization
-- **Method**: POST
-- **URL**: `/`
-- **Auth Required**: Yes
-- **Roles Required**: ADMIN
-- **Request Body**:
-  ```json
-  {
-    "name": "string (min 4 chars)",
-    "description": "string (20-250 chars)"
-  }
-  ```
-- **Response**: Created organization object
-- **Error Responses**:
-  - 412: "There is already an organization in the database. There can only be one."
-  - 400: "The name of the organization is required and must have at least 4 characters"
-  - 400: "The description is required and must be at least 20 characters long"
-  - 400: "The description cannot be longer than 250 characters"
+```json
+{
+  "message": "text describing the problem",
+  "error": "Bad Request | Not Found | Precondition Failed",
+  "statusCode": 400 | 404 | 412
+}
 
-### Update Organization
-- **Method**: PUT
-- **URL**: `/:organizationId`
-- **Auth Required**: Yes
-- **Roles Required**: ADMIN
-- **Parameters**: 
-  - `organizationId`: UUID of the organization
-- **Request Body**:
-  ```json
-  {
-    "name": "string (min 4 chars)",
-    "description": "string (20-250 chars)"
-  }
-  ```
-- **Response**: Updated organization object
-- **Error Responses**:
-  - 404: "The organization with the provided id does not exist"
-  - 400: "The description cannot be longer than 250 characters"
-  - 400: "The description is required and must be at least 20 characters long"
+```
 
-### Delete Organization
-- **Method**: DELETE
-- **URL**: `/:organizationId`
-- **Auth Required**: Yes
-- **Roles Required**: ADMIN
-- **Parameters**: 
-  - `organizationId`: UUID of the organization
-- **Response**: 204 No Content
-- **Error Responses**:
-  - 404: "The organization with the provided id does not exist"
 
-### Delete All Organizations
-- **Method**: DELETE
-- **URL**: `/`
-- **Auth Required**: Yes
-- **Roles Required**: ADMIN
-- **Response**: 204 No Content
-- **Error Responses**:
-  - 404: "There are no organizations in the database" 
+### Validation Rules (Create / Update)
+
+| Field | Rule |
+|-------|------|
+| `name` | **required** · minimum **4** characters |
+| `description` | **required** · between **20 – 250** characters |
+
+---
+
+### Behaviour Notes
+
+* The system is designed to hold **exactly one organization**.  
+  Creating a second one returns **412 PRECONDITION_FAILED**.
+* Deleting an organization cascades to **users** and **artifacts**  
+  thanks to `ON DELETE CASCADE` in the DB schema.
+* Endpoints never expose sensitive data such as user passwords;  
+  returned `users` objects only include non-sensitive fields.
+
+---
+
+_Last updated: 2025-04-24_
+

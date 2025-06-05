@@ -69,15 +69,18 @@ export class TokenBlacklistService implements OnModuleInit {
     
     this.blacklistedTokens.forEach(token => {
       try {
-        const decoded = this.jwtService.decode(token) as DecodedToken;
-        if (decoded?.exp < now) {
+        const decoded = this.jwtService.decode(token);
+        // Remove token if it's expired or couldn't be decoded (null)
+        if (decoded === null || decoded?.exp < now) {
           this.blacklistedTokens.delete(token);
           removedCount++;
         }
       } catch (error) {
-        // If token can't be decoded, remove it from blacklist
+        // If token can't be decoded (throws error), remove it from blacklist
         this.blacklistedTokens.delete(token);
         removedCount++;
+        // Log the error but don't rethrow - we just want to clean up the token
+        console.error('Error decoding token during cleanup:', error instanceof Error ? error.message : 'Unknown error');
       }
     });
     
