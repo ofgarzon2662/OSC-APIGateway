@@ -1,0 +1,94 @@
+version: '3.8'
+
+networks:
+  # Internal network for API Gateway <-> Database
+  api-db-network:
+    driver: bridge
+    internal: true
+    name: osc-api-db-network
+  
+  # External network for API Gateway <-> Services communication  
+  api-services-network:
+    driver: bridge
+    name: osc-api-services-network
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: osc-postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    ports:
+      - "${DB_PORT}:5432"
+    networks:
+      - api-db-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # API Gateway
+  api-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: osc-api-gateway
+    environment:
+      # Database (using your variables)
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      
+      # JWT (using your exact variables)
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
+      
+      # Admin Users (using your exact variables)
+      ADMIN1_USERNAME: ${ADMIN1_USERNAME}
+      ADMIN1_EMAIL: ${ADMIN1_EMAIL}
+      ADMIN1_PASSWORD: ${ADMIN1_PASSWORD}
+      ADMIN1_ROLES: ${ADMIN1_ROLES}
+      ADMIN2_USERNAME: ${ADMIN2_USERNAME}
+      ADMIN2_EMAIL: ${ADMIN2_EMAIL}
+      ADMIN2_PASSWORD: ${ADMIN2_PASSWORD}
+      ADMIN2_ROLES: ${ADMIN2_ROLES}
+      
+      # Submission Listener (using your exact variables)
+      SUBMISSION_LISTENER_API_KEY: ${SUBMISSION_LISTENER_API_KEY}
+      SUBMISSION_LISTENER_SERVICE_ROLE: ${SUBMISSION_LISTENER_SERVICE_ROLE}
+      SUBMISSION_LISTENER_USERNAME: ${SUBMISSION_LISTENER_USERNAME}
+      
+      # App Config
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    networks:
+      - api-db-network      # Access to database
+      - api-services-network # Access to other services
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health', (res) => process.exit(res.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    name: osc-postgres-data 
