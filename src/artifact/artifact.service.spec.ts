@@ -265,6 +265,47 @@ describe('ArtifactService', () => {
         'No organization exists in the system',
       );
     });
+
+    // Additional CREATE tests for missing validation coverage
+    describe('create - additional validation coverage', () => {
+      it('should throw an exception for keywords array exceeding 1000 characters', async () => {
+        const artifactDto = generateRandomArtifact();
+        // Create keywords that total over 1000 characters
+        artifactDto.keywords = [
+          'a'.repeat(500), 
+          'b'.repeat(501)  // Total: 1001 characters
+        ];
+        
+        await expect(service.create(artifactDto, testSubmitter)).rejects.toHaveProperty(
+          'message',
+          'The keywords array can have at most 1000 characters in total',
+        );
+      });
+
+      it('should throw an exception for links array exceeding 2000 characters', async () => {
+        const artifactDto = generateRandomArtifact();
+        // Create links that total over 2000 characters
+        artifactDto.links = [
+          'https://example.com/' + 'a'.repeat(1000),  
+          'https://test.com/' + 'b'.repeat(1000)  // Total: over 2000 characters
+        ];
+        
+        await expect(service.create(artifactDto, testSubmitter)).rejects.toHaveProperty(
+          'message',
+          'The links array can have at most 2000 characters in total',
+        );
+      });
+
+      it('should throw an exception for invalid URL in links array', async () => {
+        const artifactDto = generateRandomArtifact();
+        artifactDto.links = ['https://valid.com', 'invalid-url', 'https://another-valid.com'];
+        
+        await expect(service.create(artifactDto, testSubmitter)).rejects.toHaveProperty(
+          'message',
+          'Each link in the links array must be a valid URL',
+        );
+      });
+    });
   });
 
   // UPDATE TESTS
@@ -317,6 +358,129 @@ describe('ArtifactService', () => {
         'No organization exists in the system',
       );
     });
+
+    // Additional UPDATE tests for missing validation coverage
+    describe('update - additional validation coverage', () => {
+      it('should throw an exception when trying to update contributor field', async () => {
+        const storedArtifact = artifactList[0];
+        const updateDto = {
+          contributor: 'New Contributor'
+        } as any;
+        
+        await expect(service.update(storedArtifact.id, updateDto)).rejects.toHaveProperty(
+          'message',
+          'Cannot update title, contributor, or submittedAt fields',
+        );
+      });
+
+      it('should throw an exception when trying to update description field', async () => {
+        const storedArtifact = artifactList[0];
+        const updateDto = {
+          description: 'New Description'
+        } as any;
+        
+        await expect(service.update(storedArtifact.id, updateDto)).rejects.toHaveProperty(
+          'message',
+          'Cannot update title, contributor, or submittedAt fields',
+        );
+      });
+
+      it('should throw an exception when trying to update keywords field', async () => {
+        const storedArtifact = artifactList[0];
+        const updateDto = {
+          keywords: ['new', 'keywords']
+        } as any;
+        
+        await expect(service.update(storedArtifact.id, updateDto)).rejects.toHaveProperty(
+          'message',
+          'Cannot update title, contributor, or submittedAt fields',
+        );
+      });
+
+      it('should throw an exception when trying to update links field', async () => {
+        const storedArtifact = artifactList[0];
+        const updateDto = {
+          links: ['https://newlink.com']
+        } as any;
+        
+        await expect(service.update(storedArtifact.id, updateDto)).rejects.toHaveProperty(
+          'message',
+          'Cannot update title, contributor, or submittedAt fields',
+        );
+      });
+
+      it('should throw an exception when trying to update dois field', async () => {
+        const storedArtifact = artifactList[0];
+        const updateDto = {
+          dois: ['10.1000/182']
+        } as any;
+        
+        await expect(service.update(storedArtifact.id, updateDto)).rejects.toHaveProperty(
+          'message',
+          'Cannot update title, contributor, or submittedAt fields',
+        );
+      });
+
+      it('should throw an exception when trying to update fundingAgencies field', async () => {
+        const storedArtifact = artifactList[0];
+        const updateDto = {
+          fundingAgencies: ['New Agency']
+        } as any;
+        
+        await expect(service.update(storedArtifact.id, updateDto)).rejects.toHaveProperty(
+          'message',
+          'Cannot update title, contributor, or submittedAt fields',
+        );
+      });
+
+      it('should throw an exception when trying to update acknowledgements field', async () => {
+        const storedArtifact = artifactList[0];
+        const updateDto = {
+          acknowledgements: 'New acknowledgements'
+        } as any;
+        
+        await expect(service.update(storedArtifact.id, updateDto)).rejects.toHaveProperty(
+          'message',
+          'Cannot update title, contributor, or submittedAt fields',
+        );
+      });
+
+      it('should throw an exception when trying to update fileName field', async () => {
+        const storedArtifact = artifactList[0];
+        const updateDto = {
+          fileName: 'newfile.txt'
+        } as any;
+        
+        await expect(service.update(storedArtifact.id, updateDto)).rejects.toHaveProperty(
+          'message',
+          'Cannot update title, contributor, or submittedAt fields',
+        );
+      });
+
+      it('should throw an exception when trying to update hash field', async () => {
+        const storedArtifact = artifactList[0];
+        const updateDto = {
+          hash: 'newhash123'
+        } as any;
+        
+        await expect(service.update(storedArtifact.id, updateDto)).rejects.toHaveProperty(
+          'message',
+          'Cannot update title, contributor, or submittedAt fields',
+        );
+      });
+
+      it('should throw an exception when trying to update organization field', async () => {
+        const storedArtifact = artifactList[0];
+        const updateDto = {
+          organization: { id: faker.string.uuid() }
+        } as any;
+        
+        await expect(service.update(storedArtifact.id, updateDto)).rejects.toHaveProperty(
+          'message',
+          'Cannot update title, contributor, or submittedAt fields',
+        );
+      });
+    });
   });
 
   // DELETE TESTS
@@ -356,6 +520,111 @@ describe('ArtifactService', () => {
         'message',
         'No organization exists in the system',
       );
+    });
+  });
+
+  // Additional UPDATE STATUS tests for lines 348-378 coverage
+  describe('updateStatus - additional coverage for conditional updates', () => {
+    it('should update only submissionState when other fields are undefined', async () => {
+      const storedArtifact = artifactList[0];
+      const updateStatusDto: UpdateArtifactDto = {
+        submissionState: SubmissionState.SUCCESS,
+        // All other fields are undefined
+      };
+      
+      const originalSubmittedAt = storedArtifact.submittedAt;
+      const originalBlockchainTxId = storedArtifact.blockchainTxId;
+      const originalPeerId = storedArtifact.peerId;
+      const originalVerified = storedArtifact.verified;
+      const originalLastTimeVerified = storedArtifact.lastTimeVerified;
+      
+      const updatedArtifact = await service.updateStatus(storedArtifact.id, updateStatusDto);
+      
+      expect(updatedArtifact.submissionState).toBe(SubmissionState.SUCCESS);
+      // Other fields should remain unchanged
+      expect(updatedArtifact.submittedAt).toEqual(originalSubmittedAt);
+      expect(updatedArtifact.blockchainTxId).toEqual(originalBlockchainTxId);
+      expect(updatedArtifact.peerId).toEqual(originalPeerId);
+      expect(updatedArtifact.verified).toBe(originalVerified);
+      expect(updatedArtifact.lastTimeVerified).toEqual(originalLastTimeVerified);
+    });
+
+    it('should update only submittedAt when other fields are undefined', async () => {
+      const storedArtifact = artifactList[0];
+      const newDate = '2023-12-07T15:30:00.000Z';
+      const updateStatusDto: UpdateArtifactDto = {
+        submittedAt: newDate,
+        // All other fields are undefined
+      };
+      
+      const updatedArtifact = await service.updateStatus(storedArtifact.id, updateStatusDto);
+      
+      expect(updatedArtifact.submittedAt).toEqual(new Date(newDate));
+      // submissionState should remain unchanged
+      expect(updatedArtifact.submissionState).toBe(storedArtifact.submissionState);
+    });
+
+    it('should update only blockchainTxId when provided', async () => {
+      const storedArtifact = artifactList[0];
+      const txId = '0x1234567890abcdef';
+      const updateStatusDto: UpdateArtifactDto = {
+        blockchainTxId: txId,
+      };
+      
+      const updatedArtifact = await service.updateStatus(storedArtifact.id, updateStatusDto);
+      
+      expect(updatedArtifact.blockchainTxId).toBe(txId);
+    });
+
+    it('should update only peerId when provided', async () => {
+      const storedArtifact = artifactList[0];
+      const peerId = '12D3KooWExample';
+      const updateStatusDto: UpdateArtifactDto = {
+        peerId: peerId,
+      };
+      
+      const updatedArtifact = await service.updateStatus(storedArtifact.id, updateStatusDto);
+      
+      expect(updatedArtifact.peerId).toBe(peerId);
+    });
+
+    it('should update verified field when set to false', async () => {
+      const storedArtifact = artifactList[0];
+      const updateStatusDto: UpdateArtifactDto = {
+        verified: false,
+      };
+      
+      const updatedArtifact = await service.updateStatus(storedArtifact.id, updateStatusDto);
+      
+      expect(updatedArtifact.verified).toBe(false);
+    });
+
+    it('should update lastTimeVerified when provided', async () => {
+      const storedArtifact = artifactList[0];
+      const verificationDate = new Date('2023-12-07T15:30:00.000Z');
+      const updateStatusDto: UpdateArtifactDto = {
+        lastTimeVerified: verificationDate,
+      };
+      
+      const updatedArtifact = await service.updateStatus(storedArtifact.id, updateStatusDto);
+      
+      expect(updatedArtifact.lastTimeVerified).toEqual(verificationDate);
+    });
+
+    it('should not update fields when they are null or empty string', async () => {
+      const storedArtifact = artifactList[0];
+      const updateStatusDto: UpdateArtifactDto = {
+        blockchainTxId: '', // Empty string should not update
+        peerId: null as any, // Null should not update
+        submissionState: SubmissionState.SUCCESS,
+      };
+      
+      const updatedArtifact = await service.updateStatus(storedArtifact.id, updateStatusDto);
+      
+      expect(updatedArtifact.submissionState).toBe(SubmissionState.SUCCESS);
+      // blockchainTxId and peerId should remain unchanged since they were empty/null
+      expect(updatedArtifact.blockchainTxId).toEqual(storedArtifact.blockchainTxId);
+      expect(updatedArtifact.peerId).toEqual(storedArtifact.peerId);
     });
   });
 });

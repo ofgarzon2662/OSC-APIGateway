@@ -13,6 +13,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from '../user/user.entity';
 import { TokenBlacklistService } from './token-blacklist.service';
 import { SubmitterListenerAuthService } from './submitter-listener-auth.service';
+import { ApiKeyAuthGuard } from './guards/api-key-auth/api-key-auth.guard';
 
 @Module({
    imports: [
@@ -30,7 +31,7 @@ import { SubmitterListenerAuthService } from './submitter-listener-auth.service'
          inject: [ConfigService],
        }),
      ],
-   providers: [AuthService, JwtService, LocalStrategy, JwtStrategy, PasswordService, TokenBlacklistService, SubmitterListenerAuthService],
-   exports: [AuthService, PasswordService, TokenBlacklistService, SubmitterListenerAuthService]
+   providers: [AuthService, JwtService, LocalStrategy, JwtStrategy, PasswordService, TokenBlacklistService, SubmitterListenerAuthService, ApiKeyAuthGuard],
+   exports: [AuthService, PasswordService, TokenBlacklistService, SubmitterListenerAuthService, ApiKeyAuthGuard]
 })
 export class AuthModule {}

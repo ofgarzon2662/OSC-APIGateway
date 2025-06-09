@@ -9,6 +9,7 @@ import {
 import validator from 'validator';
 import { CreateArtifactDto } from './dto/create-artifact.dto';
 import { UpdateArtifactDto } from './dto/update-artifact.dto';
+
 import { GetArtifactDto } from './dto/get-artifact.dto';
 import { ListArtifactDto } from './dto/list-artifact.dto';
 import { OrganizationEntity } from '../organization/organization.entity';
@@ -193,6 +194,25 @@ export class ArtifactService {
     }
   }
 
+  /**
+   * Validates the update artifact DTO for status updates
+   * @param updateStatusDto The DTO to validate
+   * @throws BusinessLogicException if validation fails
+   */
+  private validateUpdateStatusDto(updateStatusDto: UpdateArtifactDto): void {
+    const allowedFields = ['submissionState', 'submittedAt', 'blockchainTxId', 'peerId', 'verified', 'lastTimeVerified'];
+    const receivedFields = Object.keys(updateStatusDto);
+    
+    const forbiddenFields = receivedFields.filter(field => !allowedFields.includes(field));
+    
+    if (forbiddenFields.length > 0) {
+      throw new BusinessLogicException(
+        `Cannot update the following fields in status update: ${forbiddenFields.join(', ')}. Only allowed: ${allowedFields.join(', ')}`,
+        BusinessError.BAD_REQUEST,
+      );
+    }
+  }
+
   // Get All Artifacts - Return minimal fields
   async findAll(): Promise<ListArtifactDto[]> {
     // Find the organization
@@ -322,5 +342,39 @@ export class ArtifactService {
       .delete()
       .where("id = :id", { id: artifact.id })
       .execute();
+  }
+
+  async updateStatus(id: string, updateStatusDto: UpdateArtifactDto): Promise<ArtifactEntity> {
+    const artifact = await this.findArtifactOrThrow(id);
+    
+    // Validate that only allowed fields are being updated
+    this.validateUpdateStatusDto(updateStatusDto);
+    
+    // Update the artifact with the new status information
+    if (updateStatusDto.submissionState !== undefined) {
+      artifact.submissionState = updateStatusDto.submissionState;
+    }
+    
+    if (updateStatusDto.submittedAt !== undefined) {
+      artifact.submittedAt = new Date(updateStatusDto.submittedAt);
+    }
+    
+    if (updateStatusDto.blockchainTxId) {
+      artifact.blockchainTxId = updateStatusDto.blockchainTxId;
+    }
+    
+    if (updateStatusDto.peerId) {
+      artifact.peerId = updateStatusDto.peerId;
+    }
+
+    if (updateStatusDto.verified !== undefined) {
+      artifact.verified = updateStatusDto.verified;
+    }
+
+    if (updateStatusDto.lastTimeVerified !== undefined) {
+      artifact.lastTimeVerified = updateStatusDto.lastTimeVerified;
+    }
+
+    return await this.artifactRepository.save(artifact);
   }
 }
