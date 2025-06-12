@@ -14,6 +14,7 @@ import { GetArtifactDto } from './dto/get-artifact.dto';
 import { ListArtifactDto } from './dto/list-artifact.dto';
 import { OrganizationEntity } from '../organization/organization.entity';
 import { SubmissionState } from './enums/submission-state.enum';
+import { RabbitMQService, ArtifactCreatedEvent } from '../messaging/rabbitmq.service';
 
 // Definir una interfaz para la información del creador del artefacto
 interface SubmitterInfo {
@@ -28,6 +29,7 @@ export class ArtifactService {
     private readonly artifactRepository: Repository<ArtifactEntity>,
     @InjectRepository(OrganizationEntity)
     private readonly organizationRepository: Repository<OrganizationEntity>,
+    private readonly rabbitMQService: RabbitMQService,
   ) {}
 
   // Private helper methods to reduce code duplication
@@ -303,6 +305,34 @@ export class ArtifactService {
     });
     
     const savedArtifact = await this.artifactRepository.save(artifact);
+    
+    // Publish artifact.created event to RabbitMQ
+    try {
+      const artifactCreatedEvent: ArtifactCreatedEvent = {
+        artifactId: savedArtifact.id,
+        title: savedArtifact.title,
+        description: savedArtifact.description,
+        keywords: savedArtifact.keywords,
+        links: savedArtifact.links,
+        dois: savedArtifact.dois,
+        fundingAgencies: savedArtifact.fundingAgencies,
+        acknowledgements: savedArtifact.acknowledgements,
+        fileName: savedArtifact.fileName,
+        hash: savedArtifact.hash,
+        submitterEmail: savedArtifact.submitterEmail,
+        submitterUsername: savedArtifact.submitterUsername,
+        submittedAt: savedArtifact.submittedAt?.toISOString() || new Date().toISOString(),
+        organizationName: organization.name,
+        version: 'v1'
+      };
+      
+      await this.rabbitMQService.publishArtifactCreated(artifactCreatedEvent);
+    } catch (error) {
+      // Log the error but don't fail the artifact creation
+      // The artifact was successfully saved to the database
+      console.error('Failed to publish artifact.created event:', error);
+      // You might want to implement a retry mechanism or dead letter queue here
+    }
     
     // Return only the minimal fields
     return {
