@@ -13,6 +13,27 @@ networks:
     name: osc-api-services-network
 
 services:
+  # RabbitMQ Message Broker
+  rabbitmq:
+    build:
+      context: ./broker
+      dockerfile: Dockerfile
+    container_name: osc-artifact-rabbitmq
+    ports:
+      - "${RABBITMQ_PORT}:5672"  # AMQP port
+      - "15672:15672"  # Management UI port
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASS}
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - api-services-network
+    restart: unless-stopped
+
   # PostgreSQL Database
   postgres:
     image: postgres:15-alpine
@@ -83,16 +104,56 @@ services:
       - "3000:3000"
     networks:
       - api-db-network      # Access to database
-      - api-services-network # Access to other services
+      - api-services-network # Access to RabbitMQ and other services
     depends_on:
       postgres:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     healthcheck:
-      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health', (res) => process.exit(res.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/api/v1/health', (res) => process.exit(res.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
+    restart: unless-stopped
+
+  # Submission Listener
+  submission-listener:
+    build:
+      context: ./submission_listener
+      dockerfile: Dockerfile
+    container_name: osc-submission-listener
+    environment:
+      # RabbitMQ Configuration
+      RABBITMQ_HOST: ${RABBITMQ_HOST}
+      RABBITMQ_PORT: ${RABBITMQ_PORT}
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASS: ${RABBITMQ_PASS}
+      RABBITMQ_QUEUE_SUBMITTED: ${RABBITMQ_QUEUE_SUBMITTED}
+      
+      # API Gateway Configuration
+      API_GATEWAY_URL: ${API_GATEWAY_URL}
+      API_KEY: ${API_KEY}
+      SERVICE_ROLE: ${SERVICE_ROLE}
+      
+      # Environment
+      ENVIRONMENT: docker
+    ports:
+      - "${HEALTH_CHECK_PORT}:8000"  # Health check port
+    networks:
+      - api-services-network  # Access to API Gateway and RabbitMQ
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      api-gateway:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
     restart: unless-stopped
 
 volumes:
