@@ -10,6 +10,7 @@ import { SubmissionState } from './enums/submission-state.enum';
 import { UpdateArtifactDto } from './dto/update-artifact.dto';
 import { OrganizationEntity } from '../organization/organization.entity';
 import { CreateArtifactDto } from './dto/create-artifact.dto';
+import { RabbitMQService } from '../messaging/rabbitmq.service';
 
 describe('ArtifactService', () => {
   let service: ArtifactService;
@@ -17,6 +18,7 @@ describe('ArtifactService', () => {
   let organizationRepository: Repository<OrganizationEntity>;
   let artifactList: ArtifactEntity[];
   let organization: OrganizationEntity;
+  let rabbitMQService: RabbitMQService;
   
   // Test submitter info
   const testSubmitter = {
@@ -50,10 +52,19 @@ describe('ArtifactService', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [...TypeOrmTestingConfig()],
-      providers: [ArtifactService],
+      providers: [
+        ArtifactService,
+        {
+          provide: RabbitMQService,
+          useValue: {
+            publishArtifactCreated: jest.fn(),
+          },
+        },
+      ],
     }).compile();
 
     service = module.get<ArtifactService>(ArtifactService);
+    rabbitMQService = module.get<RabbitMQService>(RabbitMQService);
     artifactRepository = module.get<Repository<ArtifactEntity>>(
       getRepositoryToken(ArtifactEntity),
     );
