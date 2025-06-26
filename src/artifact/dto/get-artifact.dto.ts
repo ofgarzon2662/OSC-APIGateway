@@ -64,6 +64,18 @@ export class GetArtifactDto {
   @IsOptional()
   submittedAt: Date;
 
+  @IsString()
+  @IsOptional()
+  blockchainTxId?: string;
+
+  @IsString()
+  @IsOptional()
+  peerId?: string;
+
+  @IsString()
+  @IsOptional()
+  submissionError?: string;
+
   @IsOptional()
   organization: GetOrganizationDto;
 

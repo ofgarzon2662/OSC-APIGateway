@@ -25,4 +25,8 @@ export class UpdateArtifactDto {
   @IsString()
   @IsOptional()
   peerId?: string;
+
+  @IsString()
+  @IsOptional()
+  submissionError?: string;
 } 

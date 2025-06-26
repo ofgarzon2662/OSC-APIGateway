@@ -137,6 +137,11 @@ export class ArtifactEntity {
   @IsOptional()
   peerId?: string;
 
+  @Column({ type: 'text', nullable: true })
+  @IsString()
+  @IsOptional()
+  submissionError?: string;
+
   /* --------------- Relationship --------------- */
 
   @ManyToOne(

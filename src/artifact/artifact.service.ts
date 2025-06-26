@@ -202,7 +202,7 @@ export class ArtifactService {
    * @throws BusinessLogicException if validation fails
    */
   private validateUpdateStatusDto(updateStatusDto: UpdateArtifactDto): void {
-    const allowedFields = ['submissionState', 'submittedAt', 'blockchainTxId', 'peerId', 'verified', 'lastTimeVerified'];
+    const allowedFields = ['submissionState', 'submittedAt', 'blockchainTxId', 'peerId', 'verified', 'lastTimeVerified', 'submissionError'];
     const receivedFields = Object.keys(updateStatusDto);
     
     const forbiddenFields = receivedFields.filter(field => !allowedFields.includes(field));
@@ -236,7 +236,7 @@ export class ArtifactService {
 
   // Get One Artifact - Return all fields
   async findOne(id: string): Promise<GetArtifactDto> {
-    // Verificar primero que exista una organización
+    // First, verify that an organization exists
     await this.findOrganizationOrThrow();
     
     // Find the artifact with the organization relation
@@ -260,9 +260,13 @@ export class ArtifactService {
       submitterEmail: artifact.submitterEmail,
       submitterUsername: artifact.submitterUsername,
       submittedAt: artifact.submittedAt,
-      organization: {
-        name: artifact.organization.name
-      }
+      blockchainTxId: artifact.blockchainTxId,
+      peerId: artifact.peerId,
+      submissionError: artifact.submissionError,
+      organization: artifact.organization ? {
+        name: artifact.organization.name,
+        // Do not include other organization fields like description, id
+      } : undefined,
     };
   }
 
@@ -271,7 +275,7 @@ export class ArtifactService {
     createArtifactDto: CreateArtifactDto, 
     submitterInfo: SubmitterInfo
   ): Promise<ListArtifactDto> {
-    // Validar la información del creador
+    // Validate the creator's information
     if (!submitterInfo.email || !validator.isEmail(submitterInfo.email)) {
       throw new BusinessLogicException(
         'Invalid submitter email provided.',
@@ -306,33 +310,34 @@ export class ArtifactService {
     
     const savedArtifact = await this.artifactRepository.save(artifact);
     
-    // Publish artifact.created event to RabbitMQ
-    try {
-      const artifactCreatedEvent: ArtifactCreatedEvent = {
-        artifactId: savedArtifact.id,
-        title: savedArtifact.title,
-        description: savedArtifact.description,
-        keywords: savedArtifact.keywords,
-        links: savedArtifact.links,
-        dois: savedArtifact.dois,
-        fundingAgencies: savedArtifact.fundingAgencies,
-        acknowledgements: savedArtifact.acknowledgements,
-        fileName: savedArtifact.fileName,
-        hash: savedArtifact.hash,
-        submitterEmail: savedArtifact.submitterEmail,
-        submitterUsername: savedArtifact.submitterUsername,
-        submittedAt: savedArtifact.submittedAt?.toISOString() || new Date().toISOString(),
-        organizationName: organization.name,
-        version: 'v1'
-      };
-      
-      await this.rabbitMQService.publishArtifactCreated(artifactCreatedEvent);
-    } catch (error) {
-      // Log the error but don't fail the artifact creation
-      // The artifact was successfully saved to the database
-      console.error('Failed to publish artifact.created event:', error);
-      // You might want to implement a retry mechanism or dead letter queue here
-    }
+    // Publish artifact.created event to RabbitMQ without awaiting
+    const artifactCreatedEvent: ArtifactCreatedEvent = {
+      artifactId: savedArtifact.id,
+      title: savedArtifact.title,
+      description: savedArtifact.description,
+      keywords: savedArtifact.keywords,
+      links: savedArtifact.links,
+      dois: savedArtifact.dois,
+      fundingAgencies: savedArtifact.fundingAgencies,
+      acknowledgements: savedArtifact.acknowledgements,
+      fileName: savedArtifact.fileName,
+      hash: savedArtifact.hash,
+      submitterEmail: savedArtifact.submitterEmail,
+      submitterUsername: savedArtifact.submitterUsername,
+      submittedAt: savedArtifact.submittedAt?.toISOString() || new Date().toISOString(),
+      organizationName: organization.name,
+      version: 'v1'
+    };
+    
+    this.rabbitMQService.publishArtifactCreated(artifactCreatedEvent).catch(error => {
+        // Log the error for observability but do not fail the request.
+        // The artifact is already saved with PENDING state.
+        // A separate reconciliation job can handle these failures later.
+        console.error(
+          `Failed to publish artifact.created event for artifactId: ${savedArtifact.id}. Error: ${error.message}`,
+          error,
+        );
+    });
     
     // Return only the minimal fields
     return {
@@ -345,7 +350,7 @@ export class ArtifactService {
 
   // Update an Artifact - Only allow updating specific fields
   async update(id: string, updateArtifactDto: UpdateArtifactDto): Promise<ArtifactEntity> {
-    // Verificar primero que exista una organización
+    // First, verify that an organization exists
     await this.findOrganizationOrThrow();
 
     // Find the artifact with the organization relation
@@ -361,13 +366,13 @@ export class ArtifactService {
 
   // Delete an Artifact
   async delete(id: string): Promise<void> {
-    // Verificar primero que exista una organización
+    // First, verify that an organization exists
     await this.findOrganizationOrThrow();
 
     // Find the artifact
     const artifact = await this.findArtifactOrThrow(id);
     
-    // Usar createQueryBuilder().delete() en lugar de remove para respetar las cascadas
+    // Use createQueryBuilder().delete() instead of remove to respect cascades
     await this.artifactRepository.createQueryBuilder()
       .delete()
       .where("id = :id", { id: artifact.id })
@@ -395,6 +400,10 @@ export class ArtifactService {
     
     if (updateStatusDto.peerId) {
       artifact.peerId = updateStatusDto.peerId;
+    }
+
+    if (updateStatusDto.submissionError) {
+      artifact.submissionError = updateStatusDto.submissionError;
     }
 
     if (updateStatusDto.verified !== undefined) {
