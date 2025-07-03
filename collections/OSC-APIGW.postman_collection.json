@@ -1,11 +1,2339 @@
 {
 	"info": {
-		"_postman_id": "a30ea459-4c4a-4a7d-b7bf-27ec333b5c3a",
+		"_postman_id": "f4289636-92a4-43d0-a6c0-1148021fee21",
 		"name": "OSC-APIGW",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "29465325"
 	},
 	"item": [
+		{
+			"name": "API+Broker+Listener+Worker+MockPeer",
+			"item": [
+				{
+					"name": "Log in as Admin 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"token_ADMIN1\", pm.response.json().token);\r",
+									"\r",
+									"pm.test(\"El código de estado es 201\", function() {\r",
+									"    pm.response.to.have.status(201)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Información presente\", function() {\r",
+									"    pm.expect(pm.response.json().token).to.be.a('string').and.to.not.be.empty;\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n   \"username\": \"{{ADMIN1_USERNAME}}\",\r\n   \"password\": \"{{ADMIN1_PASSWORD}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete All",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_ADMIN1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/organizations",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin 1 Creates an org",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"orgId\", pm.response.json().id);\r",
+									"pm.environment.set(\"orgName\", pm.response.json().name);\r",
+									"\r",
+									"\r",
+									"pm.test(\"El código de estado es 201\", function() {\r",
+									"    pm.response.to.have.status(201)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Información presente\", function() {\r",
+									"    pm.expect(pm.response.json().name).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().description).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_ADMIN1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{$randomCompanyName}}\",\r\n    \"description\": \"This organization focuses on {{$randomLoremWords}} and its main mission in life is {{$randomLoremWords}}\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/organizations",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Log in as Admin 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"token_ADMIN2\", pm.response.json().token);\r",
+									"\r",
+									"pm.test(\"El código de estado es 201\", function() {\r",
+									"    pm.response.to.have.status(201)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Información presente\", function() {\r",
+									"    pm.expect(pm.response.json().token).to.be.a('string').and.to.not.be.empty;\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n   \"username\": \"{{ADMIN2_USERNAME}}\",\r\n   \"password\": \"{{ADMIN2_PASSWORD}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ADMIN 1 Creates a PI",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Capturar los datos enviados en la solicitud",
+									"const requestData = pm.request.body.raw ? JSON.parse(pm.request.body.raw) : {};",
+									"",
+									"// Guardar los valores enviados para comparar después",
+									"const sentName = requestData.name;",
+									"const sentUsername = requestData.username;",
+									"const sentRole = requestData.role",
+									"",
+									"// Guardar variables de entorno",
+									"pm.environment.set(\"userId1\", pm.response.json().id);",
+									"pm.environment.set(\"usernameUser1\", pm.response.json().username);",
+									"pm.environment.set(\"nameOfUser1\", pm.response.json().name);",
+									"pm.environment.set(\"pi_password\", requestData.password); // Save PI password for later use",
+									"",
+									"pm.test(\"Status code is 201 Created\", function() {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"// Verificar información del usuario",
+									"pm.test(\"User information is valid\", function() {",
+									"    const responseData = pm.response.json();",
+									"    pm.expect(responseData.name).to.be.a('string').and.to.not.be.empty;",
+									"    pm.expect(responseData.username).to.be.a('string').and.to.not.be.empty;",
+									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;",
+									"});",
+									"",
+									"// Verificar que los datos de respuesta coinciden con los enviados",
+									"pm.test(\"User data in response matches request data\", function() {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    // Verificar que el nombre coincide",
+									"    pm.expect(responseData.name).to.equal(sentName, \"Name in response should match sent name\");",
+									"    ",
+									"    // Verificar que el username coincide",
+									"    pm.expect(responseData.username).to.equal(sentUsername, \"Username in response should match sent username\");",
+									"});",
+									"",
+									"// Verificar que el usuario tiene el rol de PI",
+									"pm.test(\"User has correct role\", function() {",
+									"    const responseData = pm.response.json();",
+									"    pm.expect(responseData.roles).to.be.an('array');",
+									"    pm.expect(responseData.roles).to.include(sentRole, \"Role in response should match sent role\");",
+									"});",
+									"",
+									"// Verificar que el usuario está asociado con la organización correcta",
+									"pm.test(\"User is associated with correct organization\", function () {",
+									"    const responseData = pm.response.json();",
+									"    pm.expect(responseData.organizationName).to.equal(pm.environment.get(\"orgName\"), \"Organization name in response should match organization ID\");",
+									"});",
+									"",
+									"// Guardar datos del usuario para verificación posterior",
+									"pm.collectionVariables.set(\"pi_user_id\", pm.response.json().id);",
+									"pm.collectionVariables.set(\"pi_username\", pm.response.json().username);",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Generar un nombre aleatorio\r",
+									"let fullName = pm.variables.replaceIn(\"{{$randomFullName}}\");\r",
+									"// Asegurarse de que tiene al menos 8 caracteres\r",
+									"if (fullName.length < 8) {\r",
+									"    fullName = fullName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - fullName.length));\r",
+									"}\r",
+									"pm.environment.set(\"validFullName\", fullName);\r",
+									"\r",
+									"// Generar un nombre de usuario aleatorio\r",
+									"let userName = pm.variables.replaceIn(\"{{$randomUserName}}\");\r",
+									"// Asegurarse de que tiene al menos 8 caracteres\r",
+									"if (userName.length < 8) {\r",
+									"    userName = userName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - userName.length));\r",
+									"}\r",
+									"pm.environment.set(\"validUserName\", userName);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_ADMIN1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{validFullName}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"{{validUserName}}\",\r\n    \"password\": \"{{$randomPassword}}\",\r\n    \"role\": \"pi\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin 2 Creates a Collaborator",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Capturar los datos enviados en la solicitud",
+									"const requestData = pm.request.body.raw ? JSON.parse(pm.request.body.raw) : {};",
+									"",
+									"// Guardar los valores enviados para comparar después",
+									"const sentName = requestData.name;",
+									"const sentUsername = requestData.username;",
+									"const sentRole = requestData.role",
+									"",
+									"// Guardar variables de entorno",
+									"pm.environment.set(\"collaboratorId\", pm.response.json().id);",
+									"pm.environment.set(\"collaborator1Username\", pm.response.json().username);",
+									"pm.environment.set(\"collaborator1_password\", requestData.password); // Save PI password for later use",
+									"",
+									"",
+									"// Verificar código de estado",
+									"pm.test(\"Status code is 201 Created\", function() {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"// Verificar información del usuario",
+									"pm.test(\"collaborator user information is valid\", function() {",
+									"    const responseData = pm.response.json();",
+									"    pm.expect(responseData.name).to.be.a('string').and.to.not.be.empty;",
+									"    pm.expect(responseData.username).to.be.a('string').and.to.not.be.empty;",
+									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;",
+									"});",
+									"",
+									"// Verificar que los datos de respuesta coinciden con los enviados",
+									"pm.test(\"collaborator data in response matches request data\", function() {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    // Verificar que el nombre coincide",
+									"    pm.expect(responseData.name).to.equal(sentName, \"Name in response should match sent name\");",
+									"    ",
+									"",
+									"    pm.expect(responseData.username).to.equal(sentUsername, \"Username in response should match sent username\");",
+									"});",
+									"",
+									"// Verificar que el usuario tiene el rol de collaborator",
+									"pm.test(\"User has correct collaborator role\", function() {",
+									"    const responseData = pm.response.json();",
+									"    pm.expect(responseData.roles).to.be.an('array');",
+									"    pm.expect(responseData.roles).to.include(sentRole, \"Role in response should match sent role\");",
+									"});",
+									"",
+									"",
+									"// Verificar que el usuario está asociado con la organización correcta",
+									"pm.test(\"User is associated with correct organization\", function () {",
+									"    const responseData = pm.response.json();",
+									"    pm.expect(responseData.organizationName).to.equal(pm.environment.get(\"orgName\"), \"Organization name in response should match organization ID\");",
+									"});",
+									"// Guardar datos del usuario collaborator para verificación posterior",
+									"pm.collectionVariables.set(\"collaborator_user_id\", pm.response.json().id);",
+									"pm.collectionVariables.set(\"collaborator_username\", pm.response.json().username);",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Generar un nombre aleatorio\r",
+									"let fullName = pm.variables.replaceIn(\"{{$randomFullName}}\");\r",
+									"// Asegurarse de que tiene al menos 8 caracteres\r",
+									"if (fullName.length < 8) {\r",
+									"    fullName = fullName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - fullName.length));\r",
+									"}\r",
+									"pm.environment.set(\"validFullName2\", fullName);\r",
+									"\r",
+									"// Generar un nombre de usuario aleatorio\r",
+									"let userName = pm.variables.replaceIn(\"{{$randomUserName}}\");\r",
+									"// Asegurarse de que tiene al menos 8 caracteres\r",
+									"if (userName.length < 8) {\r",
+									"    userName = userName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - userName.length));\r",
+									"}\r",
+									"pm.environment.set(\"validUserName2\", userName);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_ADMIN2}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"{{validFullName2}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"{{validUserName2}}\",\r\n    \"password\": \"{{$randomPassword}}\",\r\n    \"role\": \"collaborator\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Collaborator1 logs in",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"token_collaborator1\", pm.response.json().token);\r",
+									"\r",
+									"pm.test(\"Status code is 201 Created\", function() {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Token is present\", function() {\r",
+									"    pm.expect(pm.response.json().token).to.be.a('string').and.to.not.be.empty;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"collaborator login successful\", function() {\r",
+									"    // Verificar que hay un token de respuesta (indicación de login exitoso)\r",
+									"    const responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson.token).to.be.a('string').and.to.not.be.empty;\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n   \"username\": \"{{collaborator1Username}}\",\r\n   \"password\": \"{{collaborator1_password}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PI user logs in",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"token_PI\", pm.response.json().token);\r",
+									"\r",
+									"pm.test(\"Status code is 201 Created\", function() {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Token is present\", function() {\r",
+									"    pm.expect(pm.response.json().token).to.be.a('string').and.to.not.be.empty;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"PI login successful\", function() {\r",
+									"    // Verificar que hay un token de respuesta (indicación de login exitoso)\r",
+									"    const responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson.token).to.be.a('string').and.to.not.be.empty;\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n   \"username\": \"{{pi_username}}\",\r\n   \"password\": \"{{pi_password}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PI Create Artifact 3",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Store the response data in environment variables\r",
+									"pm.environment.set(\"artifact3title\", pm.response.json().title);\r",
+									"pm.environment.set(\"artifactId3\", pm.response.json().id);\r",
+									"pm.environment.set(\"artifactTitle3\", pm.response.json().title);\r",
+									"pm.environment.set(\"artifactDescription3\", pm.response.json().description)\r",
+									"\r",
+									"// Test HTTP Status Code\r",
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"// Test Response Structure\r",
+									"pm.test(\"Response has the correct structure\", function () {\r",
+									"    const response = pm.response.json();\r",
+									"    \r",
+									"    // Required fields\r",
+									"    pm.expect(response).to.have.property('id');\r",
+									"    pm.expect(response).to.have.property('title');\r",
+									"    pm.expect(response).to.have.property('description');\r",
+									"    pm.expect(response).not.to.have.property('fileName');\r",
+									"    pm.expect(response).not.to.have.property('hash');\r",
+									"    pm.expect(response).not.to.have.property('submitterEmail');\r",
+									"    pm.expect(response).not.to.have.property('submissionState');\r",
+									"    pm.expect(response).not.to.have.property('organization');\r",
+									"    pm.expect(response.lastTimeVerified).to.be.null;\r",
+									"    \r",
+									"});\r",
+									"\r",
+									"  // Wait for 500ms before proceeding to the next request\r",
+									"  setTimeout(function() {\r",
+									"      // No-op, just delay\r",
+									"  }, 1000);\r",
+									"\r",
+									"    pm.test(\"Dummy delay always passes\", function () {\r",
+									"      pm.expect(true).to.be.true;\r",
+									"  });\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"function generateRandomHash(length) {",
+									"    let result = '';",
+									"    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';",
+									"    const charactersLength = characters.length;",
+									"",
+									"    for (let i = 0; i < length; i++) {",
+									"        result += characters.charAt(Math.floor(Math.random() * charactersLength));",
+									"    }",
+									"",
+									"    return result;",
+									"}",
+									"",
+									"// Set the generated hash in an environment variable",
+									"pm.environment.set(\"artifacthash3\", generateRandomHash(64));",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_PI}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\": \"{{$randomProductName}}\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"fileName\": \"{{$randomFileName}}\",\r\n    \"hash\": \"{{artifacthash3}}\",\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example.com/product\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/artifacts",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"artifacts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Artifact 3 - Pending",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 200\", function() {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Non empty response\", function() {\r",
+									"    const responseData = pm.response.json();\r",
+									"    \r",
+									"    // Verify stored values from creation\r",
+									"    pm.expect(responseData.id).to.equal(pm.environment.get(\"artifactId3\"));\r",
+									"    pm.expect(responseData.title).to.equal(pm.environment.get(\"artifactTitle3\"));\r",
+									"    pm.expect(responseData.description).to.equal(pm.environment.get(\"artifactDescription3\"));\r",
+									"    pm.expect(responseData.hash).to.equal(pm.environment.get(\"artifacthash3\"));\r",
+									"    \r",
+									"    // Rest of the field validations\r",
+									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.title).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.description).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.acknowledgements).to.be.a('string');\r",
+									"    pm.expect(responseData.fileName).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.hash).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.verified).to.be.a('boolean');\r",
+									"    pm.expect(responseData.lastTimeVerified).to.be.null; // Assuming null is expected\r",
+									"    pm.expect(responseData.submitterEmail).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.organization).to.be.an('object');\r",
+									"    pm.expect(responseData.organization.name).to.be.a('string').and.to.not.be.empty;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Submission fields are updated correctly\", function() {\r",
+									"    const responseData = pm.response.json();\r",
+									"    \r",
+									"    // Check submission state was updated by the listener\r",
+									"    pm.expect(responseData.submissionState).to.equal(\"PENDING\");\r",
+									"    \r",
+									"    // Check submittedAt is no longer null and is a valid date\r",
+									"    pm.expect(responseData.submittedAt).to.be.null;\r",
+									"    pm.expect(responseData.submittedAt).to.be.null;\r",
+									"    \r",
+									"    // Validate submittedAt is a valid ISO date format\r",
+									"    const submittedAtDate = new Date(responseData.submittedAt);\r",
+									"    pm.expect(submittedAtDate).to.be.instanceOf(Date);\r",
+									"    pm.expect(submittedAtDate.toString()).to.not.equal(\"Invalid Date\");\r",
+									"    \r",
+									"    \r",
+									"    // Check peer ID was set (if your API stores it)\r",
+									"    if (responseData.peerId) {\r",
+									"        pm.expect(responseData.peerId).to.be.null;\r",
+									"    }\r",
+									"    \r",
+									"    console.log(\"✅ Artifact successfully updated via listener!\");\r",
+									"    console.log(`📋 Artifact ID: ${responseData.id}`);\r",
+									"    console.log(`🎯 Submission State: ${responseData.submissionState}`);\r",
+									"    console.log(`⏰ Submitted At: ${responseData.submittedAt}`);\r",
+									"    console.log(`🔗 Blockchain TX: ${responseData.blockchainTxId}`);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Integration test completed successfully\", function() {\r",
+									"    const responseData = pm.response.json();\r",
+									"    \r",
+									"    console.log(\"🎉 INTEGRATION TEST PASSED!\");\r",
+									"    console.log(\"   ✓ Created artifact\");\r",
+									"    console.log(\"   ✓ Published message to RabbitMQ\"); \r",
+									"    console.log(\"   ✓ Listener consumed message\");\r",
+									"    console.log(\"   ✓ Listener updated artifact via API\");\r",
+									"    console.log(\"   ✓ Artifact contains submission data\");\r",
+									"});\r",
+									"\r",
+									" // Wait for 500ms before proceeding to the next request\r",
+									"  setTimeout(function() {\r",
+									"      // No-op, just delay\r",
+									"  }, 5000);\r",
+									"\r",
+									"    pm.test(\"Dummy delay always passes\", function () {\r",
+									"      pm.expect(true).to.be.true;\r",
+									"  });"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/artifacts/{{artifactId3}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"artifacts",
+								"{{artifactId3}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Artifact 3 - Success",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 200\", function() {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Non empty response\", function() {\r",
+									"    const responseData = pm.response.json();\r",
+									"    \r",
+									"    // Verify stored values from creation\r",
+									"    pm.expect(responseData.id).to.equal(pm.environment.get(\"artifactId3\"));\r",
+									"    pm.expect(responseData.title).to.equal(pm.environment.get(\"artifactTitle3\"));\r",
+									"    pm.expect(responseData.description).to.equal(pm.environment.get(\"artifactDescription3\"));\r",
+									"    pm.expect(responseData.hash).to.equal(pm.environment.get(\"artifacthash3\"));\r",
+									"    \r",
+									"    // Rest of the field validations\r",
+									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.title).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.description).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.acknowledgements).to.be.a('string');\r",
+									"    pm.expect(responseData.fileName).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.hash).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.verified).to.be.a('boolean');\r",
+									"    pm.expect(responseData.lastTimeVerified).to.be.null; // Assuming null is expected\r",
+									"    pm.expect(responseData.submitterEmail).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.organization).to.be.an('object');\r",
+									"    pm.expect(responseData.organization.name).to.be.a('string').and.to.not.be.empty;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Submission fields are updated correctly\", function() {\r",
+									"    const responseData = pm.response.json();\r",
+									"    \r",
+									"    // Check submission state was updated by the listener\r",
+									"    pm.expect(responseData.submissionState).to.equal(\"SUCCESS\");\r",
+									"    \r",
+									"    // Check submittedAt is no longer null and is a valid date\r",
+									"    pm.expect(responseData.submittedAt).to.not.be.null;\r",
+									"    pm.expect(responseData.submittedAt).to.be.a('string').and.to.not.be.empty;\r",
+									"    \r",
+									"    // Validate submittedAt is a valid ISO date format\r",
+									"    const submittedAtDate = new Date(responseData.submittedAt);\r",
+									"    pm.expect(submittedAtDate).to.be.instanceOf(Date);\r",
+									"    pm.expect(submittedAtDate.toString()).to.not.equal(\"Invalid Date\");\r",
+									"    \r",
+									"    \r",
+									"    // Check peer ID was set (if your API stores it)\r",
+									"    if (responseData.peerId) {\r",
+									"        pm.expect(responseData.peerId).to.be.a('string').and.to.not.be.empty;\r",
+									"    }\r",
+									"    \r",
+									"    console.log(\"✅ Artifact successfully updated via listener!\");\r",
+									"    console.log(`📋 Artifact ID: ${responseData.id}`);\r",
+									"    console.log(`🎯 Submission State: ${responseData.submissionState}`);\r",
+									"    console.log(`⏰ Submitted At: ${responseData.submittedAt}`);\r",
+									"    console.log(`🔗 Blockchain TX: ${responseData.blockchainTxId}`);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Integration test completed successfully\", function() {\r",
+									"    const responseData = pm.response.json();\r",
+									"    \r",
+									"    console.log(\"🎉 INTEGRATION TEST PASSED!\");\r",
+									"    console.log(\"   ✓ Created artifact\");\r",
+									"    console.log(\"   ✓ Published message to RabbitMQ\"); \r",
+									"    console.log(\"   ✓ Listener consumed message\");\r",
+									"    console.log(\"   ✓ Listener updated artifact via API\");\r",
+									"    console.log(\"   ✓ Artifact contains submission data\");\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/artifacts/{{artifactId3}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"artifacts",
+								"{{artifactId3}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PI Create Artifact - Gas Error",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Store the response data in environment variables\r",
+									"pm.environment.set(\"artifact4title\", pm.response.json().title);\r",
+									"pm.environment.set(\"artifactId4\", pm.response.json().id);\r",
+									"pm.environment.set(\"artifactTitle4\", pm.response.json().title);\r",
+									"pm.environment.set(\"artifactDescription4\", pm.response.json().description)\r",
+									"\r",
+									"// Test HTTP Status Code\r",
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"// Test Response Structure\r",
+									"pm.test(\"Response has the correct structure\", function () {\r",
+									"    const response = pm.response.json();\r",
+									"    \r",
+									"    // Required fields\r",
+									"    pm.expect(response).to.have.property('id');\r",
+									"    pm.expect(response).to.have.property('title');\r",
+									"    pm.expect(response).to.have.property('description');\r",
+									"    pm.expect(response).not.to.have.property('fileName');\r",
+									"    pm.expect(response).not.to.have.property('hash');\r",
+									"    pm.expect(response).not.to.have.property('submitterEmail');\r",
+									"    pm.expect(response).not.to.have.property('submissionState');\r",
+									"    pm.expect(response).not.to.have.property('organization');\r",
+									"    pm.expect(response.lastTimeVerified).to.be.null;\r",
+									"    \r",
+									"});\r",
+									"\r",
+									"  "
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"function generateRandomHash(length) {",
+									"    let result = '';",
+									"    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';",
+									"    const charactersLength = characters.length;",
+									"",
+									"    for (let i = 0; i < length; i++) {",
+									"        result += characters.charAt(Math.floor(Math.random() * charactersLength));",
+									"    }",
+									"",
+									"    return result;",
+									"}",
+									"",
+									"// Set the generated hash in an environment variable",
+									"pm.environment.set(\"artifacthash4\", generateRandomHash(64));",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_PI}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\": \"test_gas - My Failed Test - {{$randomLoremSentence}}\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"fileName\": \"{{$randomFileName}}\",\r\n    \"hash\": \"{{artifacthash4}}\",\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example.com/product\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/artifacts",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"artifacts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Artifact 4 - NO Fail Gas Error",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 200\", function() {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Non empty response\", function() {\r",
+									"    const responseData = pm.response.json();\r",
+									"    \r",
+									"    // Verify stored values from creation\r",
+									"    pm.expect(responseData.id).to.equal(pm.environment.get(\"artifactId4\"));\r",
+									"    pm.expect(responseData.title).to.equal(pm.environment.get(\"artifactTitle4\"));\r",
+									"    pm.expect(responseData.description).to.equal(pm.environment.get(\"artifactDescription4\"));\r",
+									"    pm.expect(responseData.hash).to.equal(pm.environment.get(\"artifacthash4\"));\r",
+									"    \r",
+									"    // Rest of the field validations\r",
+									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.title).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.description).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.acknowledgements).to.be.a('string');\r",
+									"    pm.expect(responseData.fileName).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.hash).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.verified).to.be.a('boolean');\r",
+									"    pm.expect(responseData.lastTimeVerified).to.be.null; // Assuming null is expected\r",
+									"    pm.expect(responseData.submitterEmail).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.organization).to.be.an('object');\r",
+									"    pm.expect(responseData.organization.name).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.blockchainTxId).to.be.null;\r",
+									"    pm.expect(responseData.peerId).to.be.null;\r",
+									"    pm.expect(responseData.submissionError).to.be.null;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Submission fields are updated correctly\", function() {\r",
+									"    const responseData = pm.response.json();\r",
+									"    \r",
+									"    // Check submission state was updated by the listener\r",
+									"    pm.expect(responseData.submissionState).to.equal(\"PENDING\");    \r",
+									"    \r",
+									"    // Check peer ID was set (if your API stores it)\r",
+									"    if (responseData.peerId) {\r",
+									"        pm.expect(responseData.peerId).to.be.a('string').and.to.not.be.empty;\r",
+									"    }\r",
+									"    \r",
+									"    console.log(\"✅ Artifact successfully updated via listener!\");\r",
+									"    console.log(`📋 Artifact ID: ${responseData.id}`);\r",
+									"    console.log(`🎯 Submission State: ${responseData.submissionState}`);\r",
+									"    console.log(`⏰ Submitted At: ${responseData.submittedAt}`);\r",
+									"    console.log(`🔗 Blockchain TX: ${responseData.blockchainTxId}`);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Integration test completed successfully\", function() {\r",
+									"    const responseData = pm.response.json();\r",
+									"    \r",
+									"    console.log(\"🎉 INTEGRATION TEST PASSED!\");\r",
+									"    console.log(\"   ✓ Created artifact\");\r",
+									"    console.log(\"   ✓ Published message to RabbitMQ\"); \r",
+									"    console.log(\"   ✓ Listener consumed message\");\r",
+									"    console.log(\"   ✓ Listener updated artifact via API\");\r",
+									"    console.log(\"   ✓ Artifact contains submission data\");\r",
+									"});\r",
+									"\r",
+									"// Wait for 500ms before proceeding to the next request\r",
+									"  setTimeout(function() {\r",
+									"      // No-op, just delay\r",
+									"  }, 6000);\r",
+									"\r",
+									"    pm.test(\"Dummy delay always passes\", function () {\r",
+									"      pm.expect(true).to.be.true;\r",
+									"  });\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/artifacts/{{artifactId4}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"artifacts",
+								"{{artifactId4}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Artifact 4 - Fail Gas Error",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 200\", function() {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Non empty response\", function() {\r",
+									"    const responseData = pm.response.json();\r",
+									"    \r",
+									"    // Verify stored values from creation\r",
+									"    pm.expect(responseData.id).to.equal(pm.environment.get(\"artifactId4\"));\r",
+									"    pm.expect(responseData.title).to.equal(pm.environment.get(\"artifactTitle4\"));\r",
+									"    pm.expect(responseData.description).to.equal(pm.environment.get(\"artifactDescription4\"));\r",
+									"    pm.expect(responseData.hash).to.equal(pm.environment.get(\"artifacthash4\"));\r",
+									"    \r",
+									"    // Rest of the field validations\r",
+									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.title).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.description).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.acknowledgements).to.be.a('string');\r",
+									"    pm.expect(responseData.fileName).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.hash).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.verified).to.be.a('boolean');\r",
+									"    pm.expect(responseData.lastTimeVerified).to.be.null; // Assuming null is expected\r",
+									"    pm.expect(responseData.submitterEmail).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.organization).to.be.an('object');\r",
+									"    pm.expect(responseData.organization.name).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.peerId).to.equal('12D3KooWBhxQ7uXeY9zF8qG5nM4rL3pT6vN8wS2cK9jH1fX7yR4e')\r",
+									"    pm.expect(responseData.blockchainTxId).to.equal(null);\r",
+									"    pm.expect(responseData.submissionError).to.equal(\"Insufficient gas fees\");\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Submission fields are updated correctly\", function() {\r",
+									"    const responseData = pm.response.json();\r",
+									"    \r",
+									"    // Check submission state was updated by the listener\r",
+									"    pm.expect(responseData.submissionState).to.equal(\"FAILED\");\r",
+									"    \r",
+									"    // Check submittedAt is no longer null and is a valid date\r",
+									"    pm.expect(responseData.submittedAt).to.not.be.null;\r",
+									"    pm.expect(responseData.submittedAt).to.be.a('string').and.to.not.be.empty;\r",
+									"    \r",
+									"    // Validate submittedAt is a valid ISO date format\r",
+									"    const submittedAtDate = new Date(responseData.submittedAt);\r",
+									"    pm.expect(submittedAtDate).to.be.instanceOf(Date);\r",
+									"    pm.expect(submittedAtDate.toString()).to.not.equal(\"Invalid Date\");\r",
+									"    \r",
+									"    \r",
+									"    // Check peer ID was set (if your API stores it)\r",
+									"    if (responseData.peerId) {\r",
+									"        pm.expect(responseData.peerId).to.be.a('string').and.to.not.be.empty;\r",
+									"    }\r",
+									"    \r",
+									"    console.log(\"✅ Artifact successfully updated via listener!\");\r",
+									"    console.log(`📋 Artifact ID: ${responseData.id}`);\r",
+									"    console.log(`🎯 Submission State: ${responseData.submissionState}`);\r",
+									"    console.log(`⏰ Submitted At: ${responseData.submittedAt}`);\r",
+									"    console.log(`🔗 Blockchain TX: ${responseData.blockchainTxId}`);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Integration test completed successfully\", function() {\r",
+									"    const responseData = pm.response.json();\r",
+									"    \r",
+									"    console.log(\"🎉 INTEGRATION TEST PASSED!\");\r",
+									"    console.log(\"   ✓ Created artifact\");\r",
+									"    console.log(\"   ✓ Published message to RabbitMQ\"); \r",
+									"    console.log(\"   ✓ Listener consumed message\");\r",
+									"    console.log(\"   ✓ Listener updated artifact via API\");\r",
+									"    console.log(\"   ✓ Artifact contains submission data\");\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/artifacts/{{artifactId4}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"artifacts",
+								"{{artifactId4}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Collaborator Get All Orgs",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 200\", function() {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Non Empty list\", function() {\r",
+									"    pm.expect(pm.response.json()).to.be.an('array').that.is.not.empty;\r",
+									"    pm.expect(pm.response.json()).to.have.lengthOf(1);\r",
+									"    pm.expect(pm.response.json()[0].id).to.equal(pm.environment.get(\"orgId\"));\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_collaborator1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/organizations",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Collaborator Create Artifact 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Store the response data in environment variables\r",
+									"pm.environment.set(\"artifactId1\", pm.response.json().id);\r",
+									"pm.environment.set(\"artifactTitle1\", pm.response.json().title);\r",
+									"pm.environment.set(\"artifactDescription1\", pm.response.json().description)\r",
+									"\r",
+									"// Test HTTP Status Code\r",
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"// Test Response Structure\r",
+									"pm.test(\"Response has the correct structure\", function () {\r",
+									"    const response = pm.response.json();\r",
+									"    \r",
+									"    // Required fields\r",
+									"    pm.expect(response).to.have.property('id');\r",
+									"    pm.expect(response).to.have.property('title');\r",
+									"    pm.expect(response).to.have.property('description');\r",
+									"    pm.expect(response).not.to.have.property('fileName');\r",
+									"    pm.expect(response).not.to.have.property('hash');\r",
+									"    pm.expect(response).not.to.have.property('submitterEmail');\r",
+									"    pm.expect(response).not.to.have.property('submissionState');\r",
+									"    pm.expect(response).not.to.have.property('organization');\r",
+									"    pm.expect(response.lastTimeVerified).to.be.null;\r",
+									"    \r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"function generateRandomHash(length) {",
+									"    let result = '';",
+									"    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';",
+									"    const charactersLength = characters.length;",
+									"",
+									"    for (let i = 0; i < length; i++) {",
+									"        result += characters.charAt(Math.floor(Math.random() * charactersLength));",
+									"    }",
+									"",
+									"    return result;",
+									"}",
+									"",
+									"// Set the generated hash in an environment variable",
+									"pm.environment.set(\"artifacthash1\", generateRandomHash(64));",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_collaborator1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\": \"{{$randomProductName}}\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"fileName\": \"{{$randomFileName}}\",\r\n    \"hash\": \"{{artifacthash1}}\",\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example.com/product\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/artifacts",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"artifacts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Artifact 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 200\", function() {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Non empty response\", function() {\r",
+									"    const responseData = pm.response.json();\r",
+									"    \r",
+									"    // Verify stored values from creation\r",
+									"    pm.expect(responseData.id).to.equal(pm.environment.get(\"artifactId1\"));\r",
+									"    pm.expect(responseData.title).to.equal(pm.environment.get(\"artifactTitle1\"));\r",
+									"    pm.expect(responseData.description).to.equal(pm.environment.get(\"artifactDescription1\"));\r",
+									"    pm.expect(responseData.hash).to.equal(pm.environment.get(\"artifacthash1\"));\r",
+									"    \r",
+									"    // Rest of the field validations\r",
+									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.title).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.description).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.keywords).to.be.an('array').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.links).to.be.an('array');\r",
+									"    pm.expect(responseData.dois).to.be.an('array');\r",
+									"    pm.expect(responseData.fundingAgencies).to.be.an('array');\r",
+									"    pm.expect(responseData.acknowledgements).to.be.a('string');\r",
+									"    pm.expect(responseData.fileName).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.hash).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.verified).to.be.a('boolean');\r",
+									"    pm.expect(responseData.lastTimeVerified).to.be.null; // Assuming null is expected\r",
+									"    pm.expect(responseData.submissionState).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.submitterEmail).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.submittedAt).to.be.null; // Assuming null is expected\r",
+									"    pm.expect(responseData.organization).to.be.an('object');\r",
+									"    pm.expect(responseData.organization.name).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.blockchainTxId).to.be.null;\r",
+									"    pm.expect(responseData.peerId).to.be.null;\r",
+									"    pm.expect(responseData.submissionError).to.be.null;\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/artifacts/{{artifactId1}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"artifacts",
+								"{{artifactId1}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Collaborator Create Artifact 1 - few fields",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Store the response data in environment variables\r",
+									"pm.environment.set(\"artifactId1\", pm.response.json().id);\r",
+									"pm.environment.set(\"artifactTitle1\", pm.response.json().title);\r",
+									"pm.environment.set(\"artifactDescription1\", pm.response.json().description)\r",
+									"\r",
+									"// Test HTTP Status Code\r",
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"// Test Response Structure\r",
+									"pm.test(\"Response has the correct structure\", function () {\r",
+									"    const response = pm.response.json();\r",
+									"    \r",
+									"    // Required fields\r",
+									"    pm.expect(response).to.have.property('id');\r",
+									"    pm.expect(response).to.have.property('title');\r",
+									"    pm.expect(response).to.have.property('description');\r",
+									"    pm.expect(response).not.to.have.property('fileName');\r",
+									"    pm.expect(response).not.to.have.property('hash');\r",
+									"    pm.expect(response).not.to.have.property('submitterEmail');\r",
+									"    pm.expect(response).not.to.have.property('submissionState');\r",
+									"    pm.expect(response).not.to.have.property('organization');\r",
+									"    pm.expect(response.lastTimeVerified).to.be.null;\r",
+									"    \r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"function generateRandomHash(length) {",
+									"    let result = '';",
+									"    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';",
+									"    const charactersLength = characters.length;",
+									"",
+									"    for (let i = 0; i < length; i++) {",
+									"        result += characters.charAt(Math.floor(Math.random() * charactersLength));",
+									"    }",
+									"",
+									"    return result;",
+									"}",
+									"",
+									"// Set the generated hash in an environment variable",
+									"pm.environment.set(\"artifacthash1\", generateRandomHash(64));",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_collaborator1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\": \"{{$randomProductName}}\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"fileName\": \"{{$randomFileName}}\",\r\n    \"hash\": \"{{artifacthash1}}\",\r\n    \"keywords\": [\"\"],\r\n    \"links\": [],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [\"\"],\r\n    \"acknowledgements\": \"\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/artifacts",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"artifacts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PI Create Artifact 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Store the response data in environment variables\r",
+									"pm.environment.set(\"artifact2title\", pm.response.json().title);\r",
+									"pm.environment.set(\"artifactId2\", pm.response.json().id);\r",
+									"pm.environment.set(\"artifactTitle2\", pm.response.json().title);\r",
+									"pm.environment.set(\"artifactDescription2\", pm.response.json().description)\r",
+									"\r",
+									"// Test HTTP Status Code\r",
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"// Test Response Structure\r",
+									"pm.test(\"Response has the correct structure\", function () {\r",
+									"    const response = pm.response.json();\r",
+									"    \r",
+									"    // Required fields\r",
+									"    pm.expect(response).to.have.property('id');\r",
+									"    pm.expect(response).to.have.property('title');\r",
+									"    pm.expect(response).to.have.property('description');\r",
+									"    pm.expect(response).not.to.have.property('fileName');\r",
+									"    pm.expect(response).not.to.have.property('hash');\r",
+									"    pm.expect(response).not.to.have.property('submitterEmail');\r",
+									"    pm.expect(response).not.to.have.property('submissionState');\r",
+									"    pm.expect(response).not.to.have.property('organization');\r",
+									"    pm.expect(response.lastTimeVerified).to.be.null;\r",
+									"    \r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"function generateRandomHash(length) {",
+									"    let result = '';",
+									"    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';",
+									"    const charactersLength = characters.length;",
+									"",
+									"    for (let i = 0; i < length; i++) {",
+									"        result += characters.charAt(Math.floor(Math.random() * charactersLength));",
+									"    }",
+									"",
+									"    return result;",
+									"}",
+									"",
+									"// Set the generated hash in an environment variable",
+									"pm.environment.set(\"artifacthash2\", generateRandomHash(64));",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_PI}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\": \"{{$randomProductName}}\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"fileName\": \"{{$randomFileName}}\",\r\n    \"hash\": \"{{artifacthash2}}\",\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example.com/product\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/artifacts",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"artifacts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Artifact 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 200\", function() {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Non empty response\", function() {\r",
+									"    const responseData = pm.response.json();\r",
+									"    \r",
+									"    // Verify stored values from creation\r",
+									"    pm.expect(responseData.id).to.equal(pm.environment.get(\"artifactId2\"));\r",
+									"    pm.expect(responseData.title).to.equal(pm.environment.get(\"artifactTitle2\"));\r",
+									"    pm.expect(responseData.description).to.equal(pm.environment.get(\"artifactDescription2\"));\r",
+									"    pm.expect(responseData.hash).to.equal(pm.environment.get(\"artifacthash2\"));\r",
+									"    \r",
+									"    // Rest of the field validations\r",
+									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.title).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.description).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.keywords).to.be.an('array').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.links).to.be.an('array');\r",
+									"    pm.expect(responseData.dois).to.be.an('array');\r",
+									"    pm.expect(responseData.fundingAgencies).to.be.an('array');\r",
+									"    pm.expect(responseData.acknowledgements).to.be.a('string');\r",
+									"    pm.expect(responseData.fileName).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.hash).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.verified).to.be.a('boolean');\r",
+									"    pm.expect(responseData.lastTimeVerified).to.be.null; // Assuming null is expected\r",
+									"    pm.expect(responseData.submissionState).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.submitterEmail).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.submittedAt).to.be.null; // Assuming null is expected\r",
+									"    pm.expect(responseData.organization).to.be.an('object');\r",
+									"    pm.expect(responseData.organization.name).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.blockchainTxId).to.be.null;\r",
+									"    pm.expect(responseData.peerId).to.be.null;\r",
+									"    pm.expect(responseData.submissionError).to.be.null;\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/artifacts/{{artifactId2}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"artifacts",
+								"{{artifactId2}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Artifacts",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"/* ----------  STATUS ---------- */\r",
+									"pm.test('Code is 200', () => pm.response.to.have.status(200));\r",
+									"\r",
+									"/* ----------  BASIC ARRAY CHECK ---------- */\r",
+									"const artifacts = pm.response.json();\r",
+									"\r",
+									"pm.test('Response is array (≥ 2)', () => {\r",
+									"  pm.expect(artifacts).to.be.an('array').with.length.of.at.least(2);\r",
+									"});\r",
+									"\r",
+									"/* ----------  STRUCTURE FOR EACH ITEM ---------- */\r",
+									"pm.test('Each artifact has required minimal fields', () => {\r",
+									"  artifacts.forEach(a => {\r",
+									"    pm.expect(a).to.have.property('id').that.is.a('string').and.is.not.empty;\r",
+									"    pm.expect(a).to.have.property('title').that.is.a('string').and.is.not.empty;\r",
+									"    pm.expect(a).to.have.property('description').that.is.a('string').and.is.not.empty;\r",
+									"    pm.expect(a).to.have.property('lastTimeVerified');           // null or date\r",
+									"  });\r",
+									"});\r",
+									"\r",
+									"/* ----------  OPTIONAL VALIDATION WITH ENV VARS ---------- */\r",
+									"const envIds  = [pm.environment.get('artifactId1'), pm.environment.get('artifactId2')].filter(Boolean);\r",
+									"const envDesc = [pm.environment.get('description1'), pm.environment.get('description2')].filter(Boolean);\r",
+									"\r",
+									"if (envIds.length) {\r",
+									"  pm.test('Response contains expected artifact IDs', () => {\r",
+									"    const idsInResponse = artifacts.map(a => a.id);\r",
+									"    envIds.forEach(id => pm.expect(idsInResponse).to.include(id));\r",
+									"  });\r",
+									"}\r",
+									"\r",
+									"if (envDesc.length) {\r",
+									"  pm.test('Descriptions match stored values', () => {\r",
+									"    envDesc.forEach(desc => {\r",
+									"      const found = artifacts.some(a => a.description === desc);\r",
+									"      pm.expect(found, `Description \"${desc}\" should appear in response`).to.be.true;\r",
+									"    });\r",
+									"  });\r",
+									"}\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/artifacts",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"artifacts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Orgs",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"/* ----------  STATUS ---------- */\r",
+									"pm.test('Code is 200', () => pm.response.to.have.status(200));\r",
+									"\r",
+									"/* ----------  BODY ---------- */\r",
+									"const data = pm.response.json();\r",
+									"\r",
+									"/* ----------  ORGANIZATION ---------- */\r",
+									"pm.test('Exactly one organization returned', () => {\r",
+									"  pm.expect(data).to.be.an('array').with.lengthOf(1);\r",
+									"});\r",
+									"\r",
+									"const org = data[0];\r",
+									"\r",
+									"/* Guarda orgId la primera vez si no existe */\r",
+									"if (!pm.environment.get('orgId')) {\r",
+									"  pm.environment.set('orgId', org.id);\r",
+									"}\r",
+									"\r",
+									"pm.test('Organization ID matches stored value', () => {\r",
+									"  pm.expect(org.id).to.eql(pm.environment.get('orgId'));\r",
+									"});\r",
+									"\r",
+									"/* ----------  ARTIFACTS ARRAY ---------- */\r",
+									"pm.test('At least 2 artifacts returned', () => {\r",
+									"  pm.expect(org.artifacts).to.be.an('array').with.length.of.at.least(2);\r",
+									"});\r",
+									"\r",
+									"/* ----------  VALIDACIÓN OPCIONAL CON VARIABLES ---------- */\r",
+									"const storedIds  = [pm.environment.get('artifactId1'), pm.environment.get('artifactId2')].filter(Boolean);\r",
+									"const storedDesc = [pm.environment.get('description1'), pm.environment.get('description2')].filter(Boolean);\r",
+									"\r",
+									"if (storedIds.length) {\r",
+									"  pm.test('Response contiene los artifact IDs guardados', () => {\r",
+									"    const ids = org.artifacts.map(a => a.id);\r",
+									"    storedIds.forEach(id => pm.expect(ids, `ID ${id} debe estar en la respuesta`).to.include(id));\r",
+									"  });\r",
+									"}\r",
+									"\r",
+									"if (storedDesc.length) {\r",
+									"  pm.test('Descripciones guardadas aparecen en la respuesta', () => {\r",
+									"    storedDesc.forEach(desc => {\r",
+									"      const exists = org.artifacts.some(a => a.description === desc);\r",
+									"      pm.expect(exists, `Descripción \"${desc}\" debería estar en la respuesta`).to.be.true;\r",
+									"    });\r",
+									"  });\r",
+									"}\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_PI}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/organizations",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"organizations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Artifact wrong ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 404\", function() {\r",
+									"    pm.response.to.have.status(404)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Get error message\", function() {\r",
+									"   pm.expect(pm.response.json().message).to.eql(\"The artifact with the provided id does not exist\");\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/artifacts/{{$randomUUID}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"artifacts",
+								"{{$randomUUID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Publish Sucess messague in Rabbit - Artifact 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test that the message was successfully published\r",
+									"pm.test(\"Message published successfully\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Message was routed to queue\", function () {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson.routed).to.be.true;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response time is acceptable\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+									"});\r",
+									"\r",
+									"// Log success\r",
+									"console.log(\"✅ Message successfully published to artifact.submitted.queue\");\r",
+									"console.log(\"📨 Artifact ID:\", pm.environment.get(\"artifactId1\"));\r",
+									"console.log(\"🔄 Check listener logs for processing...\");\r",
+									"\r",
+									"// Optional: Set a timestamp for when message was sent\r",
+									"pm.environment.set(\"messageSentAt\", new Date().toISOString());"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "password",
+									"value": "{{rabbit_pass}}",
+									"type": "string"
+								},
+								{
+									"key": "username",
+									"value": "{{rabbit_user}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{API_KEY}}",
+								"type": "text"
+							},
+							{
+								"key": "X-Service-Role",
+								"value": "{{Service_Role}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"properties\": {\r\n    \"delivery_mode\": 2,\r\n    \"content_type\": \"application/json\"\r\n  },\r\n  \"routing_key\": \"artifact.submitted\",\r\n  \"payload\": \"{\\\"artifactId\\\":\\\"{{artifactId1}}\\\",\\\"submissionState\\\":\\\"SUCCESS\\\",\\\"submittedAt\\\":\\\"2023-12-07T15:30:00.000Z\\\",\\\"blockchainTxId\\\":\\\"0x1234567890abcdef1234567890abcdef12345678\\\",\\\"peerId\\\":\\\"12D3KooWBhxQ7uXeY9zF8qG5nM4rL3pT6vN8wS2cK9jH1fX7yR4e\\\",\\\"version\\\":\\\"v1\\\"}\",\r\n  \"payload_encoding\": \"string\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{rabbit_url}}",
+							"host": [
+								"{{rabbit_url}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Artifact 1 Updated",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 200\", function() {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Non empty response\", function() {\r",
+									"    const responseData = pm.response.json();\r",
+									"    \r",
+									"    // Verify stored values from creation\r",
+									"    pm.expect(responseData.id).to.equal(pm.environment.get(\"artifactId1\"));\r",
+									"    pm.expect(responseData.title).to.equal(pm.environment.get(\"artifactTitle1\"));\r",
+									"    pm.expect(responseData.description).to.equal(pm.environment.get(\"artifactDescription1\"));\r",
+									"    pm.expect(responseData.hash).to.equal(pm.environment.get(\"artifacthash1\"));\r",
+									"    \r",
+									"    // Rest of the field validations\r",
+									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.title).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.description).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.acknowledgements).to.be.a('string');\r",
+									"    pm.expect(responseData.fileName).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.hash).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.verified).to.be.a('boolean');\r",
+									"    pm.expect(responseData.lastTimeVerified).to.be.null; // Assuming null is expected\r",
+									"    pm.expect(responseData.submitterEmail).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.organization).to.be.an('object');\r",
+									"    pm.expect(responseData.organization.name).to.be.a('string').and.to.not.be.empty;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Submission fields are updated correctly\", function() {\r",
+									"    const responseData = pm.response.json();\r",
+									"    \r",
+									"    // Check submission state was updated by the listener\r",
+									"    pm.expect(responseData.submissionState).to.equal(\"SUCCESS\");\r",
+									"    \r",
+									"    // Check submittedAt is no longer null and is a valid date\r",
+									"    pm.expect(responseData.submittedAt).to.not.be.null;\r",
+									"    pm.expect(responseData.submittedAt).to.be.a('string').and.to.not.be.empty;\r",
+									"    \r",
+									"    // Validate submittedAt is a valid ISO date format\r",
+									"    const submittedAtDate = new Date(responseData.submittedAt);\r",
+									"    pm.expect(submittedAtDate).to.be.instanceOf(Date);\r",
+									"    pm.expect(submittedAtDate.toString()).to.not.equal(\"Invalid Date\");\r",
+									"    \r",
+									"    \r",
+									"    // Check peer ID was set (if your API stores it)\r",
+									"    if (responseData.peerId) {\r",
+									"        pm.expect(responseData.peerId).to.be.a('string').and.to.not.be.empty;\r",
+									"    }\r",
+									"    \r",
+									"    console.log(\"✅ Artifact successfully updated via listener!\");\r",
+									"    console.log(`📋 Artifact ID: ${responseData.id}`);\r",
+									"    console.log(`🎯 Submission State: ${responseData.submissionState}`);\r",
+									"    console.log(`⏰ Submitted At: ${responseData.submittedAt}`);\r",
+									"    console.log(`🔗 Blockchain TX: ${responseData.blockchainTxId}`);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Integration test completed successfully\", function() {\r",
+									"    const responseData = pm.response.json();\r",
+									"    \r",
+									"    console.log(\"🎉 INTEGRATION TEST PASSED!\");\r",
+									"    console.log(\"   ✓ Created artifact\");\r",
+									"    console.log(\"   ✓ Published message to RabbitMQ\"); \r",
+									"    console.log(\"   ✓ Listener consumed message\");\r",
+									"    console.log(\"   ✓ Listener updated artifact via API\");\r",
+									"    console.log(\"   ✓ Artifact contains submission data\");\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/artifacts/{{artifactId1}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"artifacts",
+								"{{artifactId1}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Publish Failed messague in Rabbit - Artifact 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test that the message was successfully published\r",
+									"pm.test(\"Message published successfully\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Message was routed to queue\", function () {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    pm.expect(responseJson.routed).to.be.true;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response time is acceptable\", function () {\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
+									"});\r",
+									"\r",
+									"// Log success\r",
+									"console.log(\"✅ Message successfully published to artifact.submitted.queue\");\r",
+									"console.log(\"📨 Artifact ID:\", pm.environment.get(\"artifactId1\"));\r",
+									"console.log(\"🔄 Check listener logs for processing...\");\r",
+									"\r",
+									"// Optional: Set a timestamp for when message was sent\r",
+									"pm.environment.set(\"messageSentAt\", new Date().toISOString());"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "password",
+									"value": "{{rabbit_pass}}",
+									"type": "string"
+								},
+								{
+									"key": "username",
+									"value": "{{rabbit_user}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"properties\": {\r\n    \"delivery_mode\": 2,\r\n    \"content_type\": \"application/json\"\r\n  },\r\n  \"routing_key\": \"artifact.submitted\",\r\n  \"payload\": \"{\\\"artifactId\\\":\\\"{{artifactId2}}\\\",\\\"submissionState\\\":\\\"FAILED\\\",\\\"submittedAt\\\":\\\"2023-12-07T15:30:00.000Z\\\",\\\"error\\\":\\\"Testing Failure\\\",\\\"peerId\\\":\\\"12D3KooWBhxQ7uXeY9zF8qG5nM4rL3pT6vN8wS2cK9jH1fX7yR4e\\\",\\\"version\\\":\\\"v1\\\"}\",\r\n  \"payload_encoding\": \"string\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{rabbit_url}}",
+							"host": [
+								"{{rabbit_url}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Artifact 2 Updated",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Code is 200\", function() {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Non empty response\", function() {\r",
+									"    const responseData = pm.response.json();\r",
+									"    \r",
+									"    // Verify stored values from creation\r",
+									"    pm.expect(responseData.id).to.equal(pm.environment.get(\"artifactId2\"));\r",
+									"    pm.expect(responseData.title).to.equal(pm.environment.get(\"artifactTitle2\"));\r",
+									"    pm.expect(responseData.description).to.equal(pm.environment.get(\"artifactDescription2\"));\r",
+									"    pm.expect(responseData.hash).to.equal(pm.environment.get(\"artifacthash2\"));\r",
+									"    \r",
+									"    // Rest of the field validations\r",
+									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.title).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.description).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.acknowledgements).to.be.a('string');\r",
+									"    pm.expect(responseData.fileName).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.hash).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.verified).to.be.a('boolean');\r",
+									"    pm.expect(responseData.lastTimeVerified).to.be.null; // Assuming null is expected\r",
+									"    pm.expect(responseData.submitterEmail).to.be.a('string').and.to.not.be.empty;\r",
+									"    pm.expect(responseData.organization).to.be.an('object');\r",
+									"    pm.expect(responseData.organization.name).to.be.a('string').and.to.not.be.empty;\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Submission fields are updated correctly\", function() {\r",
+									"    const responseData = pm.response.json();\r",
+									"    \r",
+									"    // Check submission state was updated by the listener\r",
+									"    pm.expect(responseData.submissionState).to.equal(\"FAILED\");\r",
+									"    \r",
+									"    // Check submittedAt is no longer null and is a valid date\r",
+									"    pm.expect(responseData.submittedAt).to.not.be.null;\r",
+									"    pm.expect(responseData.submittedAt).to.be.a('string').and.to.not.be.empty;\r",
+									"    \r",
+									"    // Validate submittedAt is a valid ISO date format\r",
+									"    const submittedAtDate = new Date(responseData.submittedAt);\r",
+									"    pm.expect(submittedAtDate).to.be.instanceOf(Date);\r",
+									"    pm.expect(submittedAtDate.toString()).to.not.equal(\"Invalid Date\");\r",
+									"    \r",
+									"    \r",
+									"    // Check peer ID was set (if your API stores it)\r",
+									"    if (responseData.peerId) {\r",
+									"        pm.expect(responseData.peerId).to.be.a('string').and.to.not.be.empty;\r",
+									"    }\r",
+									"    \r",
+									"    console.log(\"✅ Artifact successfully updated via listener!\");\r",
+									"    console.log(`📋 Artifact ID: ${responseData.id}`);\r",
+									"    console.log(`🎯 Submission State: ${responseData.submissionState}`);\r",
+									"    console.log(`⏰ Submitted At: ${responseData.submittedAt}`);\r",
+									"    console.log(`🔗 Blockchain TX: ${responseData.blockchainTxId}`);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Integration test completed successfully\", function() {\r",
+									"    const responseData = pm.response.json();\r",
+									"    \r",
+									"    console.log(\"🎉 INTEGRATION TEST PASSED!\");\r",
+									"    console.log(\"   ✓ Created artifact\");\r",
+									"    console.log(\"   ✓ Published message to RabbitMQ\"); \r",
+									"    console.log(\"   ✓ Listener consumed message\");\r",
+									"    console.log(\"   ✓ Listener updated artifact via API\");\r",
+									"    console.log(\"   ✓ Artifact contains submission data\");\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/artifacts/{{artifactId2}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"artifacts",
+								"{{artifactId2}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
 		{
 			"name": "Organization",
 			"item": [
@@ -125,6 +2453,64 @@
 							],
 							"path": [
 								"organizations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin 1 tries to get all Users",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Exactly 2 admin users, no PI/Collaborator', () => {",
+									"  const users = pm.response.json();",
+									"  users.forEach(u => pm.expect(u.roles).to.eql(['admin'])); // each has exactly [\"admin\"]",
+									"});",
+									"",
+									"pm.test(\"Code is 200\", function() {",
+									"    pm.response.to.have.status(200)",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_ADMIN1}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users"
 							]
 						}
 					},
@@ -1649,115 +4035,6 @@
 						}
 					},
 					"response": []
-				},
-				{
-					"name": "Admin 1 Deletes Org",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"code is 204\", function() {\r",
-									"    pm.response.to.have.status(204)\r",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token_ADMIN1}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "DELETE",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/organizations/{{orgId}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations",
-								"{{orgId}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Admin 1 tries to get all Users",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test('Exactly 2 admin users, no PI/Collaborator', () => {",
-									"  const users = pm.response.json();",
-									"  users.forEach(u => pm.expect(u.roles).to.eql(['admin'])); // each has exactly [\"admin\"]",
-									"});",
-									"",
-									"pm.test(\"Code is 200\", function() {",
-									"    pm.response.to.have.status(200)",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token_ADMIN1}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/users",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"users"
-							]
-						}
-					},
-					"response": []
 				}
 			]
 		},
@@ -2473,8 +4750,9 @@
 									"});",
 									"",
 									"// Guardar datos del usuario para verificación posterior",
-									"pm.collectionVariables.set(\"pi_user_id\", pm.response.json().id);",
+									"",
 									"pm.collectionVariables.set(\"pi_username\", pm.response.json().username);",
+									"pm.collectionVariables.set(\"pi_user_id\", pm.response.json().id);",
 									""
 								],
 								"type": "text/javascript",
@@ -2536,6 +4814,80 @@
 							"path": [
 								"users",
 								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Admin2 Gets PI",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Get the saved PI user data",
+									"const piUserId = pm.collectionVariables.get(\"pi_user_id\");",
+									"const piUsername = pm.collectionVariables.get(\"pi_username\");",
+									"const piEmail = pm.collectionVariables.get(\"pi_email\");",
+									"",
+									"pm.test(\"Status code is 200 OK\", function() {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"PI user information is correct\", function() {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData.id).to.equal(piUserId);",
+									"    pm.expect(responseData.username).to.equal(piUsername);",
+									"    pm.expect(responseData.name).to.be.a('string').and.to.not.be.empty;",
+									"});",
+									"",
+									"pm.test(\"PI user has correct role\", function() {",
+									"    const responseData = pm.response.json();",
+									"    ",
+									"    pm.expect(responseData.roles).to.be.an('array');",
+									"    pm.expect(responseData.roles).to.include('pi');",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_ADMIN2}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/{{pi_user_id}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"{{pi_user_id}}"
 							]
 						}
 					},
@@ -3384,80 +5736,6 @@
 					"response": []
 				},
 				{
-					"name": "Admin2 Gets PI",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Get the saved PI user data",
-									"const piUserId = pm.collectionVariables.get(\"pi_user_id\");",
-									"const piUsername = pm.collectionVariables.get(\"pi_username\");",
-									"const piEmail = pm.collectionVariables.get(\"pi_email\");",
-									"",
-									"pm.test(\"Status code is 200 OK\", function() {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"pm.test(\"PI user information is correct\", function() {",
-									"    const responseData = pm.response.json();",
-									"    ",
-									"    pm.expect(responseData.id).to.equal(piUserId);",
-									"    pm.expect(responseData.username).to.equal(piUsername);",
-									"    pm.expect(responseData.name).to.be.a('string').and.to.not.be.empty;",
-									"});",
-									"",
-									"pm.test(\"PI user has correct role\", function() {",
-									"    const responseData = pm.response.json();",
-									"    ",
-									"    pm.expect(responseData.roles).to.be.an('array');",
-									"    pm.expect(responseData.roles).to.include('pi');",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token_ADMIN2}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/users/{{pi_user_id}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"users",
-								"{{pi_user_id}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "PI user logs in",
 					"event": [
 						{
@@ -3918,7 +6196,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"{{validFullName3}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"ValidUserName\",\r\n    \"password\": \"{{contributor2_password}}\",\r\n    \"role\": \"admin\"\r\n}",
+							"raw": "{\r\n    \"name\": \"{{validUserName4}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"ValidUserName\",\r\n    \"password\": \"{{contributor2_password}}\",\r\n    \"role\": \"admin\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -4536,7 +6814,12 @@
 						}
 					},
 					"response": []
-				},
+				}
+			]
+		},
+		{
+			"name": "User - Tear Down",
+			"item": [
 				{
 					"name": "Log Out as Admin 1",
 					"event": [
@@ -7332,7 +9615,12 @@
 						}
 					},
 					"response": []
-				},
+				}
+			]
+		},
+		{
+			"name": "Artifact Tear Down",
+			"item": [
 				{
 					"name": "Delete All Admin",
 					"event": [
@@ -8670,2219 +10958,6 @@
 							"path": [
 								"artifacts",
 								"{{$randomUUID}}"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "API+Broker+Listener+Worker+MockPeer",
-			"item": [
-				{
-					"name": "Log in as Admin 1",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.environment.set(\"token_ADMIN1\", pm.response.json().token);\r",
-									"\r",
-									"pm.test(\"El código de estado es 201\", function() {\r",
-									"    pm.response.to.have.status(201)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Información presente\", function() {\r",
-									"    pm.expect(pm.response.json().token).to.be.a('string').and.to.not.be.empty;\r",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n   \"username\": \"{{ADMIN1_USERNAME}}\",\r\n   \"password\": \"{{ADMIN1_PASSWORD}}\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/users/login",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"users",
-								"login"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete All",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token_ADMIN1}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "DELETE",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/organizations",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Admin 1 Creates an org",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.environment.set(\"orgId\", pm.response.json().id);\r",
-									"pm.environment.set(\"orgName\", pm.response.json().name);\r",
-									"\r",
-									"\r",
-									"pm.test(\"El código de estado es 201\", function() {\r",
-									"    pm.response.to.have.status(201)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Información presente\", function() {\r",
-									"    pm.expect(pm.response.json().name).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().description).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token_ADMIN1}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"{{$randomCompanyName}}\",\r\n    \"description\": \"This organization focuses on {{$randomLoremWords}} and its main mission in life is {{$randomLoremWords}}\"\r\n}\r\n",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/organizations",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Log in as Admin 2",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.environment.set(\"token_ADMIN2\", pm.response.json().token);\r",
-									"\r",
-									"pm.test(\"El código de estado es 201\", function() {\r",
-									"    pm.response.to.have.status(201)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Información presente\", function() {\r",
-									"    pm.expect(pm.response.json().token).to.be.a('string').and.to.not.be.empty;\r",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n   \"username\": \"{{ADMIN2_USERNAME}}\",\r\n   \"password\": \"{{ADMIN2_PASSWORD}}\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/users/login",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"users",
-								"login"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "ADMIN 1 Creates a PI",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Capturar los datos enviados en la solicitud",
-									"const requestData = pm.request.body.raw ? JSON.parse(pm.request.body.raw) : {};",
-									"",
-									"// Guardar los valores enviados para comparar después",
-									"const sentName = requestData.name;",
-									"const sentUsername = requestData.username;",
-									"const sentRole = requestData.role",
-									"",
-									"// Guardar variables de entorno",
-									"pm.environment.set(\"userId1\", pm.response.json().id);",
-									"pm.environment.set(\"usernameUser1\", pm.response.json().username);",
-									"pm.environment.set(\"nameOfUser1\", pm.response.json().name);",
-									"pm.environment.set(\"pi_password\", requestData.password); // Save PI password for later use",
-									"",
-									"pm.test(\"Status code is 201 Created\", function() {",
-									"    pm.response.to.have.status(201);",
-									"});",
-									"",
-									"// Verificar información del usuario",
-									"pm.test(\"User information is valid\", function() {",
-									"    const responseData = pm.response.json();",
-									"    pm.expect(responseData.name).to.be.a('string').and.to.not.be.empty;",
-									"    pm.expect(responseData.username).to.be.a('string').and.to.not.be.empty;",
-									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;",
-									"});",
-									"",
-									"// Verificar que los datos de respuesta coinciden con los enviados",
-									"pm.test(\"User data in response matches request data\", function() {",
-									"    const responseData = pm.response.json();",
-									"    ",
-									"    // Verificar que el nombre coincide",
-									"    pm.expect(responseData.name).to.equal(sentName, \"Name in response should match sent name\");",
-									"    ",
-									"    // Verificar que el username coincide",
-									"    pm.expect(responseData.username).to.equal(sentUsername, \"Username in response should match sent username\");",
-									"});",
-									"",
-									"// Verificar que el usuario tiene el rol de PI",
-									"pm.test(\"User has correct role\", function() {",
-									"    const responseData = pm.response.json();",
-									"    pm.expect(responseData.roles).to.be.an('array');",
-									"    pm.expect(responseData.roles).to.include(sentRole, \"Role in response should match sent role\");",
-									"});",
-									"",
-									"// Verificar que el usuario está asociado con la organización correcta",
-									"pm.test(\"User is associated with correct organization\", function () {",
-									"    const responseData = pm.response.json();",
-									"    pm.expect(responseData.organizationName).to.equal(pm.environment.get(\"orgName\"), \"Organization name in response should match organization ID\");",
-									"});",
-									"",
-									"// Guardar datos del usuario para verificación posterior",
-									"pm.collectionVariables.set(\"pi_user_id\", pm.response.json().id);",
-									"pm.collectionVariables.set(\"pi_username\", pm.response.json().username);",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"// Generar un nombre aleatorio\r",
-									"let fullName = pm.variables.replaceIn(\"{{$randomFullName}}\");\r",
-									"// Asegurarse de que tiene al menos 8 caracteres\r",
-									"if (fullName.length < 8) {\r",
-									"    fullName = fullName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - fullName.length));\r",
-									"}\r",
-									"pm.environment.set(\"validFullName\", fullName);\r",
-									"\r",
-									"// Generar un nombre de usuario aleatorio\r",
-									"let userName = pm.variables.replaceIn(\"{{$randomUserName}}\");\r",
-									"// Asegurarse de que tiene al menos 8 caracteres\r",
-									"if (userName.length < 8) {\r",
-									"    userName = userName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - userName.length));\r",
-									"}\r",
-									"pm.environment.set(\"validUserName\", userName);"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token_ADMIN1}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"{{validFullName}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"{{validUserName}}\",\r\n    \"password\": \"{{$randomPassword}}\",\r\n    \"role\": \"pi\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/users/register",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"users",
-								"register"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Admin 2 Creates a Collaborator",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Capturar los datos enviados en la solicitud",
-									"const requestData = pm.request.body.raw ? JSON.parse(pm.request.body.raw) : {};",
-									"",
-									"// Guardar los valores enviados para comparar después",
-									"const sentName = requestData.name;",
-									"const sentUsername = requestData.username;",
-									"const sentRole = requestData.role",
-									"",
-									"// Guardar variables de entorno",
-									"pm.environment.set(\"collaboratorId\", pm.response.json().id);",
-									"pm.environment.set(\"collaborator1Username\", pm.response.json().username);",
-									"pm.environment.set(\"collaborator1_password\", requestData.password); // Save PI password for later use",
-									"",
-									"",
-									"// Verificar código de estado",
-									"pm.test(\"Status code is 201 Created\", function() {",
-									"    pm.response.to.have.status(201);",
-									"});",
-									"",
-									"// Verificar información del usuario",
-									"pm.test(\"collaborator user information is valid\", function() {",
-									"    const responseData = pm.response.json();",
-									"    pm.expect(responseData.name).to.be.a('string').and.to.not.be.empty;",
-									"    pm.expect(responseData.username).to.be.a('string').and.to.not.be.empty;",
-									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;",
-									"});",
-									"",
-									"// Verificar que los datos de respuesta coinciden con los enviados",
-									"pm.test(\"collaborator data in response matches request data\", function() {",
-									"    const responseData = pm.response.json();",
-									"    ",
-									"    // Verificar que el nombre coincide",
-									"    pm.expect(responseData.name).to.equal(sentName, \"Name in response should match sent name\");",
-									"    ",
-									"",
-									"    pm.expect(responseData.username).to.equal(sentUsername, \"Username in response should match sent username\");",
-									"});",
-									"",
-									"// Verificar que el usuario tiene el rol de collaborator",
-									"pm.test(\"User has correct collaborator role\", function() {",
-									"    const responseData = pm.response.json();",
-									"    pm.expect(responseData.roles).to.be.an('array');",
-									"    pm.expect(responseData.roles).to.include(sentRole, \"Role in response should match sent role\");",
-									"});",
-									"",
-									"",
-									"// Verificar que el usuario está asociado con la organización correcta",
-									"pm.test(\"User is associated with correct organization\", function () {",
-									"    const responseData = pm.response.json();",
-									"    pm.expect(responseData.organizationName).to.equal(pm.environment.get(\"orgName\"), \"Organization name in response should match organization ID\");",
-									"});",
-									"// Guardar datos del usuario collaborator para verificación posterior",
-									"pm.collectionVariables.set(\"collaborator_user_id\", pm.response.json().id);",
-									"pm.collectionVariables.set(\"collaborator_username\", pm.response.json().username);",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"// Generar un nombre aleatorio\r",
-									"let fullName = pm.variables.replaceIn(\"{{$randomFullName}}\");\r",
-									"// Asegurarse de que tiene al menos 8 caracteres\r",
-									"if (fullName.length < 8) {\r",
-									"    fullName = fullName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - fullName.length));\r",
-									"}\r",
-									"pm.environment.set(\"validFullName2\", fullName);\r",
-									"\r",
-									"// Generar un nombre de usuario aleatorio\r",
-									"let userName = pm.variables.replaceIn(\"{{$randomUserName}}\");\r",
-									"// Asegurarse de que tiene al menos 8 caracteres\r",
-									"if (userName.length < 8) {\r",
-									"    userName = userName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - userName.length));\r",
-									"}\r",
-									"pm.environment.set(\"validUserName2\", userName);"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token_ADMIN2}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"{{validFullName2}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"{{validUserName2}}\",\r\n    \"password\": \"{{$randomPassword}}\",\r\n    \"role\": \"collaborator\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/users/register",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"users",
-								"register"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Collaborator1 logs in",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.environment.set(\"token_collaborator1\", pm.response.json().token);\r",
-									"\r",
-									"pm.test(\"Status code is 201 Created\", function() {\r",
-									"    pm.response.to.have.status(201);\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Token is present\", function() {\r",
-									"    pm.expect(pm.response.json().token).to.be.a('string').and.to.not.be.empty;\r",
-									"});\r",
-									"\r",
-									"pm.test(\"collaborator login successful\", function() {\r",
-									"    // Verificar que hay un token de respuesta (indicación de login exitoso)\r",
-									"    const responseJson = pm.response.json();\r",
-									"    pm.expect(responseJson.token).to.be.a('string').and.to.not.be.empty;\r",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n   \"username\": \"{{collaborator1Username}}\",\r\n   \"password\": \"{{collaborator1_password}}\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/users/login",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"users",
-								"login"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "PI user logs in",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.environment.set(\"token_PI\", pm.response.json().token);\r",
-									"\r",
-									"pm.test(\"Status code is 201 Created\", function() {\r",
-									"    pm.response.to.have.status(201);\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Token is present\", function() {\r",
-									"    pm.expect(pm.response.json().token).to.be.a('string').and.to.not.be.empty;\r",
-									"});\r",
-									"\r",
-									"pm.test(\"PI login successful\", function() {\r",
-									"    // Verificar que hay un token de respuesta (indicación de login exitoso)\r",
-									"    const responseJson = pm.response.json();\r",
-									"    pm.expect(responseJson.token).to.be.a('string').and.to.not.be.empty;\r",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n   \"username\": \"{{pi_username}}\",\r\n   \"password\": \"{{pi_password}}\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/users/login",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"users",
-								"login"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Collaborator Get All Orgs",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Code is 200\", function() {\r",
-									"    pm.response.to.have.status(200);\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Non Empty list\", function() {\r",
-									"    pm.expect(pm.response.json()).to.be.an('array').that.is.not.empty;\r",
-									"    pm.expect(pm.response.json()).to.have.lengthOf(1);\r",
-									"    pm.expect(pm.response.json()[0].id).to.equal(pm.environment.get(\"orgId\"));\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token_collaborator1}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/organizations",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Collaborator Create Artifact 1",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Store the response data in environment variables\r",
-									"pm.environment.set(\"artifactId1\", pm.response.json().id);\r",
-									"pm.environment.set(\"artifactTitle1\", pm.response.json().title);\r",
-									"pm.environment.set(\"artifactDescription1\", pm.response.json().description)\r",
-									"\r",
-									"// Test HTTP Status Code\r",
-									"pm.test(\"Status code is 201\", function () {\r",
-									"    pm.response.to.have.status(201);\r",
-									"});\r",
-									"\r",
-									"// Test Response Structure\r",
-									"pm.test(\"Response has the correct structure\", function () {\r",
-									"    const response = pm.response.json();\r",
-									"    \r",
-									"    // Required fields\r",
-									"    pm.expect(response).to.have.property('id');\r",
-									"    pm.expect(response).to.have.property('title');\r",
-									"    pm.expect(response).to.have.property('description');\r",
-									"    pm.expect(response).not.to.have.property('fileName');\r",
-									"    pm.expect(response).not.to.have.property('hash');\r",
-									"    pm.expect(response).not.to.have.property('submitterEmail');\r",
-									"    pm.expect(response).not.to.have.property('submissionState');\r",
-									"    pm.expect(response).not.to.have.property('organization');\r",
-									"    pm.expect(response.lastTimeVerified).to.be.null;\r",
-									"    \r",
-									"});\r",
-									"\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"function generateRandomHash(length) {",
-									"    let result = '';",
-									"    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';",
-									"    const charactersLength = characters.length;",
-									"",
-									"    for (let i = 0; i < length; i++) {",
-									"        result += characters.charAt(Math.floor(Math.random() * charactersLength));",
-									"    }",
-									"",
-									"    return result;",
-									"}",
-									"",
-									"// Set the generated hash in an environment variable",
-									"pm.environment.set(\"artifacthash1\", generateRandomHash(64));",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token_collaborator1}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"title\": \"{{$randomProductName}}\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"fileName\": \"{{$randomFileName}}\",\r\n    \"hash\": \"{{artifacthash1}}\",\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example.com/product\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/artifacts",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"artifacts"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Artifact 1",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Code is 200\", function() {\r",
-									"    pm.response.to.have.status(200);\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Non empty response\", function() {\r",
-									"    const responseData = pm.response.json();\r",
-									"    \r",
-									"    // Verify stored values from creation\r",
-									"    pm.expect(responseData.id).to.equal(pm.environment.get(\"artifactId1\"));\r",
-									"    pm.expect(responseData.title).to.equal(pm.environment.get(\"artifactTitle1\"));\r",
-									"    pm.expect(responseData.description).to.equal(pm.environment.get(\"artifactDescription1\"));\r",
-									"    pm.expect(responseData.hash).to.equal(pm.environment.get(\"artifacthash1\"));\r",
-									"    \r",
-									"    // Rest of the field validations\r",
-									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.title).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.description).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.keywords).to.be.an('array').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.links).to.be.an('array');\r",
-									"    pm.expect(responseData.dois).to.be.an('array');\r",
-									"    pm.expect(responseData.fundingAgencies).to.be.an('array');\r",
-									"    pm.expect(responseData.acknowledgements).to.be.a('string');\r",
-									"    pm.expect(responseData.fileName).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.hash).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.verified).to.be.a('boolean');\r",
-									"    pm.expect(responseData.lastTimeVerified).to.be.null; // Assuming null is expected\r",
-									"    pm.expect(responseData.submissionState).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.submitterEmail).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.submittedAt).to.be.null; // Assuming null is expected\r",
-									"    pm.expect(responseData.organization).to.be.an('object');\r",
-									"    pm.expect(responseData.organization.name).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.blockchainTxId).to.be.null;\r",
-									"    pm.expect(responseData.peerId).to.be.null;\r",
-									"    pm.expect(responseData.submissionError).to.be.null;\r",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/artifacts/{{artifactId1}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"artifacts",
-								"{{artifactId1}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Collaborator Create Artifact 1 - few fields",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Store the response data in environment variables\r",
-									"pm.environment.set(\"artifactId1\", pm.response.json().id);\r",
-									"pm.environment.set(\"artifactTitle1\", pm.response.json().title);\r",
-									"pm.environment.set(\"artifactDescription1\", pm.response.json().description)\r",
-									"\r",
-									"// Test HTTP Status Code\r",
-									"pm.test(\"Status code is 201\", function () {\r",
-									"    pm.response.to.have.status(201);\r",
-									"});\r",
-									"\r",
-									"// Test Response Structure\r",
-									"pm.test(\"Response has the correct structure\", function () {\r",
-									"    const response = pm.response.json();\r",
-									"    \r",
-									"    // Required fields\r",
-									"    pm.expect(response).to.have.property('id');\r",
-									"    pm.expect(response).to.have.property('title');\r",
-									"    pm.expect(response).to.have.property('description');\r",
-									"    pm.expect(response).not.to.have.property('fileName');\r",
-									"    pm.expect(response).not.to.have.property('hash');\r",
-									"    pm.expect(response).not.to.have.property('submitterEmail');\r",
-									"    pm.expect(response).not.to.have.property('submissionState');\r",
-									"    pm.expect(response).not.to.have.property('organization');\r",
-									"    pm.expect(response.lastTimeVerified).to.be.null;\r",
-									"    \r",
-									"});\r",
-									"\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"function generateRandomHash(length) {",
-									"    let result = '';",
-									"    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';",
-									"    const charactersLength = characters.length;",
-									"",
-									"    for (let i = 0; i < length; i++) {",
-									"        result += characters.charAt(Math.floor(Math.random() * charactersLength));",
-									"    }",
-									"",
-									"    return result;",
-									"}",
-									"",
-									"// Set the generated hash in an environment variable",
-									"pm.environment.set(\"artifacthash1\", generateRandomHash(64));",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token_collaborator1}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"title\": \"{{$randomProductName}}\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"fileName\": \"{{$randomFileName}}\",\r\n    \"hash\": \"{{artifacthash1}}\",\r\n    \"keywords\": [\"\"],\r\n    \"links\": [],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [\"\"],\r\n    \"acknowledgements\": \"\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/artifacts",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"artifacts"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "PI Create Artifact 2",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Store the response data in environment variables\r",
-									"pm.environment.set(\"artifact2title\", pm.response.json().title);\r",
-									"pm.environment.set(\"artifactId2\", pm.response.json().id);\r",
-									"pm.environment.set(\"artifactTitle2\", pm.response.json().title);\r",
-									"pm.environment.set(\"artifactDescription2\", pm.response.json().description)\r",
-									"\r",
-									"// Test HTTP Status Code\r",
-									"pm.test(\"Status code is 201\", function () {\r",
-									"    pm.response.to.have.status(201);\r",
-									"});\r",
-									"\r",
-									"// Test Response Structure\r",
-									"pm.test(\"Response has the correct structure\", function () {\r",
-									"    const response = pm.response.json();\r",
-									"    \r",
-									"    // Required fields\r",
-									"    pm.expect(response).to.have.property('id');\r",
-									"    pm.expect(response).to.have.property('title');\r",
-									"    pm.expect(response).to.have.property('description');\r",
-									"    pm.expect(response).not.to.have.property('fileName');\r",
-									"    pm.expect(response).not.to.have.property('hash');\r",
-									"    pm.expect(response).not.to.have.property('submitterEmail');\r",
-									"    pm.expect(response).not.to.have.property('submissionState');\r",
-									"    pm.expect(response).not.to.have.property('organization');\r",
-									"    pm.expect(response.lastTimeVerified).to.be.null;\r",
-									"    \r",
-									"});\r",
-									"\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"function generateRandomHash(length) {",
-									"    let result = '';",
-									"    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';",
-									"    const charactersLength = characters.length;",
-									"",
-									"    for (let i = 0; i < length; i++) {",
-									"        result += characters.charAt(Math.floor(Math.random() * charactersLength));",
-									"    }",
-									"",
-									"    return result;",
-									"}",
-									"",
-									"// Set the generated hash in an environment variable",
-									"pm.environment.set(\"artifacthash2\", generateRandomHash(64));",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token_PI}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"title\": \"{{$randomProductName}}\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"fileName\": \"{{$randomFileName}}\",\r\n    \"hash\": \"{{artifacthash2}}\",\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example.com/product\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/artifacts",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"artifacts"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Artifact 2",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Code is 200\", function() {\r",
-									"    pm.response.to.have.status(200);\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Non empty response\", function() {\r",
-									"    const responseData = pm.response.json();\r",
-									"    \r",
-									"    // Verify stored values from creation\r",
-									"    pm.expect(responseData.id).to.equal(pm.environment.get(\"artifactId2\"));\r",
-									"    pm.expect(responseData.title).to.equal(pm.environment.get(\"artifactTitle2\"));\r",
-									"    pm.expect(responseData.description).to.equal(pm.environment.get(\"artifactDescription2\"));\r",
-									"    pm.expect(responseData.hash).to.equal(pm.environment.get(\"artifacthash2\"));\r",
-									"    \r",
-									"    // Rest of the field validations\r",
-									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.title).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.description).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.keywords).to.be.an('array').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.links).to.be.an('array');\r",
-									"    pm.expect(responseData.dois).to.be.an('array');\r",
-									"    pm.expect(responseData.fundingAgencies).to.be.an('array');\r",
-									"    pm.expect(responseData.acknowledgements).to.be.a('string');\r",
-									"    pm.expect(responseData.fileName).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.hash).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.verified).to.be.a('boolean');\r",
-									"    pm.expect(responseData.lastTimeVerified).to.be.null; // Assuming null is expected\r",
-									"    pm.expect(responseData.submissionState).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.submitterEmail).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.submittedAt).to.be.null; // Assuming null is expected\r",
-									"    pm.expect(responseData.organization).to.be.an('object');\r",
-									"    pm.expect(responseData.organization.name).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.blockchainTxId).to.be.null;\r",
-									"    pm.expect(responseData.peerId).to.be.null;\r",
-									"    pm.expect(responseData.submissionError).to.be.null;\r",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/artifacts/{{artifactId2}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"artifacts",
-								"{{artifactId2}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get All Artifacts",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"/* ----------  STATUS ---------- */\r",
-									"pm.test('Code is 200', () => pm.response.to.have.status(200));\r",
-									"\r",
-									"/* ----------  BASIC ARRAY CHECK ---------- */\r",
-									"const artifacts = pm.response.json();\r",
-									"\r",
-									"pm.test('Response is array (≥ 2)', () => {\r",
-									"  pm.expect(artifacts).to.be.an('array').with.length.of.at.least(2);\r",
-									"});\r",
-									"\r",
-									"/* ----------  STRUCTURE FOR EACH ITEM ---------- */\r",
-									"pm.test('Each artifact has required minimal fields', () => {\r",
-									"  artifacts.forEach(a => {\r",
-									"    pm.expect(a).to.have.property('id').that.is.a('string').and.is.not.empty;\r",
-									"    pm.expect(a).to.have.property('title').that.is.a('string').and.is.not.empty;\r",
-									"    pm.expect(a).to.have.property('description').that.is.a('string').and.is.not.empty;\r",
-									"    pm.expect(a).to.have.property('lastTimeVerified');           // null or date\r",
-									"  });\r",
-									"});\r",
-									"\r",
-									"/* ----------  OPTIONAL VALIDATION WITH ENV VARS ---------- */\r",
-									"const envIds  = [pm.environment.get('artifactId1'), pm.environment.get('artifactId2')].filter(Boolean);\r",
-									"const envDesc = [pm.environment.get('description1'), pm.environment.get('description2')].filter(Boolean);\r",
-									"\r",
-									"if (envIds.length) {\r",
-									"  pm.test('Response contains expected artifact IDs', () => {\r",
-									"    const idsInResponse = artifacts.map(a => a.id);\r",
-									"    envIds.forEach(id => pm.expect(idsInResponse).to.include(id));\r",
-									"  });\r",
-									"}\r",
-									"\r",
-									"if (envDesc.length) {\r",
-									"  pm.test('Descriptions match stored values', () => {\r",
-									"    envDesc.forEach(desc => {\r",
-									"      const found = artifacts.some(a => a.description === desc);\r",
-									"      pm.expect(found, `Description \"${desc}\" should appear in response`).to.be.true;\r",
-									"    });\r",
-									"  });\r",
-									"}\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/artifacts",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"artifacts"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get All Orgs",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"/* ----------  STATUS ---------- */\r",
-									"pm.test('Code is 200', () => pm.response.to.have.status(200));\r",
-									"\r",
-									"/* ----------  BODY ---------- */\r",
-									"const data = pm.response.json();\r",
-									"\r",
-									"/* ----------  ORGANIZATION ---------- */\r",
-									"pm.test('Exactly one organization returned', () => {\r",
-									"  pm.expect(data).to.be.an('array').with.lengthOf(1);\r",
-									"});\r",
-									"\r",
-									"const org = data[0];\r",
-									"\r",
-									"/* Guarda orgId la primera vez si no existe */\r",
-									"if (!pm.environment.get('orgId')) {\r",
-									"  pm.environment.set('orgId', org.id);\r",
-									"}\r",
-									"\r",
-									"pm.test('Organization ID matches stored value', () => {\r",
-									"  pm.expect(org.id).to.eql(pm.environment.get('orgId'));\r",
-									"});\r",
-									"\r",
-									"/* ----------  ARTIFACTS ARRAY ---------- */\r",
-									"pm.test('At least 2 artifacts returned', () => {\r",
-									"  pm.expect(org.artifacts).to.be.an('array').with.length.of.at.least(2);\r",
-									"});\r",
-									"\r",
-									"/* ----------  VALIDACIÓN OPCIONAL CON VARIABLES ---------- */\r",
-									"const storedIds  = [pm.environment.get('artifactId1'), pm.environment.get('artifactId2')].filter(Boolean);\r",
-									"const storedDesc = [pm.environment.get('description1'), pm.environment.get('description2')].filter(Boolean);\r",
-									"\r",
-									"if (storedIds.length) {\r",
-									"  pm.test('Response contiene los artifact IDs guardados', () => {\r",
-									"    const ids = org.artifacts.map(a => a.id);\r",
-									"    storedIds.forEach(id => pm.expect(ids, `ID ${id} debe estar en la respuesta`).to.include(id));\r",
-									"  });\r",
-									"}\r",
-									"\r",
-									"if (storedDesc.length) {\r",
-									"  pm.test('Descripciones guardadas aparecen en la respuesta', () => {\r",
-									"    storedDesc.forEach(desc => {\r",
-									"      const exists = org.artifacts.some(a => a.description === desc);\r",
-									"      pm.expect(exists, `Descripción \"${desc}\" debería estar en la respuesta`).to.be.true;\r",
-									"    });\r",
-									"  });\r",
-									"}\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token_PI}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/organizations",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Artifact wrong ID",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Code is 404\", function() {\r",
-									"    pm.response.to.have.status(404)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Get error message\", function() {\r",
-									"   pm.expect(pm.response.json().message).to.eql(\"The artifact with the provided id does not exist\");\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/artifacts/{{$randomUUID}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"artifacts",
-								"{{$randomUUID}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Publish Sucess messague in Rabbit - Artifact 1",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test that the message was successfully published\r",
-									"pm.test(\"Message published successfully\", function () {\r",
-									"    pm.response.to.have.status(200);\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Message was routed to queue\", function () {\r",
-									"    const responseJson = pm.response.json();\r",
-									"    pm.expect(responseJson.routed).to.be.true;\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Response time is acceptable\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
-									"});\r",
-									"\r",
-									"// Log success\r",
-									"console.log(\"✅ Message successfully published to artifact.submitted.queue\");\r",
-									"console.log(\"📨 Artifact ID:\", pm.environment.get(\"artifactId1\"));\r",
-									"console.log(\"🔄 Check listener logs for processing...\");\r",
-									"\r",
-									"// Optional: Set a timestamp for when message was sent\r",
-									"pm.environment.set(\"messageSentAt\", new Date().toISOString());"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "basic",
-							"basic": [
-								{
-									"key": "password",
-									"value": "{{rabbit_pass}}",
-									"type": "string"
-								},
-								{
-									"key": "username",
-									"value": "{{rabbit_user}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [
-							{
-								"key": "X-API-Key",
-								"value": "{{API_KEY}}",
-								"type": "text"
-							},
-							{
-								"key": "X-Service-Role",
-								"value": "{{Service_Role}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n  \"properties\": {\r\n    \"delivery_mode\": 2,\r\n    \"content_type\": \"application/json\"\r\n  },\r\n  \"routing_key\": \"artifact.submitted\",\r\n  \"payload\": \"{\\\"artifactId\\\":\\\"{{artifactId1}}\\\",\\\"submissionState\\\":\\\"SUCCESS\\\",\\\"submittedAt\\\":\\\"2023-12-07T15:30:00.000Z\\\",\\\"blockchainTxId\\\":\\\"0x1234567890abcdef1234567890abcdef12345678\\\",\\\"peerId\\\":\\\"12D3KooWBhxQ7uXeY9zF8qG5nM4rL3pT6vN8wS2cK9jH1fX7yR4e\\\",\\\"version\\\":\\\"v1\\\"}\",\r\n  \"payload_encoding\": \"string\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{rabbit_url}}",
-							"host": [
-								"{{rabbit_url}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Artifact 1 Updated",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Code is 200\", function() {\r",
-									"    pm.response.to.have.status(200);\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Non empty response\", function() {\r",
-									"    const responseData = pm.response.json();\r",
-									"    \r",
-									"    // Verify stored values from creation\r",
-									"    pm.expect(responseData.id).to.equal(pm.environment.get(\"artifactId1\"));\r",
-									"    pm.expect(responseData.title).to.equal(pm.environment.get(\"artifactTitle1\"));\r",
-									"    pm.expect(responseData.description).to.equal(pm.environment.get(\"artifactDescription1\"));\r",
-									"    pm.expect(responseData.hash).to.equal(pm.environment.get(\"artifacthash1\"));\r",
-									"    \r",
-									"    // Rest of the field validations\r",
-									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.title).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.description).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.acknowledgements).to.be.a('string');\r",
-									"    pm.expect(responseData.fileName).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.hash).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.verified).to.be.a('boolean');\r",
-									"    pm.expect(responseData.lastTimeVerified).to.be.null; // Assuming null is expected\r",
-									"    pm.expect(responseData.submitterEmail).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.organization).to.be.an('object');\r",
-									"    pm.expect(responseData.organization.name).to.be.a('string').and.to.not.be.empty;\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Submission fields are updated correctly\", function() {\r",
-									"    const responseData = pm.response.json();\r",
-									"    \r",
-									"    // Check submission state was updated by the listener\r",
-									"    pm.expect(responseData.submissionState).to.equal(\"SUCCESS\");\r",
-									"    \r",
-									"    // Check submittedAt is no longer null and is a valid date\r",
-									"    pm.expect(responseData.submittedAt).to.not.be.null;\r",
-									"    pm.expect(responseData.submittedAt).to.be.a('string').and.to.not.be.empty;\r",
-									"    \r",
-									"    // Validate submittedAt is a valid ISO date format\r",
-									"    const submittedAtDate = new Date(responseData.submittedAt);\r",
-									"    pm.expect(submittedAtDate).to.be.instanceOf(Date);\r",
-									"    pm.expect(submittedAtDate.toString()).to.not.equal(\"Invalid Date\");\r",
-									"    \r",
-									"    \r",
-									"    // Check peer ID was set (if your API stores it)\r",
-									"    if (responseData.peerId) {\r",
-									"        pm.expect(responseData.peerId).to.be.a('string').and.to.not.be.empty;\r",
-									"    }\r",
-									"    \r",
-									"    console.log(\"✅ Artifact successfully updated via listener!\");\r",
-									"    console.log(`📋 Artifact ID: ${responseData.id}`);\r",
-									"    console.log(`🎯 Submission State: ${responseData.submissionState}`);\r",
-									"    console.log(`⏰ Submitted At: ${responseData.submittedAt}`);\r",
-									"    console.log(`🔗 Blockchain TX: ${responseData.blockchainTxId}`);\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Integration test completed successfully\", function() {\r",
-									"    const responseData = pm.response.json();\r",
-									"    \r",
-									"    console.log(\"🎉 INTEGRATION TEST PASSED!\");\r",
-									"    console.log(\"   ✓ Created artifact\");\r",
-									"    console.log(\"   ✓ Published message to RabbitMQ\"); \r",
-									"    console.log(\"   ✓ Listener consumed message\");\r",
-									"    console.log(\"   ✓ Listener updated artifact via API\");\r",
-									"    console.log(\"   ✓ Artifact contains submission data\");\r",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/artifacts/{{artifactId1}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"artifacts",
-								"{{artifactId1}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Publish Failed messague in Rabbit - Artifact 2",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test that the message was successfully published\r",
-									"pm.test(\"Message published successfully\", function () {\r",
-									"    pm.response.to.have.status(200);\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Message was routed to queue\", function () {\r",
-									"    const responseJson = pm.response.json();\r",
-									"    pm.expect(responseJson.routed).to.be.true;\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Response time is acceptable\", function () {\r",
-									"    pm.expect(pm.response.responseTime).to.be.below(2000);\r",
-									"});\r",
-									"\r",
-									"// Log success\r",
-									"console.log(\"✅ Message successfully published to artifact.submitted.queue\");\r",
-									"console.log(\"📨 Artifact ID:\", pm.environment.get(\"artifactId1\"));\r",
-									"console.log(\"🔄 Check listener logs for processing...\");\r",
-									"\r",
-									"// Optional: Set a timestamp for when message was sent\r",
-									"pm.environment.set(\"messageSentAt\", new Date().toISOString());"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "basic",
-							"basic": [
-								{
-									"key": "password",
-									"value": "{{rabbit_pass}}",
-									"type": "string"
-								},
-								{
-									"key": "username",
-									"value": "{{rabbit_user}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n  \"properties\": {\r\n    \"delivery_mode\": 2,\r\n    \"content_type\": \"application/json\"\r\n  },\r\n  \"routing_key\": \"artifact.submitted\",\r\n  \"payload\": \"{\\\"artifactId\\\":\\\"{{artifactId2}}\\\",\\\"submissionState\\\":\\\"FAILED\\\",\\\"submittedAt\\\":\\\"2023-12-07T15:30:00.000Z\\\",\\\"error\\\":\\\"Testing Failure\\\",\\\"peerId\\\":\\\"12D3KooWBhxQ7uXeY9zF8qG5nM4rL3pT6vN8wS2cK9jH1fX7yR4e\\\",\\\"version\\\":\\\"v1\\\"}\",\r\n  \"payload_encoding\": \"string\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{rabbit_url}}",
-							"host": [
-								"{{rabbit_url}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Artifact 2 Updated",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Code is 200\", function() {\r",
-									"    pm.response.to.have.status(200);\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Non empty response\", function() {\r",
-									"    const responseData = pm.response.json();\r",
-									"    \r",
-									"    // Verify stored values from creation\r",
-									"    pm.expect(responseData.id).to.equal(pm.environment.get(\"artifactId2\"));\r",
-									"    pm.expect(responseData.title).to.equal(pm.environment.get(\"artifactTitle2\"));\r",
-									"    pm.expect(responseData.description).to.equal(pm.environment.get(\"artifactDescription2\"));\r",
-									"    pm.expect(responseData.hash).to.equal(pm.environment.get(\"artifacthash2\"));\r",
-									"    \r",
-									"    // Rest of the field validations\r",
-									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.title).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.description).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.acknowledgements).to.be.a('string');\r",
-									"    pm.expect(responseData.fileName).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.hash).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.verified).to.be.a('boolean');\r",
-									"    pm.expect(responseData.lastTimeVerified).to.be.null; // Assuming null is expected\r",
-									"    pm.expect(responseData.submitterEmail).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.organization).to.be.an('object');\r",
-									"    pm.expect(responseData.organization.name).to.be.a('string').and.to.not.be.empty;\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Submission fields are updated correctly\", function() {\r",
-									"    const responseData = pm.response.json();\r",
-									"    \r",
-									"    // Check submission state was updated by the listener\r",
-									"    pm.expect(responseData.submissionState).to.equal(\"FAILED\");\r",
-									"    \r",
-									"    // Check submittedAt is no longer null and is a valid date\r",
-									"    pm.expect(responseData.submittedAt).to.not.be.null;\r",
-									"    pm.expect(responseData.submittedAt).to.be.a('string').and.to.not.be.empty;\r",
-									"    \r",
-									"    // Validate submittedAt is a valid ISO date format\r",
-									"    const submittedAtDate = new Date(responseData.submittedAt);\r",
-									"    pm.expect(submittedAtDate).to.be.instanceOf(Date);\r",
-									"    pm.expect(submittedAtDate.toString()).to.not.equal(\"Invalid Date\");\r",
-									"    \r",
-									"    \r",
-									"    // Check peer ID was set (if your API stores it)\r",
-									"    if (responseData.peerId) {\r",
-									"        pm.expect(responseData.peerId).to.be.a('string').and.to.not.be.empty;\r",
-									"    }\r",
-									"    \r",
-									"    console.log(\"✅ Artifact successfully updated via listener!\");\r",
-									"    console.log(`📋 Artifact ID: ${responseData.id}`);\r",
-									"    console.log(`🎯 Submission State: ${responseData.submissionState}`);\r",
-									"    console.log(`⏰ Submitted At: ${responseData.submittedAt}`);\r",
-									"    console.log(`🔗 Blockchain TX: ${responseData.blockchainTxId}`);\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Integration test completed successfully\", function() {\r",
-									"    const responseData = pm.response.json();\r",
-									"    \r",
-									"    console.log(\"🎉 INTEGRATION TEST PASSED!\");\r",
-									"    console.log(\"   ✓ Created artifact\");\r",
-									"    console.log(\"   ✓ Published message to RabbitMQ\"); \r",
-									"    console.log(\"   ✓ Listener consumed message\");\r",
-									"    console.log(\"   ✓ Listener updated artifact via API\");\r",
-									"    console.log(\"   ✓ Artifact contains submission data\");\r",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/artifacts/{{artifactId2}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"artifacts",
-								"{{artifactId2}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "PI Create Artifact 3",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Store the response data in environment variables\r",
-									"pm.environment.set(\"artifact3title\", pm.response.json().title);\r",
-									"pm.environment.set(\"artifactId3\", pm.response.json().id);\r",
-									"pm.environment.set(\"artifactTitle3\", pm.response.json().title);\r",
-									"pm.environment.set(\"artifactDescription3\", pm.response.json().description)\r",
-									"\r",
-									"// Test HTTP Status Code\r",
-									"pm.test(\"Status code is 201\", function () {\r",
-									"    pm.response.to.have.status(201);\r",
-									"});\r",
-									"\r",
-									"// Test Response Structure\r",
-									"pm.test(\"Response has the correct structure\", function () {\r",
-									"    const response = pm.response.json();\r",
-									"    \r",
-									"    // Required fields\r",
-									"    pm.expect(response).to.have.property('id');\r",
-									"    pm.expect(response).to.have.property('title');\r",
-									"    pm.expect(response).to.have.property('description');\r",
-									"    pm.expect(response).not.to.have.property('fileName');\r",
-									"    pm.expect(response).not.to.have.property('hash');\r",
-									"    pm.expect(response).not.to.have.property('submitterEmail');\r",
-									"    pm.expect(response).not.to.have.property('submissionState');\r",
-									"    pm.expect(response).not.to.have.property('organization');\r",
-									"    pm.expect(response.lastTimeVerified).to.be.null;\r",
-									"    \r",
-									"});\r",
-									"\r",
-									"  // Wait for 500ms before proceeding to the next request\r",
-									"  setTimeout(function() {\r",
-									"      // No-op, just delay\r",
-									"  }, 1000);\r",
-									"\r",
-									"    pm.test(\"Dummy delay always passes\", function () {\r",
-									"      pm.expect(true).to.be.true;\r",
-									"  });\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"function generateRandomHash(length) {",
-									"    let result = '';",
-									"    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';",
-									"    const charactersLength = characters.length;",
-									"",
-									"    for (let i = 0; i < length; i++) {",
-									"        result += characters.charAt(Math.floor(Math.random() * charactersLength));",
-									"    }",
-									"",
-									"    return result;",
-									"}",
-									"",
-									"// Set the generated hash in an environment variable",
-									"pm.environment.set(\"artifacthash3\", generateRandomHash(64));",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token_PI}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"title\": \"{{$randomProductName}}\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"fileName\": \"{{$randomFileName}}\",\r\n    \"hash\": \"{{artifacthash3}}\",\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example.com/product\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/artifacts",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"artifacts"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Artifact 3",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Code is 200\", function() {\r",
-									"    pm.response.to.have.status(200);\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Non empty response\", function() {\r",
-									"    const responseData = pm.response.json();\r",
-									"    \r",
-									"    // Verify stored values from creation\r",
-									"    pm.expect(responseData.id).to.equal(pm.environment.get(\"artifactId3\"));\r",
-									"    pm.expect(responseData.title).to.equal(pm.environment.get(\"artifactTitle3\"));\r",
-									"    pm.expect(responseData.description).to.equal(pm.environment.get(\"artifactDescription3\"));\r",
-									"    pm.expect(responseData.hash).to.equal(pm.environment.get(\"artifacthash3\"));\r",
-									"    \r",
-									"    // Rest of the field validations\r",
-									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.title).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.description).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.acknowledgements).to.be.a('string');\r",
-									"    pm.expect(responseData.fileName).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.hash).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.verified).to.be.a('boolean');\r",
-									"    pm.expect(responseData.lastTimeVerified).to.be.null; // Assuming null is expected\r",
-									"    pm.expect(responseData.submitterEmail).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.organization).to.be.an('object');\r",
-									"    pm.expect(responseData.organization.name).to.be.a('string').and.to.not.be.empty;\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Submission fields are updated correctly\", function() {\r",
-									"    const responseData = pm.response.json();\r",
-									"    \r",
-									"    // Check submission state was updated by the listener\r",
-									"    pm.expect(responseData.submissionState).to.equal(\"SUCCESS\");\r",
-									"    \r",
-									"    // Check submittedAt is no longer null and is a valid date\r",
-									"    pm.expect(responseData.submittedAt).to.not.be.null;\r",
-									"    pm.expect(responseData.submittedAt).to.be.a('string').and.to.not.be.empty;\r",
-									"    \r",
-									"    // Validate submittedAt is a valid ISO date format\r",
-									"    const submittedAtDate = new Date(responseData.submittedAt);\r",
-									"    pm.expect(submittedAtDate).to.be.instanceOf(Date);\r",
-									"    pm.expect(submittedAtDate.toString()).to.not.equal(\"Invalid Date\");\r",
-									"    \r",
-									"    \r",
-									"    // Check peer ID was set (if your API stores it)\r",
-									"    if (responseData.peerId) {\r",
-									"        pm.expect(responseData.peerId).to.be.a('string').and.to.not.be.empty;\r",
-									"    }\r",
-									"    \r",
-									"    console.log(\"✅ Artifact successfully updated via listener!\");\r",
-									"    console.log(`📋 Artifact ID: ${responseData.id}`);\r",
-									"    console.log(`🎯 Submission State: ${responseData.submissionState}`);\r",
-									"    console.log(`⏰ Submitted At: ${responseData.submittedAt}`);\r",
-									"    console.log(`🔗 Blockchain TX: ${responseData.blockchainTxId}`);\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Integration test completed successfully\", function() {\r",
-									"    const responseData = pm.response.json();\r",
-									"    \r",
-									"    console.log(\"🎉 INTEGRATION TEST PASSED!\");\r",
-									"    console.log(\"   ✓ Created artifact\");\r",
-									"    console.log(\"   ✓ Published message to RabbitMQ\"); \r",
-									"    console.log(\"   ✓ Listener consumed message\");\r",
-									"    console.log(\"   ✓ Listener updated artifact via API\");\r",
-									"    console.log(\"   ✓ Artifact contains submission data\");\r",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/artifacts/{{artifactId3}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"artifacts",
-								"{{artifactId3}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "PI Create Artifact - Gas Error",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Store the response data in environment variables\r",
-									"pm.environment.set(\"artifact4title\", pm.response.json().title);\r",
-									"pm.environment.set(\"artifactId4\", pm.response.json().id);\r",
-									"pm.environment.set(\"artifactTitle4\", pm.response.json().title);\r",
-									"pm.environment.set(\"artifactDescription4\", pm.response.json().description)\r",
-									"\r",
-									"// Test HTTP Status Code\r",
-									"pm.test(\"Status code is 201\", function () {\r",
-									"    pm.response.to.have.status(201);\r",
-									"});\r",
-									"\r",
-									"// Test Response Structure\r",
-									"pm.test(\"Response has the correct structure\", function () {\r",
-									"    const response = pm.response.json();\r",
-									"    \r",
-									"    // Required fields\r",
-									"    pm.expect(response).to.have.property('id');\r",
-									"    pm.expect(response).to.have.property('title');\r",
-									"    pm.expect(response).to.have.property('description');\r",
-									"    pm.expect(response).not.to.have.property('fileName');\r",
-									"    pm.expect(response).not.to.have.property('hash');\r",
-									"    pm.expect(response).not.to.have.property('submitterEmail');\r",
-									"    pm.expect(response).not.to.have.property('submissionState');\r",
-									"    pm.expect(response).not.to.have.property('organization');\r",
-									"    pm.expect(response.lastTimeVerified).to.be.null;\r",
-									"    \r",
-									"});\r",
-									"\r",
-									"  "
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"function generateRandomHash(length) {",
-									"    let result = '';",
-									"    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';",
-									"    const charactersLength = characters.length;",
-									"",
-									"    for (let i = 0; i < length; i++) {",
-									"        result += characters.charAt(Math.floor(Math.random() * charactersLength));",
-									"    }",
-									"",
-									"    return result;",
-									"}",
-									"",
-									"// Set the generated hash in an environment variable",
-									"pm.environment.set(\"artifacthash4\", generateRandomHash(64));",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token_PI}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"title\": \"test_gas - My Failed Test - {{$randomLoremSentence}}\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"fileName\": \"{{$randomFileName}}\",\r\n    \"hash\": \"{{artifacthash4}}\",\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example.com/product\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/artifacts",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"artifacts"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Artifact 4 - NO Fail Gas Error",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Code is 200\", function() {\r",
-									"    pm.response.to.have.status(200);\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Non empty response\", function() {\r",
-									"    const responseData = pm.response.json();\r",
-									"    \r",
-									"    // Verify stored values from creation\r",
-									"    pm.expect(responseData.id).to.equal(pm.environment.get(\"artifactId4\"));\r",
-									"    pm.expect(responseData.title).to.equal(pm.environment.get(\"artifactTitle4\"));\r",
-									"    pm.expect(responseData.description).to.equal(pm.environment.get(\"artifactDescription4\"));\r",
-									"    pm.expect(responseData.hash).to.equal(pm.environment.get(\"artifacthash4\"));\r",
-									"    \r",
-									"    // Rest of the field validations\r",
-									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.title).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.description).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.acknowledgements).to.be.a('string');\r",
-									"    pm.expect(responseData.fileName).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.hash).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.verified).to.be.a('boolean');\r",
-									"    pm.expect(responseData.lastTimeVerified).to.be.null; // Assuming null is expected\r",
-									"    pm.expect(responseData.submitterEmail).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.organization).to.be.an('object');\r",
-									"    pm.expect(responseData.organization.name).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.blockchainTxId).to.be.null;\r",
-									"    pm.expect(responseData.peerId).to.be.null;\r",
-									"    pm.expect(responseData.submissionError).to.be.null;\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Submission fields are updated correctly\", function() {\r",
-									"    const responseData = pm.response.json();\r",
-									"    \r",
-									"    // Check submission state was updated by the listener\r",
-									"    pm.expect(responseData.submissionState).to.equal(\"PENDING\");    \r",
-									"    \r",
-									"    // Check peer ID was set (if your API stores it)\r",
-									"    if (responseData.peerId) {\r",
-									"        pm.expect(responseData.peerId).to.be.a('string').and.to.not.be.empty;\r",
-									"    }\r",
-									"    \r",
-									"    console.log(\"✅ Artifact successfully updated via listener!\");\r",
-									"    console.log(`📋 Artifact ID: ${responseData.id}`);\r",
-									"    console.log(`🎯 Submission State: ${responseData.submissionState}`);\r",
-									"    console.log(`⏰ Submitted At: ${responseData.submittedAt}`);\r",
-									"    console.log(`🔗 Blockchain TX: ${responseData.blockchainTxId}`);\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Integration test completed successfully\", function() {\r",
-									"    const responseData = pm.response.json();\r",
-									"    \r",
-									"    console.log(\"🎉 INTEGRATION TEST PASSED!\");\r",
-									"    console.log(\"   ✓ Created artifact\");\r",
-									"    console.log(\"   ✓ Published message to RabbitMQ\"); \r",
-									"    console.log(\"   ✓ Listener consumed message\");\r",
-									"    console.log(\"   ✓ Listener updated artifact via API\");\r",
-									"    console.log(\"   ✓ Artifact contains submission data\");\r",
-									"});\r",
-									"\r",
-									"// Wait for 500ms before proceeding to the next request\r",
-									"  setTimeout(function() {\r",
-									"      // No-op, just delay\r",
-									"  }, 1000);\r",
-									"\r",
-									"    pm.test(\"Dummy delay always passes\", function () {\r",
-									"      pm.expect(true).to.be.true;\r",
-									"  });\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/artifacts/{{artifactId4}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"artifacts",
-								"{{artifactId4}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Artifact 4 - Fail Gas Error",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Code is 200\", function() {\r",
-									"    pm.response.to.have.status(200);\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Non empty response\", function() {\r",
-									"    const responseData = pm.response.json();\r",
-									"    \r",
-									"    // Verify stored values from creation\r",
-									"    pm.expect(responseData.id).to.equal(pm.environment.get(\"artifactId4\"));\r",
-									"    pm.expect(responseData.title).to.equal(pm.environment.get(\"artifactTitle4\"));\r",
-									"    pm.expect(responseData.description).to.equal(pm.environment.get(\"artifactDescription4\"));\r",
-									"    pm.expect(responseData.hash).to.equal(pm.environment.get(\"artifacthash4\"));\r",
-									"    \r",
-									"    // Rest of the field validations\r",
-									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.title).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.description).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.acknowledgements).to.be.a('string');\r",
-									"    pm.expect(responseData.fileName).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.hash).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.verified).to.be.a('boolean');\r",
-									"    pm.expect(responseData.lastTimeVerified).to.be.null; // Assuming null is expected\r",
-									"    pm.expect(responseData.submitterEmail).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.organization).to.be.an('object');\r",
-									"    pm.expect(responseData.organization.name).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.peerId).to.equal('12D3KooWBhxQ7uXeY9zF8qG5nM4rL3pT6vN8wS2cK9jH1fX7yR4e')\r",
-									"    pm.expect(responseData.blockchainTxId).to.equal(null);\r",
-									"    pm.expect(responseData.submissionError).to.equal(\"Insufficient gas fees\");\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Submission fields are updated correctly\", function() {\r",
-									"    const responseData = pm.response.json();\r",
-									"    \r",
-									"    // Check submission state was updated by the listener\r",
-									"    pm.expect(responseData.submissionState).to.equal(\"FAILED\");\r",
-									"    \r",
-									"    // Check submittedAt is no longer null and is a valid date\r",
-									"    pm.expect(responseData.submittedAt).to.not.be.null;\r",
-									"    pm.expect(responseData.submittedAt).to.be.a('string').and.to.not.be.empty;\r",
-									"    \r",
-									"    // Validate submittedAt is a valid ISO date format\r",
-									"    const submittedAtDate = new Date(responseData.submittedAt);\r",
-									"    pm.expect(submittedAtDate).to.be.instanceOf(Date);\r",
-									"    pm.expect(submittedAtDate.toString()).to.not.equal(\"Invalid Date\");\r",
-									"    \r",
-									"    \r",
-									"    // Check peer ID was set (if your API stores it)\r",
-									"    if (responseData.peerId) {\r",
-									"        pm.expect(responseData.peerId).to.be.a('string').and.to.not.be.empty;\r",
-									"    }\r",
-									"    \r",
-									"    console.log(\"✅ Artifact successfully updated via listener!\");\r",
-									"    console.log(`📋 Artifact ID: ${responseData.id}`);\r",
-									"    console.log(`🎯 Submission State: ${responseData.submissionState}`);\r",
-									"    console.log(`⏰ Submitted At: ${responseData.submittedAt}`);\r",
-									"    console.log(`🔗 Blockchain TX: ${responseData.blockchainTxId}`);\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Integration test completed successfully\", function() {\r",
-									"    const responseData = pm.response.json();\r",
-									"    \r",
-									"    console.log(\"🎉 INTEGRATION TEST PASSED!\");\r",
-									"    console.log(\"   ✓ Created artifact\");\r",
-									"    console.log(\"   ✓ Published message to RabbitMQ\"); \r",
-									"    console.log(\"   ✓ Listener consumed message\");\r",
-									"    console.log(\"   ✓ Listener updated artifact via API\");\r",
-									"    console.log(\"   ✓ Artifact contains submission data\");\r",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/artifacts/{{artifactId4}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"artifacts",
-								"{{artifactId4}}"
 							]
 						}
 					},
