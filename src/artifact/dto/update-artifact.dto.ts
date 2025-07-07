@@ -1,4 +1,4 @@
-import { IsBoolean, IsDate, IsEnum, IsOptional } from 'class-validator';
+import { IsBoolean, IsDate, IsEnum, IsOptional, IsString, IsDateString } from 'class-validator';
 import { SubmissionState } from '../enums/submission-state.enum';
 
 export class UpdateArtifactDto {
@@ -14,7 +14,19 @@ export class UpdateArtifactDto {
   @IsOptional()
   submissionState?: SubmissionState;
 
-  @IsDate()
+  @IsDateString()
   @IsOptional()
-  submittedAt?: Date;
+  submittedAt?: string;
+
+  @IsString()
+  @IsOptional()
+  blockchainTxId?: string;
+
+  @IsString()
+  @IsOptional()
+  peerId?: string;
+
+  @IsString()
+  @IsOptional()
+  submissionError?: string;
 } 

@@ -242,53 +242,40 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"// Capturar los datos enviados en la solicitud",
-									"const requestData = pm.request.body.raw ? JSON.parse(pm.request.body.raw) : {};",
+									"const res   = pm.response.json();",
+									"const env   = pm.environment;          // shorthand",
+									"const roleS = res.roles || res.role;   // array or string, depending on your API",
 									"",
-									"// Guardar los valores enviados para comparar después",
-									"const sentName = requestData.name;",
-									"const sentUsername = requestData.username;",
-									"const sentRole = requestData.role",
-									"",
-									"// Guardar variables de entorno",
-									"pm.environment.set(\"userId1\", pm.response.json().id);",
-									"pm.environment.set(\"usernameUser1\", pm.response.json().username);",
-									"pm.environment.set(\"nameOfUser1\", pm.response.json().name);",
-									"pm.environment.set(\"pi_password\", requestData.password); // Save PI password for later use",
-									"",
-									"pm.test(\"Status code is 201 Created\", function() {",
-									"    pm.response.to.have.status(201);",
+									"/* ── 1. Status code ── */",
+									"pm.test(\"Status code is 201 Created\", () => {",
+									"  pm.response.to.have.status(201);",
 									"});",
 									"",
-									"// Verificar información del usuario",
-									"pm.test(\"User information is valid\", function() {",
-									"    const responseData = pm.response.json();",
-									"    pm.expect(responseData.name).to.be.a('string').and.to.not.be.empty;",
-									"    pm.expect(responseData.username).to.be.a('string').and.to.not.be.empty;",
-									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;",
+									"/* ── 2. Mandatory fields present ── */",
+									"pm.test(\"Response contains mandatory user fields\", () => {",
+									"  pm.expect(res).to.have.property(\"id\").that.is.not.empty;",
+									"  pm.expect(res).to.have.property(\"username\").that.is.a(\"string\").and.not.empty;",
+									"  pm.expect(res).to.have.property(\"name\").that.is.a(\"string\").and.not.empty;",
 									"});",
 									"",
-									"// Verificar que los datos de respuesta coinciden con los enviados",
-									"pm.test(\"User data in response matches request data\", function() {",
-									"    const responseData = pm.response.json();",
-									"    ",
-									"    // Verificar que el nombre coincide",
-									"    pm.expect(responseData.name).to.equal(sentName, \"Name in response should match sent name\");",
-									"        ",
-									"    // Verificar que el username coincide",
-									"    pm.expect(responseData.username).to.equal(sentUsername, \"Username in response should match sent username\");",
+									"/* ── 3. Response matches request data ── */",
+									"pm.test(\"Response matches request data\", () => {",
+									"  pm.expect(res.username).to.eql(env.get(\"PI1_USERNAME\"), \"Username mismatch\");",
+									"  pm.expect(res.name)     .to.eql(\"Juan Pablo\",            \"Name mismatch\");",
+									"  // If your API echoes the email, add:",
+									"  // pm.expect(res.email).to.eql(env.get(\"PI1_EMAIL\"),  \"Email mismatch\");",
 									"});",
 									"",
-									"// Verificar que el usuario tiene el rol de PI",
-									"pm.test(\"User has correct role\", function() {",
-									"    const responseData = pm.response.json();",
-									"    pm.expect(responseData.roles).to.be.an('array');",
-									"    pm.expect(responseData.roles).to.include(sentRole, \"Role in response should match sent role\");",
+									"/* ── 4. Correct role ── */",
+									"pm.test(\"User has correct PI role\", () => {",
+									"  pm.expect(roleS).to.include(\"pi\");",
 									"});",
 									"",
-									"// Guardar datos del usuario para verificación posterior",
-									"pm.collectionVariables.set(\"pi_user_id\", pm.response.json().id);",
-									"pm.collectionVariables.set(\"pi_username\", pm.response.json().username);"
+									"/* ── 5. Persist for later requests ── */",
+									"env.set(\"pi_user_id_e2e_test\",  res.id);",
+									"env.set(\"pi_username_e2e_test\", res.username);",
+									"env.set(\"pi_password\", env.get(\"PI1_PASSWORD\"));",
+									""
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -298,21 +285,7 @@
 							"listen": "prerequest",
 							"script": {
 								"exec": [
-									"// Generar un nombre aleatorio\r",
-									"let fullName = pm.variables.replaceIn(\"{{$randomFullName}}\");\r",
-									"// Asegurarse de que tiene al menos 8 caracteres\r",
-									"if (fullName.length < 8) {\r",
-									"    fullName = fullName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - fullName.length));\r",
-									"}\r",
-									"pm.environment.set(\"validFullName\", fullName);\r",
-									"\r",
-									"// Generar un nombre de usuario aleatorio\r",
-									"let userName = pm.variables.replaceIn(\"{{$randomUserName}}\");\r",
-									"// Asegurarse de que tiene al menos 8 caracteres\r",
-									"if (userName.length < 8) {\r",
-									"    userName = userName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - userName.length));\r",
-									"}\r",
-									"pm.environment.set(\"validUserName\", userName);"
+									""
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -334,7 +307,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"Fernando Garzon\",\r\n    \"email\": \"{{PI1_e2e_EMAIL}}\",\r\n    \"username\": \"{{PI1_e2e_USERNAME}}\",\r\n    \"password\": \"{{PI1_e2e_password}}\",\r\n    \"role\": \"pi\"\r\n}",
+							"raw": "{\r\n  \"name\": \"Juan Pablo\",\r\n  \"email\": \"{{PI1_EMAIL}}\",\r\n  \"username\": \"{{PI1_USERNAME}}\",\r\n  \"password\": \"{{PI1_PASSWORD}}\",\r\n  \"role\": \"pi\"\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -361,54 +334,51 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"// Capturar los datos enviados en la solicitud",
-									"const requestData = pm.request.body.raw ? JSON.parse(pm.request.body.raw) : {};",
+									"// === Collaborator creation – Post-request tests (deterministic) ===",
 									"",
-									"// Guardar los valores enviados para comparar después",
-									"const sentName = requestData.name;",
-									"const sentUsername = requestData.username;",
-									"const sentRole = requestData.role",
+									"// Short aliases",
+									"const res   = pm.response.json();",
+									"const env   = pm.environment;",
+									"const roleS = res.roles || res.role;   // supports `roles` (array) OR `role` (string)",
 									"",
-									"// Guardar variables de entorno",
-									"pm.environment.set(\"collaboratorId\", pm.response.json().id);",
-									"pm.environment.set(\"collaborator1Username\", pm.response.json().username);",
-									"pm.environment.set(\"collaborator1_password\", requestData.password); // Save PI password for later use",
-									"",
-									"",
-									"// Verificar código de estado",
-									"pm.test(\"Status code is 201 Created\", function() {",
-									"    pm.response.to.have.status(201);",
+									"/* 1️⃣  Status code -------------------------------------------------- */",
+									"pm.test(\"Status code is 201 Created\", () => {",
+									"  pm.response.to.have.status(201);",
 									"});",
 									"",
-									"// Verificar información del usuario",
-									"pm.test(\"collaborator user information is valid\", function() {",
-									"    const responseData = pm.response.json();",
-									"    pm.expect(responseData.name).to.be.a('string').and.to.not.be.empty;",
-									"    pm.expect(responseData.username).to.be.a('string').and.to.not.be.empty;",
-									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;",
+									"/* 2️⃣  Mandatory fields present ------------------------------------ */",
+									"pm.test(\"Response contains mandatory user fields\", () => {",
+									"  pm.expect(res).to.have.property(\"id\").that.is.not.empty;",
+									"  pm.expect(res).to.have.property(\"username\").that.is.a(\"string\").and.not.empty;",
+									"  pm.expect(res).to.have.property(\"name\").that.is.a(\"string\").and.not.empty;",
 									"});",
 									"",
-									"// Verificar que los datos de respuesta coinciden con los enviados",
-									"pm.test(\"collaborator data in response matches request data\", function() {",
-									"    const responseData = pm.response.json();",
-									"    ",
-									"    // Verificar que el nombre coincide",
-									"    pm.expect(responseData.name).to.equal(sentName, \"Name in response should match sent name\");",
-									"        ",
-									"    // Verificar que el username coincide",
-									"    pm.expect(responseData.username).to.equal(sentUsername, \"Username in response should match sent username\");",
+									"/* 3️⃣  Response matches request data ------------------------------- */",
+									"pm.test(\"Response matches request data\", () => {",
+									"  pm.expect(res.username, \"Username mismatch\")",
+									"    .to.eql(env.get(\"COLLABORATOR1_USERNAME\"));",
+									"",
+									"  pm.expect(res.name, \"Name mismatch\")",
+									"    .to.eql(\"Fernando Garzon de Arango\");           // Use the exact name sent in the body",
+									"",
+									"  // If your API echoes the email, uncomment:",
+									"  // pm.expect(res.email, \"Email mismatch\")",
+									"  //   .to.eql(env.get(\"COLLABORATOR_EMAIL\"));",
 									"});",
 									"",
-									"// Verificar que el usuario tiene el rol de collaborator",
-									"pm.test(\"User has correct collaborator role\", function() {",
-									"    const responseData = pm.response.json();",
-									"    pm.expect(responseData.roles).to.be.an('array');",
-									"    pm.expect(responseData.roles).to.include(sentRole, \"Role in response should match sent role\");",
+									"/* 4️⃣  Correct collaborator role ----------------------------------- */",
+									"pm.test(\"User has correct collaborator role\", () => {",
+									"  pm.expect(roleS).to.include(\"collaborator\");",
 									"});",
 									"",
-									"// Guardar datos del usuario collaborator para verificación posterior",
-									"pm.collectionVariables.set(\"collaborator_user_id\", pm.response.json().id);",
-									"pm.collectionVariables.set(\"collaborator_username\", pm.response.json().username);"
+									"/* 5️⃣  Persist data for later requests ----------------------------- */",
+									"env.set(\"collaboratorId\",         res.id);",
+									"env.set(\"collaborator1Username\",  res.username);",
+									"env.set(\"collaborator1_password\", env.get(\"COLLABORATOR_PASSWORD\"));",
+									"",
+									"pm.collectionVariables.set(\"collaborator_user_id\", res.id);",
+									"pm.collectionVariables.set(\"collaborator_username\", res.username);",
+									""
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -418,21 +388,7 @@
 							"listen": "prerequest",
 							"script": {
 								"exec": [
-									"// Generar un nombre aleatorio\r",
-									"let fullName = pm.variables.replaceIn(\"{{$randomFullName}}\");\r",
-									"// Asegurarse de que tiene al menos 8 caracteres\r",
-									"if (fullName.length < 8) {\r",
-									"    fullName = fullName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - fullName.length));\r",
-									"}\r",
-									"pm.environment.set(\"validFullName2\", fullName);\r",
-									"\r",
-									"// Generar un nombre de usuario aleatorio\r",
-									"let userName = pm.variables.replaceIn(\"{{$randomUserName}}\");\r",
-									"// Asegurarse de que tiene al menos 8 caracteres\r",
-									"if (userName.length < 8) {\r",
-									"    userName = userName + \"_\" + pm.variables.replaceIn(\"{{$randomAlphaNumeric}}\".repeat(8 - userName.length));\r",
-									"}\r",
-									"pm.environment.set(\"validUserName2\", userName);"
+									""
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -454,7 +410,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"Fernando Garzon de Arango\",\r\n    \"email\": \"{{COLLABORATOR1_e2e_EMAIL}}\",\r\n    \"username\": \"{{COLLABORATOR1_e2e_USERNAME}}\",\r\n    \"password\": \"{{collaborator1_e2e_password}}\",\r\n    \"role\": \"collaborator\"\r\n}",
+							"raw": "{\r\n  \"name\": \"Fernando Garzon de Arango\",\r\n  \"email\": \"{{COLLABORATOR_EMAIL}}\",\r\n  \"username\": \"{{COLLABORATOR1_USERNAME}}\",\r\n  \"password\": \"{{COLLABORATOR_PASSWORD}}\",\r\n  \"role\": \"collaborator\"\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -475,7 +431,7 @@
 					"response": []
 				},
 				{
-					"name": "Collaborator Get All Orgs",
+					"name": "Admin Get All Orgs",
 					"event": [
 						{
 							"listen": "test",
@@ -503,7 +459,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "{{token_collaborator1}}",
+									"value": "{{token_ADMIN1}}",
 									"type": "string"
 								}
 							]
@@ -523,7 +479,7 @@
 					"response": []
 				},
 				{
-					"name": "Collaborator Get One Org",
+					"name": "Admin Get One Org",
 					"event": [
 						{
 							"listen": "test",
@@ -553,7 +509,7 @@
 							"bearer": [
 								{
 									"key": "token",
-									"value": "{{token_collaborator1}}",
+									"value": "{{token_ADMIN1}}",
 									"type": "string"
 								}
 							]
