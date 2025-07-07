@@ -14,6 +14,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { Role } from '../shared/enums/role.enums';
+import { OrganizationEntity } from '../organization/organization.entity';
 
 @Entity()
 export class UserEntity {
@@ -48,11 +49,10 @@ export class UserEntity {
 
   /* ---------- relación (lado MANY) ---------- */
   @ManyToOne(
-    // usamos require para evitar import estático
-    () => require('../organization/organization.entity').OrganizationEntity,
-    (org: any) => org.users,
+    () => OrganizationEntity,
+    (org) => org.users,
     { nullable: true, onDelete: 'CASCADE' },
   )
   @JoinColumn()
-  organization: any | null;
+  organization: OrganizationEntity | null;
 }

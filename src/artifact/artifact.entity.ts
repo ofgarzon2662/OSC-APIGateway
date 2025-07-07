@@ -125,6 +125,23 @@ export class ArtifactEntity {
   @UpdateDateColumn()
   updatedAt: Date;
 
+  /* --------------- Blockchain fields --------------- */
+
+  @Column({ nullable: true })
+  @IsString()
+  @IsOptional()
+  blockchainTxId?: string;
+
+  @Column({ nullable: true })
+  @IsString()
+  @IsOptional()
+  peerId?: string;
+
+  @Column({ type: 'text', nullable: true })
+  @IsString()
+  @IsOptional()
+  submissionError?: string;
+
   /* --------------- Relationship --------------- */
 
   @ManyToOne(
