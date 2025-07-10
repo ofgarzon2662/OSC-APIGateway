@@ -662,7 +662,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"title\": \"{{$randomProductName}}\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"fileName\": \"{{$randomFileName}}\",\r\n    \"hash\": \"{{artifacthash3}}\",\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example.com/product\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
+									"raw": "{\r\n    \"title\": \"{{$randomProductName}}\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"manifest\": [],\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example.com/product\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -699,15 +699,13 @@
 											"    pm.expect(responseData.id).to.equal(pm.environment.get(\"artifactId3\"));\r",
 											"    pm.expect(responseData.title).to.equal(pm.environment.get(\"artifactTitle3\"));\r",
 											"    pm.expect(responseData.description).to.equal(pm.environment.get(\"artifactDescription3\"));\r",
-											"    pm.expect(responseData.hash).to.equal(pm.environment.get(\"artifacthash3\"));\r",
+											"    \r",
 											"    \r",
 											"    // Rest of the field validations\r",
 											"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
 											"    pm.expect(responseData.title).to.be.a('string').and.to.not.be.empty;\r",
 											"    pm.expect(responseData.description).to.be.a('string').and.to.not.be.empty;\r",
 											"    pm.expect(responseData.acknowledgements).to.be.a('string');\r",
-											"    pm.expect(responseData.fileName).to.be.a('string').and.to.not.be.empty;\r",
-											"    pm.expect(responseData.hash).to.be.a('string').and.to.not.be.empty;\r",
 											"    pm.expect(responseData.verified).to.be.a('boolean');\r",
 											"    pm.expect(responseData.lastTimeVerified).to.be.null; // Assuming null is expected\r",
 											"    pm.expect(responseData.submitterEmail).to.be.a('string').and.to.not.be.empty;\r",
@@ -722,9 +720,7 @@
 											"    pm.expect(responseData.submissionState).to.equal(\"PENDING\");\r",
 											"    \r",
 											"    // Check submittedAt is no longer null and is a valid date\r",
-											"    pm.expect(responseData.submittedAt).to.be.null;\r",
-											"    pm.expect(responseData.submittedAt).to.be.null;\r",
-											"    \r",
+											"    pm.expect(responseData.submittedAt).not.to.be.null;\r",
 											"    // Validate submittedAt is a valid ISO date format\r",
 											"    const submittedAtDate = new Date(responseData.submittedAt);\r",
 											"    pm.expect(submittedAtDate).to.be.instanceOf(Date);\r",
@@ -814,15 +810,12 @@
 											"    pm.expect(responseData.id).to.equal(pm.environment.get(\"artifactId3\"));\r",
 											"    pm.expect(responseData.title).to.equal(pm.environment.get(\"artifactTitle3\"));\r",
 											"    pm.expect(responseData.description).to.equal(pm.environment.get(\"artifactDescription3\"));\r",
-											"    pm.expect(responseData.hash).to.equal(pm.environment.get(\"artifacthash3\"));\r",
 											"    \r",
 											"    // Rest of the field validations\r",
 											"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
 											"    pm.expect(responseData.title).to.be.a('string').and.to.not.be.empty;\r",
 											"    pm.expect(responseData.description).to.be.a('string').and.to.not.be.empty;\r",
 											"    pm.expect(responseData.acknowledgements).to.be.a('string');\r",
-											"    pm.expect(responseData.fileName).to.be.a('string').and.to.not.be.empty;\r",
-											"    pm.expect(responseData.hash).to.be.a('string').and.to.not.be.empty;\r",
 											"    pm.expect(responseData.verified).to.be.a('boolean');\r",
 											"    pm.expect(responseData.lastTimeVerified).to.be.null; // Assuming null is expected\r",
 											"    pm.expect(responseData.submitterEmail).to.be.a('string').and.to.not.be.empty;\r",
@@ -947,9 +940,10 @@
 									"listen": "prerequest",
 									"script": {
 										"exec": [
-											"function generateRandomHash(length) {",
+											"function generateRandomHexHash(length) {",
 											"    let result = '';",
-											"    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';",
+											"    // Only use characters valid in a hexadecimal string",
+											"    const characters = 'abcdef0123456789';",
 											"    const charactersLength = characters.length;",
 											"",
 											"    for (let i = 0; i < length; i++) {",
@@ -960,8 +954,8 @@
 											"}",
 											"",
 											"// Set the generated hash in an environment variable",
-											"pm.environment.set(\"artifacthash4\", generateRandomHash(64));",
-											""
+											"// I've renamed the function to be more descriptive, but you can keep the old name",
+											"pm.environment.set(\"artifacthash4\", generateRandomHexHash(64));"
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -983,7 +977,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"title\": \"test_gas - My Failed Test - {{$randomLoremSentence}}\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"fileName\": \"{{$randomFileName}}\",\r\n    \"hash\": \"{{artifacthash4}}\",\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example.com/product\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
+									"raw": "{\r\n    \"title\": \"test_gas - My Failed Test - {{$randomLoremSentence}}\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"manifest\": [{\r\n        \"hash\": \"{{artifacthash4}}\",\r\n        \"filename\": \"my_data.csv\",\r\n        \"algorithm\" : \"sha256\"\r\n    }],\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example.com/product\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -1009,74 +1003,73 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Code is 200\", function() {\r",
+											"pm.test(\"Status code is 200 OK\", function() {\r",
 											"    pm.response.to.have.status(200);\r",
 											"});\r",
 											"\r",
-											"pm.test(\"Non empty response\", function() {\r",
+											"pm.test(\"Response contains correct artifact data\", function() {\r",
 											"    const responseData = pm.response.json();\r",
 											"    \r",
-											"    // Verify stored values from creation\r",
-											"    pm.expect(responseData.id).to.equal(pm.environment.get(\"artifactId4\"));\r",
-											"    pm.expect(responseData.title).to.equal(pm.environment.get(\"artifactTitle4\"));\r",
-											"    pm.expect(responseData.description).to.equal(pm.environment.get(\"artifactDescription4\"));\r",
-											"    pm.expect(responseData.hash).to.equal(pm.environment.get(\"artifacthash4\"));\r",
+											"    // --- Verify stored values from the creation request ---\r",
+											"    // These assume you saved these values to the environment in the \"Create Artifact\" request's tests\r",
+											"    pm.expect(responseData.id).to.equal(pm.environment.get(\"artifactId4\"), \"ID should match the created artifact's ID\");\r",
+											"    pm.expect(responseData.title).to.equal(pm.environment.get(\"artifactTitle4\"), \"Title should match the one provided on creation\");\r",
+											"    pm.expect(responseData.description).to.equal(pm.environment.get(\"artifactDescription4\"), \"Description should match\");\r",
 											"    \r",
-											"    // Rest of the field validations\r",
+											"    // --- Validate general field types and structure ---\r",
 											"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
-											"    pm.expect(responseData.title).to.be.a('string').and.to.not.be.empty;\r",
-											"    pm.expect(responseData.description).to.be.a('string').and.to.not.be.empty;\r",
+											"    pm.expect(responseData.keywords).to.be.an('array');\r",
+											"    pm.expect(responseData.links).to.be.an('array');\r",
+											"    pm.expect(responseData.dois).to.be.an('array');\r",
 											"    pm.expect(responseData.acknowledgements).to.be.a('string');\r",
-											"    pm.expect(responseData.fileName).to.be.a('string').and.to.not.be.empty;\r",
-											"    pm.expect(responseData.hash).to.be.a('string').and.to.not.be.empty;\r",
 											"    pm.expect(responseData.verified).to.be.a('boolean');\r",
-											"    pm.expect(responseData.lastTimeVerified).to.be.null; // Assuming null is expected\r",
 											"    pm.expect(responseData.submitterEmail).to.be.a('string').and.to.not.be.empty;\r",
+											"    pm.expect(responseData.submitterUsername).to.be.a('string').and.to.not.be.empty;\r",
 											"    pm.expect(responseData.organization).to.be.an('object');\r",
 											"    pm.expect(responseData.organization.name).to.be.a('string').and.to.not.be.empty;\r",
-											"    pm.expect(responseData.blockchainTxId).to.be.null;\r",
-											"    pm.expect(responseData.peerId).to.be.null;\r",
-											"    pm.expect(responseData.submissionError).to.be.null;\r",
+											"\r",
+											"    // --- Validate the manifest object ---\r",
+											"    pm.expect(responseData.manifest).to.be.an('array').with.lengthOf(1, \"Manifest should contain one item\");\r",
+											"    const manifestItem = responseData.manifest[0];\r",
+											"    \r",
+											"    // Verify values from environment\r",
+											"    pm.expect(manifestItem.hash).to.equal(pm.environment.get(\"artifacthash4\"), \"Hash in manifest should match\");\r",
+											"    // Assuming you save the filename in your create request like this: pm.environment.set(\"artifactFilename4\", \"my_data.csv\");\r",
+											"    pm.expect(manifestItem.filename).to.equal(\"my_data.csv\", \"Filename in manifest should match\");\r",
+											"    pm.expect(manifestItem.algorithm).to.equal(\"sha256\");\r",
 											"});\r",
 											"\r",
-											"pm.test(\"Submission fields are updated correctly\", function() {\r",
+											"pm.test(\"Submission fields show FAILED state correctly\", function() {\r",
 											"    const responseData = pm.response.json();\r",
 											"    \r",
-											"    // Check submission state was updated by the listener\r",
-											"    pm.expect(responseData.submissionState).to.equal(\"PENDING\");    \r",
-											"    \r",
-											"    // Check peer ID was set (if your API stores it)\r",
-											"    if (responseData.peerId) {\r",
-											"        pm.expect(responseData.peerId).to.be.a('string').and.to.not.be.empty;\r",
-											"    }\r",
-											"    \r",
-											"    console.log(\"✅ Artifact successfully updated via listener!\");\r",
+											"    // Check submission state reflects the expected failure\r",
+											"    pm.expect(responseData.submissionState).to.equal(\"PENDING\", \"Submission state should be PENDING\");    \r",
+											"\r",
+											"\r",
+											"    // Check submittedAt is a valid date string\r",
+											"    pm.expect(responseData.submittedAt, \"submittedAt should be a valid date string\").to.be.a('string');\r",
+											"    pm.expect(new Date(responseData.submittedAt)).to.not.be.an('Invalid Date');\r",
+											"\r",
+											"    console.log(\"✅ Artifact submission failure correctly recorded!\");\r",
 											"    console.log(`📋 Artifact ID: ${responseData.id}`);\r",
 											"    console.log(`🎯 Submission State: ${responseData.submissionState}`);\r",
+											"    console.log(`   Error: ${responseData.submissionError}`);\r",
 											"    console.log(`⏰ Submitted At: ${responseData.submittedAt}`);\r",
-											"    console.log(`🔗 Blockchain TX: ${responseData.blockchainTxId}`);\r",
+											"    console.log(`🔗 Peer ID: ${responseData.peerId}`);\r",
 											"});\r",
 											"\r",
-											"pm.test(\"Integration test completed successfully\", function() {\r",
-											"    const responseData = pm.response.json();\r",
-											"    \r",
-											"    console.log(\"🎉 INTEGRATION TEST PASSED!\");\r",
-											"    console.log(\"   ✓ Created artifact\");\r",
-											"    console.log(\"   ✓ Published message to RabbitMQ\"); \r",
-											"    console.log(\"   ✓ Listener consumed message\");\r",
-											"    console.log(\"   ✓ Listener updated artifact via API\");\r",
-											"    console.log(\"   ✓ Artifact contains submission data\");\r",
-											"});\r",
 											"\r",
-											"// Wait for 500ms before proceeding to the next request\r",
-											"  setTimeout(function() {\r",
-											"      // No-op, just delay\r",
-											"  }, 6000);\r",
+											"// This timeout is used to wait for the backend listener to process the message and update the artifact.\r",
+											"// In a real-world scenario, you might need a more robust way to check for completion, \r",
+											"// but for testing purposes, a delay is a common approach.\r",
+											"setTimeout(function() {\r",
+											"    console.log(\"Waited 6 seconds for backend processing before the next request.\");\r",
+											"}, 6000);\r",
 											"\r",
-											"    pm.test(\"Dummy delay always passes\", function () {\r",
-											"      pm.expect(true).to.be.true;\r",
-											"  });\r",
-											""
+											"// This is just to make the delay visible in the test results.\r",
+											"pm.test(\"Dummy delay for backend processing\", function () {\r",
+											"  pm.expect(true).to.be.true;\r",
+											"});"
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -1129,15 +1122,12 @@
 											"    pm.expect(responseData.id).to.equal(pm.environment.get(\"artifactId4\"));\r",
 											"    pm.expect(responseData.title).to.equal(pm.environment.get(\"artifactTitle4\"));\r",
 											"    pm.expect(responseData.description).to.equal(pm.environment.get(\"artifactDescription4\"));\r",
-											"    pm.expect(responseData.hash).to.equal(pm.environment.get(\"artifacthash4\"));\r",
 											"    \r",
 											"    // Rest of the field validations\r",
 											"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
 											"    pm.expect(responseData.title).to.be.a('string').and.to.not.be.empty;\r",
 											"    pm.expect(responseData.description).to.be.a('string').and.to.not.be.empty;\r",
 											"    pm.expect(responseData.acknowledgements).to.be.a('string');\r",
-											"    pm.expect(responseData.fileName).to.be.a('string').and.to.not.be.empty;\r",
-											"    pm.expect(responseData.hash).to.be.a('string').and.to.not.be.empty;\r",
 											"    pm.expect(responseData.verified).to.be.a('boolean');\r",
 											"    pm.expect(responseData.lastTimeVerified).to.be.null; // Assuming null is expected\r",
 											"    pm.expect(responseData.submitterEmail).to.be.a('string').and.to.not.be.empty;\r",
@@ -1348,7 +1338,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"title\": \"{{$randomProductName}}\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"fileName\": \"{{$randomFileName}}\",\r\n    \"hash\": \"{{artifacthash1}}\",\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example.com/product\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
+									"raw": "{\r\n    \"title\": \"{{$randomProductName}}\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"manifest\": [],\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example.com/product\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -1385,7 +1375,6 @@
 											"    pm.expect(responseData.id).to.equal(pm.environment.get(\"artifactId1\"));\r",
 											"    pm.expect(responseData.title).to.equal(pm.environment.get(\"artifactTitle1\"));\r",
 											"    pm.expect(responseData.description).to.equal(pm.environment.get(\"artifactDescription1\"));\r",
-											"    pm.expect(responseData.hash).to.equal(pm.environment.get(\"artifacthash1\"));\r",
 											"    \r",
 											"    // Rest of the field validations\r",
 											"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
@@ -1396,13 +1385,11 @@
 											"    pm.expect(responseData.dois).to.be.an('array');\r",
 											"    pm.expect(responseData.fundingAgencies).to.be.an('array');\r",
 											"    pm.expect(responseData.acknowledgements).to.be.a('string');\r",
-											"    pm.expect(responseData.fileName).to.be.a('string').and.to.not.be.empty;\r",
-											"    pm.expect(responseData.hash).to.be.a('string').and.to.not.be.empty;\r",
 											"    pm.expect(responseData.verified).to.be.a('boolean');\r",
 											"    pm.expect(responseData.lastTimeVerified).to.be.null; // Assuming null is expected\r",
 											"    pm.expect(responseData.submissionState).to.be.a('string').and.to.not.be.empty;\r",
 											"    pm.expect(responseData.submitterEmail).to.be.a('string').and.to.not.be.empty;\r",
-											"    pm.expect(responseData.submittedAt).to.be.null; // Assuming null is expected\r",
+											"    pm.expect(responseData.submittedAt).not.to.be.null; // Assuming null is expected\r",
 											"    pm.expect(responseData.organization).to.be.an('object');\r",
 											"    pm.expect(responseData.organization.name).to.be.a('string').and.to.not.be.empty;\r",
 											"    pm.expect(responseData.blockchainTxId).to.be.null;\r",
@@ -1523,7 +1510,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"title\": \"{{$randomProductName}}\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"fileName\": \"{{$randomFileName}}\",\r\n    \"hash\": \"{{artifacthash1}}\",\r\n    \"keywords\": [\"\"],\r\n    \"links\": [],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [\"\"],\r\n    \"acknowledgements\": \"\"\r\n}",
+									"raw": "{\r\n    \"title\": \"{{$randomProductName}}\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"manifest\": [],\r\n    \"keywords\": [\"\"],\r\n    \"links\": [],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [\"\"],\r\n    \"acknowledgements\": \"\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -1623,7 +1610,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"title\": \"{{$randomProductName}}\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"fileName\": \"{{$randomFileName}}\",\r\n    \"hash\": \"{{artifacthash2}}\",\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example.com/product\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
+									"raw": "{\r\n    \"title\": \"{{$randomProductName}}\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"manifest\": [],\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example.com/product\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -1660,7 +1647,6 @@
 											"    pm.expect(responseData.id).to.equal(pm.environment.get(\"artifactId2\"));\r",
 											"    pm.expect(responseData.title).to.equal(pm.environment.get(\"artifactTitle2\"));\r",
 											"    pm.expect(responseData.description).to.equal(pm.environment.get(\"artifactDescription2\"));\r",
-											"    pm.expect(responseData.hash).to.equal(pm.environment.get(\"artifacthash2\"));\r",
 											"    \r",
 											"    // Rest of the field validations\r",
 											"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
@@ -1671,13 +1657,11 @@
 											"    pm.expect(responseData.dois).to.be.an('array');\r",
 											"    pm.expect(responseData.fundingAgencies).to.be.an('array');\r",
 											"    pm.expect(responseData.acknowledgements).to.be.a('string');\r",
-											"    pm.expect(responseData.fileName).to.be.a('string').and.to.not.be.empty;\r",
-											"    pm.expect(responseData.hash).to.be.a('string').and.to.not.be.empty;\r",
 											"    pm.expect(responseData.verified).to.be.a('boolean');\r",
 											"    pm.expect(responseData.lastTimeVerified).to.be.null; // Assuming null is expected\r",
 											"    pm.expect(responseData.submissionState).to.be.a('string').and.to.not.be.empty;\r",
 											"    pm.expect(responseData.submitterEmail).to.be.a('string').and.to.not.be.empty;\r",
-											"    pm.expect(responseData.submittedAt).to.be.null; // Assuming null is expected\r",
+											"    pm.expect(responseData.submittedAt).not.to.be.null; // Assuming null is expected\r",
 											"    pm.expect(responseData.organization).to.be.an('object');\r",
 											"    pm.expect(responseData.organization.name).to.be.a('string').and.to.not.be.empty;\r",
 											"    pm.expect(responseData.blockchainTxId).to.be.null;\r",
@@ -2061,15 +2045,12 @@
 											"    pm.expect(responseData.id).to.equal(pm.environment.get(\"artifactId1\"));\r",
 											"    pm.expect(responseData.title).to.equal(pm.environment.get(\"artifactTitle1\"));\r",
 											"    pm.expect(responseData.description).to.equal(pm.environment.get(\"artifactDescription1\"));\r",
-											"    pm.expect(responseData.hash).to.equal(pm.environment.get(\"artifacthash1\"));\r",
 											"    \r",
 											"    // Rest of the field validations\r",
 											"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
 											"    pm.expect(responseData.title).to.be.a('string').and.to.not.be.empty;\r",
 											"    pm.expect(responseData.description).to.be.a('string').and.to.not.be.empty;\r",
 											"    pm.expect(responseData.acknowledgements).to.be.a('string');\r",
-											"    pm.expect(responseData.fileName).to.be.a('string').and.to.not.be.empty;\r",
-											"    pm.expect(responseData.hash).to.be.a('string').and.to.not.be.empty;\r",
 											"    pm.expect(responseData.verified).to.be.a('boolean');\r",
 											"    pm.expect(responseData.lastTimeVerified).to.be.null; // Assuming null is expected\r",
 											"    pm.expect(responseData.submitterEmail).to.be.a('string').and.to.not.be.empty;\r",
@@ -2247,15 +2228,12 @@
 											"    pm.expect(responseData.id).to.equal(pm.environment.get(\"artifactId2\"));\r",
 											"    pm.expect(responseData.title).to.equal(pm.environment.get(\"artifactTitle2\"));\r",
 											"    pm.expect(responseData.description).to.equal(pm.environment.get(\"artifactDescription2\"));\r",
-											"    pm.expect(responseData.hash).to.equal(pm.environment.get(\"artifacthash2\"));\r",
 											"    \r",
 											"    // Rest of the field validations\r",
 											"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
 											"    pm.expect(responseData.title).to.be.a('string').and.to.not.be.empty;\r",
 											"    pm.expect(responseData.description).to.be.a('string').and.to.not.be.empty;\r",
 											"    pm.expect(responseData.acknowledgements).to.be.a('string');\r",
-											"    pm.expect(responseData.fileName).to.be.a('string').and.to.not.be.empty;\r",
-											"    pm.expect(responseData.hash).to.be.a('string').and.to.not.be.empty;\r",
 											"    pm.expect(responseData.verified).to.be.a('boolean');\r",
 											"    pm.expect(responseData.lastTimeVerified).to.be.null; // Assuming null is expected\r",
 											"    pm.expect(responseData.submitterEmail).to.be.a('string').and.to.not.be.empty;\r",
@@ -7988,8 +7966,7 @@
 											"    pm.expect(response).to.have.property('id');\r",
 											"    pm.expect(response).to.have.property('title');\r",
 											"    pm.expect(response).to.have.property('description');\r",
-											"    pm.expect(response).not.to.have.property('fileName');\r",
-											"    pm.expect(response).not.to.have.property('hash');\r",
+											"    pm.expect(response).not.to.have.property('manifest');\r",
 											"    pm.expect(response).not.to.have.property('submitterEmail');\r",
 											"    pm.expect(response).not.to.have.property('submissionState');\r",
 											"    pm.expect(response).not.to.have.property('organization');\r",
@@ -8007,9 +7984,10 @@
 									"listen": "prerequest",
 									"script": {
 										"exec": [
-											"function generateRandomHash(length) {",
+											"function generateRandomHexHash(length) {",
 											"    let result = '';",
-											"    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';",
+											"    // Only use characters valid in a hexadecimal string",
+											"    const characters = 'abcdef0123456789';",
 											"    const charactersLength = characters.length;",
 											"",
 											"    for (let i = 0; i < length; i++) {",
@@ -8020,8 +7998,8 @@
 											"}",
 											"",
 											"// Set the generated hash in an environment variable",
-											"pm.environment.set(\"artifacthash1\", generateRandomHash(64));",
-											""
+											"// I've renamed the function to be more descriptive, but you can keep the old name",
+											"pm.environment.set(\"artifacthash1\", generateRandomHexHash(64));"
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -8043,7 +8021,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"title\": \"{{$randomProductName}}\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"fileName\": \"{{$randomFileName}}\",\r\n    \"hash\": \"{{artifacthash1}}\",\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example.com/product\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
+									"raw": "{\r\n    \"title\": \"{{$randomProductName}}\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"manifest\": [\r\n        {\r\n            \"hash\": \"{{artifacthash1}}\",\r\n            \"filename\": \"aNiceFileName.csv\",\r\n            \"algorithm\": \"sha256\"\r\n            }\r\n            ],\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example.com/product\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -8069,38 +8047,63 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"pm.test(\"Code is 200\", function() {\r",
+											"pm.test(\"Status code is 200 OK\", function() {\r",
 											"    pm.response.to.have.status(200);\r",
 											"});\r",
 											"\r",
-											"pm.test(\"Non empty response\", function() {\r",
+											"pm.test(\"Response contains correct artifact data\", function() {\r",
 											"    const responseData = pm.response.json();\r",
 											"    \r",
-											"    // Verify stored values from creation\r",
-											"    pm.expect(responseData.id).to.equal(pm.environment.get(\"artifactId1\"));\r",
-											"    pm.expect(responseData.title).to.equal(pm.environment.get(\"artifactTitle1\"));\r",
-											"    pm.expect(responseData.description).to.equal(pm.environment.get(\"artifactDescription1\"));\r",
-											"    pm.expect(responseData.hash).to.equal(pm.environment.get(\"artifacthash1\"));\r",
+											"    // --- Verify stored values from the creation request ---\r",
+											"    // These assume you saved these values to the environment in the \"Create Artifact\" request's tests\r",
+											"    pm.expect(responseData.id).to.equal(pm.environment.get(\"artifactId1\"), \"ID should match the created artifact's ID\");\r",
+											"    pm.expect(responseData.title).to.equal(pm.environment.get(\"artifactTitle1\"), \"Title should match the one provided on creation\");\r",
+											"    pm.expect(responseData.description).to.equal(pm.environment.get(\"artifactDescription1\"), \"Description should match\");\r",
 											"    \r",
-											"    // Rest of the field validations\r",
+											"    // --- Validate general field types and structure ---\r",
 											"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
-											"    pm.expect(responseData.title).to.be.a('string').and.to.not.be.empty;\r",
-											"    pm.expect(responseData.description).to.be.a('string').and.to.not.be.empty;\r",
-											"    pm.expect(responseData.keywords).to.be.an('array').and.to.not.be.empty;\r",
+											"    pm.expect(responseData.keywords).to.be.an('array');\r",
 											"    pm.expect(responseData.links).to.be.an('array');\r",
 											"    pm.expect(responseData.dois).to.be.an('array');\r",
-											"    pm.expect(responseData.fundingAgencies).to.be.an('array');\r",
 											"    pm.expect(responseData.acknowledgements).to.be.a('string');\r",
-											"    pm.expect(responseData.fileName).to.be.a('string').and.to.not.be.empty;\r",
-											"    pm.expect(responseData.hash).to.be.a('string').and.to.not.be.empty;\r",
 											"    pm.expect(responseData.verified).to.be.a('boolean');\r",
-											"    pm.expect(responseData.lastTimeVerified).to.be.null; // Assuming null is expected\r",
-											"    pm.expect(responseData.submissionState).to.be.a('string').and.to.not.be.empty;\r",
 											"    pm.expect(responseData.submitterEmail).to.be.a('string').and.to.not.be.empty;\r",
-											"    pm.expect(responseData.submittedAt).to.be.null; // Assuming null is expected\r",
+											"    pm.expect(responseData.submitterUsername).to.be.a('string').and.to.not.be.empty;\r",
 											"    pm.expect(responseData.organization).to.be.an('object');\r",
 											"    pm.expect(responseData.organization.name).to.be.a('string').and.to.not.be.empty;\r",
-											"});"
+											"\r",
+											"    // --- Validate the manifest object ---\r",
+											"    pm.expect(responseData.manifest).to.be.an('array').with.lengthOf(1, \"Manifest should contain one item\");\r",
+											"    const manifestItem = responseData.manifest[0];\r",
+											"    \r",
+											"    // Verify values from environment\r",
+											"    pm.expect(manifestItem.hash).to.equal(pm.environment.get(\"artifacthash1\"), \"Hash in manifest should match\");\r",
+											"    // Assuming you save the filename in your create request like this: pm.environment.set(\"artifactFilename1\", \"my_data.csv\");\r",
+											"    pm.expect(manifestItem.filename).to.equal(\"aNiceFileName.csv\", \"Filename in manifest should match\");\r",
+											"    pm.expect(manifestItem.algorithm).to.equal(\"sha256\");\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Submission fields show Pending state correctly\", function() {\r",
+											"    const responseData = pm.response.json();\r",
+											"    \r",
+											"    // Check submission state reflects the expected failure\r",
+											"    pm.expect(responseData.submissionState).to.equal(\"PENDING\", \"Submission state should be PENDING\");    \r",
+											"    \r",
+											"    // Check submittedAt is a valid date string\r",
+											"    pm.expect(responseData.submittedAt, \"submittedAt should be a valid date string\").to.be.a('string');\r",
+											"    pm.expect(new Date(responseData.submittedAt)).to.not.be.an('Invalid Date');\r",
+											"\r",
+											"    // Check that a peer ID was set\r",
+											"    pm.expect(responseData.peerId).to.be.null;\r",
+											"    \r",
+											"    console.log(\"✅ Artifact submission failure correctly recorded!\");\r",
+											"    console.log(`📋 Artifact ID: ${responseData.id}`);\r",
+											"    console.log(`🎯 Submission State: ${responseData.submissionState}`);\r",
+											"    console.log(`   Error: ${responseData.submissionError}`);\r",
+											"    console.log(`⏰ Submitted At: ${responseData.submittedAt}`);\r",
+											"    console.log(`🔗 Peer ID: ${responseData.peerId}`);\r",
+											"});\r",
+											""
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -8179,9 +8182,10 @@
 									"listen": "prerequest",
 									"script": {
 										"exec": [
-											"function generateRandomHash(length) {",
+											"function generateRandomHexHash(length) {",
 											"    let result = '';",
-											"    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';",
+											"    // Only use characters valid in a hexadecimal string",
+											"    const characters = 'abcdef0123456789';",
 											"    const charactersLength = characters.length;",
 											"",
 											"    for (let i = 0; i < length; i++) {",
@@ -8192,8 +8196,8 @@
 											"}",
 											"",
 											"// Set the generated hash in an environment variable",
-											"pm.environment.set(\"artifacthash1\", generateRandomHash(64));",
-											""
+											"// I've renamed the function to be more descriptive, but you can keep the old name",
+											"pm.environment.set(\"artifacthash1\", generateRandomHexHash(64));"
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -8215,7 +8219,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"title\": \"{{$randomProductName}}\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"fileName\": \"{{$randomFileName}}\",\r\n    \"hash\": \"{{artifacthash1}}\",\r\n    \"keywords\": [\"\"],\r\n    \"links\": [],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [\"\"],\r\n    \"acknowledgements\": \"\"\r\n}",
+									"raw": "{\r\n    \"title\": \"{{$randomProductName}}\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"manifest\": [\r\n        {\r\n            \"hash\": \"{{artifacthash1}}\",\r\n            \"filename\": \"aNiceFileName.csv\",\r\n            \"algorithm\": \"sha256\"\r\n            }\r\n            ],\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example.com/product\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -8279,9 +8283,10 @@
 									"listen": "prerequest",
 									"script": {
 										"exec": [
-											"function generateRandomHash(length) {",
+											"function generateRandomHexHash(length) {",
 											"    let result = '';",
-											"    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';",
+											"    // Only use characters valid in a hexadecimal string",
+											"    const characters = 'abcdef0123456789';",
 											"    const charactersLength = characters.length;",
 											"",
 											"    for (let i = 0; i < length; i++) {",
@@ -8292,8 +8297,8 @@
 											"}",
 											"",
 											"// Set the generated hash in an environment variable",
-											"pm.environment.set(\"artifacthash2\", generateRandomHash(64));",
-											""
+											"// I've renamed the function to be more descriptive, but you can keep the old name",
+											"pm.environment.set(\"artifacthash2\", generateRandomHexHash(64));"
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -8315,7 +8320,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"title\": \"{{$randomProductName}}\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"fileName\": \"{{$randomFileName}}\",\r\n    \"hash\": \"{{artifacthash2}}\",\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example.com/product\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
+									"raw": "{\r\n    \"title\": \"{{$randomProductName}}\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"manifest\": [\r\n        {\r\n            \"hash\": \"{{artifacthash2}}\",\r\n            \"filename\": \"aNiceFileName.csv\",\r\n            \"algorithm\": \"sha256\"\r\n            }\r\n            ],\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example.com/product\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -8352,7 +8357,8 @@
 											"    pm.expect(responseData.id).to.equal(pm.environment.get(\"artifactId2\"));\r",
 											"    pm.expect(responseData.title).to.equal(pm.environment.get(\"artifactTitle2\"));\r",
 											"    pm.expect(responseData.description).to.equal(pm.environment.get(\"artifactDescription2\"));\r",
-											"    pm.expect(responseData.hash).to.equal(pm.environment.get(\"artifacthash2\"));\r",
+											"    pm.expect(responseData.manifest[0].hash).to.equal(pm.environment.get(\"artifacthash2\"));\r",
+											"    pm.expect(responseData.manifest[0].filename).to.equal(\"aNiceFileName.csv\");\r",
 											"    \r",
 											"    // Rest of the field validations\r",
 											"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
@@ -8363,13 +8369,11 @@
 											"    pm.expect(responseData.dois).to.be.an('array');\r",
 											"    pm.expect(responseData.fundingAgencies).to.be.an('array');\r",
 											"    pm.expect(responseData.acknowledgements).to.be.a('string');\r",
-											"    pm.expect(responseData.fileName).to.be.a('string').and.to.not.be.empty;\r",
-											"    pm.expect(responseData.hash).to.be.a('string').and.to.not.be.empty;\r",
 											"    pm.expect(responseData.verified).to.be.a('boolean');\r",
 											"    pm.expect(responseData.lastTimeVerified).to.be.null; // Assuming null is expected\r",
 											"    pm.expect(responseData.submissionState).to.be.a('string').and.to.not.be.empty;\r",
 											"    pm.expect(responseData.submitterEmail).to.be.a('string').and.to.not.be.empty;\r",
-											"    pm.expect(responseData.submittedAt).to.be.null; // Assuming null is expected\r",
+											"    pm.expect(responseData.submittedAt).not.to.be.null; // Assuming null is expected\r",
 											"    pm.expect(responseData.organization).to.be.an('object');\r",
 											"    pm.expect(responseData.organization.name).to.be.a('string').and.to.not.be.empty;\r",
 											"});"
@@ -8466,7 +8470,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"title\": \"{{artifact2title}}\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"fileName\": \"{{$randomFileName}}\",\r\n    \"hash\": \"{{artifacthash2}}\",\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example.com/product\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
+									"raw": "{\r\n    \"title\": \"{{artifact2title}}\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"manifest\": [],\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example.com/product\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -8552,7 +8556,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"title\": \"UC\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"fileName\": \"{{$randomFileName}}\",\r\n    \"hash\": \"{{artifacthash2}}\",\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example.com/product\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
+									"raw": "{\r\n    \"title\": \"UC\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"manifest\": [],\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example.com/product\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -8638,7 +8642,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"title\": \"UCSD\",\r\n    \"description\": \"Short\",\r\n    \"fileName\": \"{{$randomFileName}}\",\r\n    \"hash\": \"{{artifacthash2}}\",\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example.com/product\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
+									"raw": "{\r\n    \"title\": \"UCSD\",\r\n    \"description\": \"Short\",\r\n    \"manifest\": [],\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example.com/product\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -8714,7 +8718,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"title\": \"UCSD\",\r\n    \"description\": \"This is a >50 characters description This is a >50 characters description This is a >50 characters description This is a >50 characters description\",\r\n    \"fileName\": \"{{$randomFileName}}\",\r\n    \"hash\": \"{{artifacthash2}}\",\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example\", \"facebook\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
+									"raw": "{\r\n    \"title\": \"UCSD\",\r\n    \"description\": \"This is a >50 characters description This is a >50 characters description This is a >50 characters description This is a >50 characters description\",\r\n    \"manifest\": [],\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example\", \"facebook\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -8802,7 +8806,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"title\": \"UCSD\",\r\n    \"description\": \"This is a >50 characters description This is a >50 characters description This is a >50 characters description This is a >50 characters description\",\r\n    \"fileName\": \"{{$randomFileName}}\",\r\n    \"hash\": \"{{artifacthash2}}\",\r\n    \"keywords\": [\r\n  \"quantum-computing-neural-networks-synthetic-biology-cryptographic-ledgers-augmented-reality-spatial-mapping-generative-design-algorithms\",\r\n  \"high-throughput-sequencing-pipeline-for-metagenomic-taxonomic-and-functional-profiling-of-environmental-microbiomes\",\r\n  \"ultra-low-power-edge-ai-accelerators-for-autonomous-inference-in-resource-constrained-iot-sensors\",\r\n  \"blockchain-enabled-supply-chain-traceability-and-auditability-for-circular-economy-material-flows\",\r\n  \"deep-reinforcement-learning-driven-adaptive-traffic-signal-control-for-smart-cities-with-connected-vehicles\",\r\n  \"bio-inspired-morphing-aerostructures-using-shape-memory-alloys-and-flexible-matrix-composites\",\r\n  \"optogenetic-control-of-neural-circuits-for-restoration-of-sensory-and-motor-function-in-spinal-cord-injury-models\",\r\n  \"large-scale-graph-analytics-on-heterogeneous-hardware-architectures-with-runtime-workload-rebalancing\",\r\n  \"privacy-preserving-federated-learning-frameworks-for-cross-institutional-clinical-imaging-datasets\",\r\n  \"explainable-transformer-models-for-multi-modal-sentiment-analysis-in-human-robot-interaction\",\r\n  \"self-healing-perovskite-photovoltaics-with-intrinsic-ion-migration-suppression-and-extended-operational-stability\"\r\n],\r\n    \"links\": [\"https://example.com\", \"facebook.edu.co\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
+									"raw": "{\r\n    \"title\": \"UCSD\",\r\n    \"description\": \"This is a >50 characters description This is a >50 characters description This is a >50 characters description This is a >50 characters description\",\r\n    \"manifest\": [],\r\n    \"keywords\": [\r\n  \"quantum-computing-neural-networks-synthetic-biology-cryptographic-ledgers-augmented-reality-spatial-mapping-generative-design-algorithms\",\r\n  \"high-throughput-sequencing-pipeline-for-metagenomic-taxonomic-and-functional-profiling-of-environmental-microbiomes\",\r\n  \"ultra-low-power-edge-ai-accelerators-for-autonomous-inference-in-resource-constrained-iot-sensors\",\r\n  \"blockchain-enabled-supply-chain-traceability-and-auditability-for-circular-economy-material-flows\",\r\n  \"deep-reinforcement-learning-driven-adaptive-traffic-signal-control-for-smart-cities-with-connected-vehicles\",\r\n  \"bio-inspired-morphing-aerostructures-using-shape-memory-alloys-and-flexible-matrix-composites\",\r\n  \"optogenetic-control-of-neural-circuits-for-restoration-of-sensory-and-motor-function-in-spinal-cord-injury-models\",\r\n  \"large-scale-graph-analytics-on-heterogeneous-hardware-architectures-with-runtime-workload-rebalancing\",\r\n  \"privacy-preserving-federated-learning-frameworks-for-cross-institutional-clinical-imaging-datasets\",\r\n  \"explainable-transformer-models-for-multi-modal-sentiment-analysis-in-human-robot-interaction\",\r\n  \"self-healing-perovskite-photovoltaics-with-intrinsic-ion-migration-suppression-and-extended-operational-stability\"\r\n],\r\n    \"links\": [\"https://example.com\", \"facebook.edu.co\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -8880,7 +8884,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"title\": \"A super random title\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"fileName\": \"{{$randomFileName}}\",\r\n    \"hash\": \"{{artifacthash2}}\",\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example.com/product\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
+									"raw": "{\r\n    \"title\": \"A super random title\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"manifest\": [],\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example.com/product\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -8958,7 +8962,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"title\": \"A super random title\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"fileName\": \"{{$randomFileName}}\",\r\n    \"hash\": \"{{artifacthash2}}\",\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example.com/product\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
+									"raw": "{\r\n    \"title\": \"A super random title\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"manifest\": [],\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example.com/product\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -9675,9 +9679,14 @@
 							"response": []
 						}
 					]
-				},
+				}
+			]
+		},
+		{
+			"name": "Integration Tests",
+			"item": [
 				{
-					"name": "Update Artifact",
+					"name": "Set Up",
 					"item": [
 						{
 							"name": "Log in as Admin 1",
@@ -10239,740 +10248,9 @@
 								}
 							},
 							"response": []
-						},
-						{
-							"name": "Collaborator Get All Orgs",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"pm.test(\"Code is 200\", function() {\r",
-											"    pm.response.to.have.status(200);\r",
-											"});\r",
-											"\r",
-											"pm.test(\"Non Empty list\", function() {\r",
-											"    pm.expect(pm.response.json()).to.be.an('array').that.is.not.empty;\r",
-											"    pm.expect(pm.response.json()).to.have.lengthOf(1);\r",
-											"    pm.expect(pm.response.json()[0].id).to.equal(pm.environment.get(\"orgId\"));\r",
-											"});\r",
-											""
-										],
-										"type": "text/javascript",
-										"packages": {}
-									}
-								}
-							],
-							"request": {
-								"auth": {
-									"type": "bearer",
-									"bearer": [
-										{
-											"key": "token",
-											"value": "{{token_collaborator1}}",
-											"type": "string"
-										}
-									]
-								},
-								"method": "GET",
-								"header": [],
-								"url": {
-									"raw": "{{baseUrl}}/organizations",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"organizations"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Collaborator Create Artifact 1",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"// Store the response data in environment variables\r",
-											"pm.environment.set(\"artifactId1\", pm.response.json().id);\r",
-											"pm.environment.set(\"artifactTitle1\", pm.response.json().title);\r",
-											"pm.environment.set(\"artifactDescription1\", pm.response.json().description)\r",
-											"\r",
-											"// Test HTTP Status Code\r",
-											"pm.test(\"Status code is 201\", function () {\r",
-											"    pm.response.to.have.status(201);\r",
-											"});\r",
-											"\r",
-											"// Test Response Structure\r",
-											"pm.test(\"Response has the correct structure\", function () {\r",
-											"    const response = pm.response.json();\r",
-											"    \r",
-											"    // Required fields\r",
-											"    pm.expect(response).to.have.property('id');\r",
-											"    pm.expect(response).to.have.property('title');\r",
-											"    pm.expect(response).to.have.property('description');\r",
-											"    pm.expect(response).not.to.have.property('fileName');\r",
-											"    pm.expect(response).not.to.have.property('hash');\r",
-											"    pm.expect(response).not.to.have.property('submitterEmail');\r",
-											"    pm.expect(response).not.to.have.property('submissionState');\r",
-											"    pm.expect(response).not.to.have.property('organization');\r",
-											"    pm.expect(response.lastTimeVerified).to.be.null;\r",
-											"    \r",
-											"});\r",
-											"\r",
-											""
-										],
-										"type": "text/javascript",
-										"packages": {}
-									}
-								},
-								{
-									"listen": "prerequest",
-									"script": {
-										"exec": [
-											"function generateRandomHash(length) {",
-											"    let result = '';",
-											"    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';",
-											"    const charactersLength = characters.length;",
-											"",
-											"    for (let i = 0; i < length; i++) {",
-											"        result += characters.charAt(Math.floor(Math.random() * charactersLength));",
-											"    }",
-											"",
-											"    return result;",
-											"}",
-											"",
-											"// Set the generated hash in an environment variable",
-											"pm.environment.set(\"artifacthash1\", generateRandomHash(64));",
-											""
-										],
-										"type": "text/javascript",
-										"packages": {}
-									}
-								}
-							],
-							"request": {
-								"auth": {
-									"type": "bearer",
-									"bearer": [
-										{
-											"key": "token",
-											"value": "{{token_collaborator1}}",
-											"type": "string"
-										}
-									]
-								},
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"title\": \"{{$randomProductName}}\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"fileName\": \"{{$randomFileName}}\",\r\n    \"hash\": \"{{artifacthash1}}\",\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example.com/product\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/artifacts",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"artifacts"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Get Artifact 1",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"pm.test(\"Code is 200\", function() {\r",
-											"    pm.response.to.have.status(200);\r",
-											"});\r",
-											"\r",
-											"pm.test(\"Non empty response\", function() {\r",
-											"    const responseData = pm.response.json();\r",
-											"    \r",
-											"    // Verify stored values from creation\r",
-											"    pm.expect(responseData.id).to.equal(pm.environment.get(\"artifactId1\"));\r",
-											"    pm.expect(responseData.title).to.equal(pm.environment.get(\"artifactTitle1\"));\r",
-											"    pm.expect(responseData.description).to.equal(pm.environment.get(\"artifactDescription1\"));\r",
-											"    pm.expect(responseData.hash).to.equal(pm.environment.get(\"artifacthash1\"));\r",
-											"    \r",
-											"    // Rest of the field validations\r",
-											"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
-											"    pm.expect(responseData.title).to.be.a('string').and.to.not.be.empty;\r",
-											"    pm.expect(responseData.description).to.be.a('string').and.to.not.be.empty;\r",
-											"    pm.expect(responseData.keywords).to.be.an('array').and.to.not.be.empty;\r",
-											"    pm.expect(responseData.links).to.be.an('array');\r",
-											"    pm.expect(responseData.dois).to.be.an('array');\r",
-											"    pm.expect(responseData.fundingAgencies).to.be.an('array');\r",
-											"    pm.expect(responseData.acknowledgements).to.be.a('string');\r",
-											"    pm.expect(responseData.fileName).to.be.a('string').and.to.not.be.empty;\r",
-											"    pm.expect(responseData.hash).to.be.a('string').and.to.not.be.empty;\r",
-											"    pm.expect(responseData.verified).to.be.a('boolean');\r",
-											"    pm.expect(responseData.lastTimeVerified).to.be.null; // Assuming null is expected\r",
-											"    pm.expect(responseData.submissionState).to.be.a('string').and.to.not.be.empty;\r",
-											"    pm.expect(responseData.submitterEmail).to.be.a('string').and.to.not.be.empty;\r",
-											"    pm.expect(responseData.submittedAt).to.be.null; // Assuming null is expected\r",
-											"    pm.expect(responseData.organization).to.be.an('object');\r",
-											"    pm.expect(responseData.organization.name).to.be.a('string').and.to.not.be.empty;\r",
-											"});"
-										],
-										"type": "text/javascript",
-										"packages": {}
-									}
-								}
-							],
-							"protocolProfileBehavior": {
-								"disableBodyPruning": true
-							},
-							"request": {
-								"method": "GET",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/artifacts/{{artifactId1}}",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"artifacts",
-										"{{artifactId1}}"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Collaborator Create Artifact 1 - few fields",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"// Store the response data in environment variables\r",
-											"pm.environment.set(\"artifactId1\", pm.response.json().id);\r",
-											"pm.environment.set(\"artifactTitle1\", pm.response.json().title);\r",
-											"pm.environment.set(\"artifactDescription1\", pm.response.json().description)\r",
-											"\r",
-											"// Test HTTP Status Code\r",
-											"pm.test(\"Status code is 201\", function () {\r",
-											"    pm.response.to.have.status(201);\r",
-											"});\r",
-											"\r",
-											"// Test Response Structure\r",
-											"pm.test(\"Response has the correct structure\", function () {\r",
-											"    const response = pm.response.json();\r",
-											"    \r",
-											"    // Required fields\r",
-											"    pm.expect(response).to.have.property('id');\r",
-											"    pm.expect(response).to.have.property('title');\r",
-											"    pm.expect(response).to.have.property('description');\r",
-											"    pm.expect(response).not.to.have.property('fileName');\r",
-											"    pm.expect(response).not.to.have.property('hash');\r",
-											"    pm.expect(response).not.to.have.property('submitterEmail');\r",
-											"    pm.expect(response).not.to.have.property('submissionState');\r",
-											"    pm.expect(response).not.to.have.property('organization');\r",
-											"    pm.expect(response.lastTimeVerified).to.be.null;\r",
-											"    \r",
-											"});\r",
-											"\r",
-											""
-										],
-										"type": "text/javascript",
-										"packages": {}
-									}
-								},
-								{
-									"listen": "prerequest",
-									"script": {
-										"exec": [
-											"function generateRandomHash(length) {",
-											"    let result = '';",
-											"    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';",
-											"    const charactersLength = characters.length;",
-											"",
-											"    for (let i = 0; i < length; i++) {",
-											"        result += characters.charAt(Math.floor(Math.random() * charactersLength));",
-											"    }",
-											"",
-											"    return result;",
-											"}",
-											"",
-											"// Set the generated hash in an environment variable",
-											"pm.environment.set(\"artifacthash1\", generateRandomHash(64));",
-											""
-										],
-										"type": "text/javascript",
-										"packages": {}
-									}
-								}
-							],
-							"request": {
-								"auth": {
-									"type": "bearer",
-									"bearer": [
-										{
-											"key": "token",
-											"value": "{{token_collaborator1}}",
-											"type": "string"
-										}
-									]
-								},
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"title\": \"{{$randomProductName}}\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"fileName\": \"{{$randomFileName}}\",\r\n    \"hash\": \"{{artifacthash1}}\",\r\n    \"keywords\": [\"\"],\r\n    \"links\": [],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [\"\"],\r\n    \"acknowledgements\": \"\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/artifacts",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"artifacts"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "PI Create Artifact 2",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"// Store the response data in environment variables\r",
-											"pm.environment.set(\"artifact2title\", pm.response.json().title);\r",
-											"pm.environment.set(\"artifactId2\", pm.response.json().id);\r",
-											"pm.environment.set(\"artifactTitle2\", pm.response.json().title);\r",
-											"pm.environment.set(\"artifactDescription2\", pm.response.json().description)\r",
-											"\r",
-											"// Test HTTP Status Code\r",
-											"pm.test(\"Status code is 201\", function () {\r",
-											"    pm.response.to.have.status(201);\r",
-											"});\r",
-											"\r",
-											"// Test Response Structure\r",
-											"pm.test(\"Response has the correct structure\", function () {\r",
-											"    const response = pm.response.json();\r",
-											"    \r",
-											"    // Required fields\r",
-											"    pm.expect(response).to.have.property('id');\r",
-											"    pm.expect(response).to.have.property('title');\r",
-											"    pm.expect(response).to.have.property('description');\r",
-											"    pm.expect(response).not.to.have.property('fileName');\r",
-											"    pm.expect(response).not.to.have.property('hash');\r",
-											"    pm.expect(response).not.to.have.property('submitterEmail');\r",
-											"    pm.expect(response).not.to.have.property('submissionState');\r",
-											"    pm.expect(response).not.to.have.property('organization');\r",
-											"    pm.expect(response.lastTimeVerified).to.be.null;\r",
-											"    \r",
-											"});\r",
-											"\r",
-											""
-										],
-										"type": "text/javascript",
-										"packages": {}
-									}
-								},
-								{
-									"listen": "prerequest",
-									"script": {
-										"exec": [
-											"function generateRandomHash(length) {",
-											"    let result = '';",
-											"    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';",
-											"    const charactersLength = characters.length;",
-											"",
-											"    for (let i = 0; i < length; i++) {",
-											"        result += characters.charAt(Math.floor(Math.random() * charactersLength));",
-											"    }",
-											"",
-											"    return result;",
-											"}",
-											"",
-											"// Set the generated hash in an environment variable",
-											"pm.environment.set(\"artifacthash2\", generateRandomHash(64));",
-											""
-										],
-										"type": "text/javascript",
-										"packages": {}
-									}
-								}
-							],
-							"request": {
-								"auth": {
-									"type": "bearer",
-									"bearer": [
-										{
-											"key": "token",
-											"value": "{{token_PI}}",
-											"type": "string"
-										}
-									]
-								},
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n    \"title\": \"{{$randomProductName}}\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"fileName\": \"{{$randomFileName}}\",\r\n    \"hash\": \"{{artifacthash2}}\",\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example.com/product\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/artifacts",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"artifacts"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Get Artifact 2",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"pm.test(\"Code is 200\", function() {\r",
-											"    pm.response.to.have.status(200);\r",
-											"});\r",
-											"\r",
-											"pm.test(\"Non empty response\", function() {\r",
-											"    const responseData = pm.response.json();\r",
-											"    \r",
-											"    // Verify stored values from creation\r",
-											"    pm.expect(responseData.id).to.equal(pm.environment.get(\"artifactId2\"));\r",
-											"    pm.expect(responseData.title).to.equal(pm.environment.get(\"artifactTitle2\"));\r",
-											"    pm.expect(responseData.description).to.equal(pm.environment.get(\"artifactDescription2\"));\r",
-											"    pm.expect(responseData.hash).to.equal(pm.environment.get(\"artifacthash2\"));\r",
-											"    \r",
-											"    // Rest of the field validations\r",
-											"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
-											"    pm.expect(responseData.title).to.be.a('string').and.to.not.be.empty;\r",
-											"    pm.expect(responseData.description).to.be.a('string').and.to.not.be.empty;\r",
-											"    pm.expect(responseData.keywords).to.be.an('array').and.to.not.be.empty;\r",
-											"    pm.expect(responseData.links).to.be.an('array');\r",
-											"    pm.expect(responseData.dois).to.be.an('array');\r",
-											"    pm.expect(responseData.fundingAgencies).to.be.an('array');\r",
-											"    pm.expect(responseData.acknowledgements).to.be.a('string');\r",
-											"    pm.expect(responseData.fileName).to.be.a('string').and.to.not.be.empty;\r",
-											"    pm.expect(responseData.hash).to.be.a('string').and.to.not.be.empty;\r",
-											"    pm.expect(responseData.verified).to.be.a('boolean');\r",
-											"    pm.expect(responseData.lastTimeVerified).to.be.null; // Assuming null is expected\r",
-											"    pm.expect(responseData.submissionState).to.be.a('string').and.to.not.be.empty;\r",
-											"    pm.expect(responseData.submitterEmail).to.be.a('string').and.to.not.be.empty;\r",
-											"    pm.expect(responseData.submittedAt).to.be.null; // Assuming null is expected\r",
-											"    pm.expect(responseData.organization).to.be.an('object');\r",
-											"    pm.expect(responseData.organization.name).to.be.a('string').and.to.not.be.empty;\r",
-											"});"
-										],
-										"type": "text/javascript",
-										"packages": {}
-									}
-								}
-							],
-							"protocolProfileBehavior": {
-								"disableBodyPruning": true
-							},
-							"request": {
-								"method": "GET",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/artifacts/{{artifactId2}}",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"artifacts",
-										"{{artifactId2}}"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Get All Artifacts",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"/* ----------  STATUS ---------- */\r",
-											"pm.test('Code is 200', () => pm.response.to.have.status(200));\r",
-											"\r",
-											"/* ----------  BASIC ARRAY CHECK ---------- */\r",
-											"const artifacts = pm.response.json();\r",
-											"\r",
-											"pm.test('Response is array (≥ 2)', () => {\r",
-											"  pm.expect(artifacts).to.be.an('array').with.length.of.at.least(2);\r",
-											"});\r",
-											"\r",
-											"/* ----------  STRUCTURE FOR EACH ITEM ---------- */\r",
-											"pm.test('Each artifact has required minimal fields', () => {\r",
-											"  artifacts.forEach(a => {\r",
-											"    pm.expect(a).to.have.property('id').that.is.a('string').and.is.not.empty;\r",
-											"    pm.expect(a).to.have.property('title').that.is.a('string').and.is.not.empty;\r",
-											"    pm.expect(a).to.have.property('description').that.is.a('string').and.is.not.empty;\r",
-											"    pm.expect(a).to.have.property('lastTimeVerified');           // null or date\r",
-											"  });\r",
-											"});\r",
-											"\r",
-											"/* ----------  OPTIONAL VALIDATION WITH ENV VARS ---------- */\r",
-											"const envIds  = [pm.environment.get('artifactId1'), pm.environment.get('artifactId2')].filter(Boolean);\r",
-											"const envDesc = [pm.environment.get('description1'), pm.environment.get('description2')].filter(Boolean);\r",
-											"\r",
-											"if (envIds.length) {\r",
-											"  pm.test('Response contains expected artifact IDs', () => {\r",
-											"    const idsInResponse = artifacts.map(a => a.id);\r",
-											"    envIds.forEach(id => pm.expect(idsInResponse).to.include(id));\r",
-											"  });\r",
-											"}\r",
-											"\r",
-											"if (envDesc.length) {\r",
-											"  pm.test('Descriptions match stored values', () => {\r",
-											"    envDesc.forEach(desc => {\r",
-											"      const found = artifacts.some(a => a.description === desc);\r",
-											"      pm.expect(found, `Description \"${desc}\" should appear in response`).to.be.true;\r",
-											"    });\r",
-											"  });\r",
-											"}\r",
-											""
-										],
-										"type": "text/javascript",
-										"packages": {}
-									}
-								},
-								{
-									"listen": "prerequest",
-									"script": {
-										"exec": [
-											""
-										],
-										"type": "text/javascript",
-										"packages": {}
-									}
-								}
-							],
-							"protocolProfileBehavior": {
-								"disableBodyPruning": true
-							},
-							"request": {
-								"method": "GET",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/artifacts",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"artifacts"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Get All Orgs",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"/* ----------  STATUS ---------- */\r",
-											"pm.test('Code is 200', () => pm.response.to.have.status(200));\r",
-											"\r",
-											"/* ----------  BODY ---------- */\r",
-											"const data = pm.response.json();\r",
-											"\r",
-											"/* ----------  ORGANIZATION ---------- */\r",
-											"pm.test('Exactly one organization returned', () => {\r",
-											"  pm.expect(data).to.be.an('array').with.lengthOf(1);\r",
-											"});\r",
-											"\r",
-											"const org = data[0];\r",
-											"\r",
-											"/* Guarda orgId la primera vez si no existe */\r",
-											"if (!pm.environment.get('orgId')) {\r",
-											"  pm.environment.set('orgId', org.id);\r",
-											"}\r",
-											"\r",
-											"pm.test('Organization ID matches stored value', () => {\r",
-											"  pm.expect(org.id).to.eql(pm.environment.get('orgId'));\r",
-											"});\r",
-											"\r",
-											"/* ----------  ARTIFACTS ARRAY ---------- */\r",
-											"pm.test('At least 2 artifacts returned', () => {\r",
-											"  pm.expect(org.artifacts).to.be.an('array').with.length.of.at.least(2);\r",
-											"});\r",
-											"\r",
-											"/* ----------  VALIDACIÓN OPCIONAL CON VARIABLES ---------- */\r",
-											"const storedIds  = [pm.environment.get('artifactId1'), pm.environment.get('artifactId2')].filter(Boolean);\r",
-											"const storedDesc = [pm.environment.get('description1'), pm.environment.get('description2')].filter(Boolean);\r",
-											"\r",
-											"if (storedIds.length) {\r",
-											"  pm.test('Response contiene los artifact IDs guardados', () => {\r",
-											"    const ids = org.artifacts.map(a => a.id);\r",
-											"    storedIds.forEach(id => pm.expect(ids, `ID ${id} debe estar en la respuesta`).to.include(id));\r",
-											"  });\r",
-											"}\r",
-											"\r",
-											"if (storedDesc.length) {\r",
-											"  pm.test('Descripciones guardadas aparecen en la respuesta', () => {\r",
-											"    storedDesc.forEach(desc => {\r",
-											"      const exists = org.artifacts.some(a => a.description === desc);\r",
-											"      pm.expect(exists, `Descripción \"${desc}\" debería estar en la respuesta`).to.be.true;\r",
-											"    });\r",
-											"  });\r",
-											"}\r",
-											""
-										],
-										"type": "text/javascript",
-										"packages": {}
-									}
-								}
-							],
-							"request": {
-								"auth": {
-									"type": "bearer",
-									"bearer": [
-										{
-											"key": "token",
-											"value": "{{token_PI}}",
-											"type": "string"
-										}
-									]
-								},
-								"method": "GET",
-								"header": [],
-								"url": {
-									"raw": "{{baseUrl}}/organizations",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"organizations"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "Get Artifact wrong ID",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"pm.test(\"Code is 404\", function() {\r",
-											"    pm.response.to.have.status(404)\r",
-											"});\r",
-											"\r",
-											"pm.test(\"Get error message\", function() {\r",
-											"   pm.expect(pm.response.json().message).to.eql(\"The artifact with the provided id does not exist\");\r",
-											"});\r",
-											""
-										],
-										"type": "text/javascript",
-										"packages": {}
-									}
-								},
-								{
-									"listen": "prerequest",
-									"script": {
-										"exec": [
-											""
-										],
-										"type": "text/javascript",
-										"packages": {}
-									}
-								}
-							],
-							"protocolProfileBehavior": {
-								"disableBodyPruning": true
-							},
-							"request": {
-								"method": "GET",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "{{baseUrl}}/artifacts/{{$randomUUID}}",
-									"host": [
-										"{{baseUrl}}"
-									],
-									"path": [
-										"artifacts",
-										"{{$randomUUID}}"
-									]
-								}
-							},
-							"response": []
 						}
 					]
-				}
-			]
-		},
-		{
-			"name": "Integration Tests",
-			"item": [
+				},
 				{
 					"name": "Mock Peer Down",
 					"item": [
@@ -11021,9 +10299,10 @@
 									"listen": "prerequest",
 									"script": {
 										"exec": [
-											"function generateRandomHash(length) {",
+											"function generateRandomHexHash(length) {",
 											"    let result = '';",
-											"    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';",
+											"    // Only use characters valid in a hexadecimal string",
+											"    const characters = 'abcdef0123456789';",
 											"    const charactersLength = characters.length;",
 											"",
 											"    for (let i = 0; i < length; i++) {",
@@ -11034,8 +10313,8 @@
 											"}",
 											"",
 											"// Set the generated hash in an environment variable",
-											"pm.environment.set(\"artifacthash5\", generateRandomHash(64));",
-											""
+											"// I've renamed the function to be more descriptive, but you can keep the old name",
+											"pm.environment.set(\"artifacthash5\", generateRandomHexHash(64));"
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -11057,7 +10336,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"title\": \"{{$randomProductName}}\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"fileName\": \"{{$randomFileName}}\",\r\n    \"hash\": \"{{artifacthash5}}\",\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example.com/product\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
+									"raw": "{\r\n    \"title\": \"{{$randomProductName}}\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"manifest\": [\r\n        {\r\n            \"hash\": \"{{artifacthash5}}\",\r\n            \"filename\": \"aNiceFileName.csv\",\r\n            \"algorithm\": \"sha256\"\r\n            }\r\n            ],\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example.com/product\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -11094,15 +10373,14 @@
 											"    pm.expect(responseData.id).to.equal(pm.environment.get(\"artifactId5\"));\r",
 											"    pm.expect(responseData.title).to.equal(pm.environment.get(\"artifactTitle5\"));\r",
 											"    pm.expect(responseData.description).to.equal(pm.environment.get(\"artifactDescription5\"));\r",
-											"    pm.expect(responseData.hash).to.equal(pm.environment.get(\"artifacthash5\"));\r",
+											"    pm.expect(responseData.manifest[0].hash).to.equal(pm.environment.get(\"artifacthash5\"));\r",
 											"    \r",
 											"    // Rest of the field validations\r",
 											"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
 											"    pm.expect(responseData.title).to.be.a('string').and.to.not.be.empty;\r",
 											"    pm.expect(responseData.description).to.be.a('string').and.to.not.be.empty;\r",
 											"    pm.expect(responseData.acknowledgements).to.be.a('string');\r",
-											"    pm.expect(responseData.fileName).to.be.a('string').and.to.not.be.empty;\r",
-											"    pm.expect(responseData.hash).to.be.a('string').and.to.not.be.empty;\r",
+											"    pm.expect(responseData.manifest[0].filename).to.equal(\"aNiceFileName.csv\");\r",
 											"    pm.expect(responseData.verified).to.be.a('boolean');\r",
 											"    pm.expect(responseData.lastTimeVerified).to.be.null; // Assuming null is expected\r",
 											"    pm.expect(responseData.submitterEmail).to.be.a('string').and.to.not.be.empty;\r",
@@ -11203,15 +10481,14 @@
 											"    pm.expect(responseData.id).to.equal(pm.environment.get(\"artifactId5\"));\r",
 											"    pm.expect(responseData.title).to.equal(pm.environment.get(\"artifactTitle5\"));\r",
 											"    pm.expect(responseData.description).to.equal(pm.environment.get(\"artifactDescription5\"));\r",
-											"    pm.expect(responseData.hash).to.equal(pm.environment.get(\"artifacthash5\"));\r",
+											"    pm.expect(responseData.manifest[0].hash).to.equal(pm.environment.get(\"artifacthash5\"));\r",
 											"    \r",
 											"    // Rest of the field validations\r",
 											"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
 											"    pm.expect(responseData.title).to.be.a('string').and.to.not.be.empty;\r",
 											"    pm.expect(responseData.description).to.be.a('string').and.to.not.be.empty;\r",
 											"    pm.expect(responseData.acknowledgements).to.be.a('string');\r",
-											"    pm.expect(responseData.fileName).to.be.a('string').and.to.not.be.empty;\r",
-											"    pm.expect(responseData.hash).to.be.a('string').and.to.not.be.empty;\r",
+											"    pm.expect(responseData.manifest[0].filename).to.equal(\"aNiceFileName.csv\");\r",
 											"    pm.expect(responseData.verified).to.be.a('boolean');\r",
 											"    pm.expect(responseData.lastTimeVerified).to.be.null; // Assuming null is expected\r",
 											"    pm.expect(responseData.submitterEmail).to.be.a('string').and.to.not.be.empty;\r",
@@ -11219,14 +10496,19 @@
 											"    pm.expect(responseData.organization.name).to.be.a('string').and.to.not.be.empty;\r",
 											"    pm.expect(responseData.blockchainTxId).to.be.null;\r",
 											"    pm.expect(responseData.peerId).to.be.null;\r",
-											"    pm.expect(responseData.submissionError).to.contain(\"Connection error communicating with peer at\");\r",
+											"    pm.expect(responseData.submissionError).to.equal(\"Connection error communicating with peer at http://mock_peer:8080/submit-artifact\");\r",
 											"});\r",
 											"\r",
 											"pm.test(\"Submission fields are updated correctly\", function() {\r",
 											"    const responseData = pm.response.json();\r",
 											"    \r",
 											"    // Check submission state was updated by the listener\r",
-											"    pm.expect(responseData.submissionState).to.equal(\"FAILED\");\r",
+											"    pm.expect(responseData.submissionState).to.equal(\"FAILED\");    \r",
+											"    \r",
+											"    // Check peer ID was set (if your API stores it)\r",
+											"    if (responseData.peerId) {\r",
+											"        pm.expect(responseData.peerId).to.be.a('string').and.to.not.be.empty;\r",
+											"    }\r",
 											"    \r",
 											"    console.log(\"✅ Artifact successfully updated via listener!\");\r",
 											"    console.log(`📋 Artifact ID: ${responseData.id}`);\r",
@@ -11246,14 +10528,7 @@
 											"    console.log(\"   ✓ Artifact contains submission data\");\r",
 											"});\r",
 											"\r",
-											"// Wait for 500ms before proceeding to the next request\r",
-											"  setTimeout(function() {\r",
-											"      // No-op, just delay\r",
-											"  }, 1000);\r",
 											"\r",
-											"    pm.test(\"Dummy delay always passes\", function () {\r",
-											"      pm.expect(true).to.be.true;\r",
-											"  });\r",
 											""
 										],
 										"type": "text/javascript",
@@ -11348,9 +10623,10 @@
 									"listen": "prerequest",
 									"script": {
 										"exec": [
-											"function generateRandomHash(length) {",
+											"function generateRandomHexHash(length) {",
 											"    let result = '';",
-											"    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';",
+											"    // Only use characters valid in a hexadecimal string",
+											"    const characters = 'abcdef0123456789';",
 											"    const charactersLength = characters.length;",
 											"",
 											"    for (let i = 0; i < length; i++) {",
@@ -11361,8 +10637,8 @@
 											"}",
 											"",
 											"// Set the generated hash in an environment variable",
-											"pm.environment.set(\"artifacthash6\", generateRandomHash(64));",
-											""
+											"// I've renamed the function to be more descriptive, but you can keep the old name",
+											"pm.environment.set(\"artifacthash6\", generateRandomHexHash(64));"
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -11384,7 +10660,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"title\": \"{{$randomProductName}}\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"fileName\": \"{{$randomFileName}}\",\r\n    \"hash\": \"{{artifacthash6}}\",\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example.com/product\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
+									"raw": "{\r\n    \"title\": \"{{$randomProductName}}\",\r\n    \"description\": \"Transform your living space with the Ultimate Home Organizer Kit...\",\r\n    \"manifest\": [\r\n        {\r\n            \"hash\": \"{{artifacthash6}}\",\r\n            \"filename\": \"aNiceFileName.csv\",\r\n            \"algorithm\": \"sha256\"\r\n            }\r\n            ],\r\n    \"keywords\": [\"organizer\", \"home\", \"storage\", \"declutter\"],\r\n    \"links\": [\"https://example.com/product\"],\r\n    \"dois\": [\"\"],  // Change from [] to null\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"Thanks to all contributors\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -11421,15 +10697,14 @@
 											"    pm.expect(responseData.id).to.equal(pm.environment.get(\"artifactId6\"));\r",
 											"    pm.expect(responseData.title).to.equal(pm.environment.get(\"artifactTitle6\"));\r",
 											"    pm.expect(responseData.description).to.equal(pm.environment.get(\"artifactDescription6\"));\r",
-											"    pm.expect(responseData.hash).to.equal(pm.environment.get(\"artifacthash6\"));\r",
+											"    pm.expect(responseData.manifest[0].hash).to.equal(pm.environment.get(\"artifacthash6\"));\r",
 											"    \r",
 											"    // Rest of the field validations\r",
 											"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
 											"    pm.expect(responseData.title).to.be.a('string').and.to.not.be.empty;\r",
 											"    pm.expect(responseData.description).to.be.a('string').and.to.not.be.empty;\r",
 											"    pm.expect(responseData.acknowledgements).to.be.a('string');\r",
-											"    pm.expect(responseData.fileName).to.be.a('string').and.to.not.be.empty;\r",
-											"    pm.expect(responseData.hash).to.be.a('string').and.to.not.be.empty;\r",
+											"    pm.expect(responseData.manifest[0].filename).to.equal(\"aNiceFileName.csv\");\r",
 											"    pm.expect(responseData.verified).to.be.a('boolean');\r",
 											"    pm.expect(responseData.lastTimeVerified).to.be.null; // Assuming null is expected\r",
 											"    pm.expect(responseData.submitterEmail).to.be.a('string').and.to.not.be.empty;\r",
@@ -11477,9 +10752,6 @@
 											"    pm.test(\"Dummy delay always passes\", function () {\r",
 											"      pm.expect(true).to.be.true;\r",
 											"  });\r",
-											"\r",
-											"\r",
-											"\r",
 											""
 										],
 										"type": "text/javascript",
@@ -11489,11 +10761,8 @@
 								{
 									"listen": "prerequest",
 									"script": {
-										"exec": [
-											""
-										],
-										"type": "text/javascript",
-										"packages": {}
+										"packages": {},
+										"type": "text/javascript"
 									}
 								}
 							],
@@ -11568,7 +10837,7 @@
 											"pm.test(\"Latest message's structure is correct\", () => {\r",
 											"    pm.expect(latestMessage).to.have.property('exchange', 'artifact.exchange');\r",
 											"    pm.expect(latestMessage).to.have.property('routing_key', 'artifact.created');\r",
-											"    pm.expect(payload).to.have.property('hash');\r",
+											"    pm.expect(payload).to.have.property('manifest');\r",
 											"    pm.expect(payload).to.have.property('version', 'v1');\r",
 											"});"
 										],
@@ -11631,15 +10900,13 @@
 											"    pm.expect(responseData.id).to.equal(pm.environment.get(\"artifactId6\"));\r",
 											"    pm.expect(responseData.title).to.equal(pm.environment.get(\"artifactTitle6\"));\r",
 											"    pm.expect(responseData.description).to.equal(pm.environment.get(\"artifactDescription6\"));\r",
-											"    pm.expect(responseData.hash).to.equal(pm.environment.get(\"artifacthash6\"));\r",
+											"    pm.expect(responseData.manifest[0].hash).to.equal(pm.environment.get(\"artifacthash6\"));\r",
 											"    \r",
 											"    // Rest of the field validations\r",
 											"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
 											"    pm.expect(responseData.title).to.be.a('string').and.to.not.be.empty;\r",
 											"    pm.expect(responseData.description).to.be.a('string').and.to.not.be.empty;\r",
 											"    pm.expect(responseData.acknowledgements).to.be.a('string');\r",
-											"    pm.expect(responseData.fileName).to.be.a('string').and.to.not.be.empty;\r",
-											"    pm.expect(responseData.hash).to.be.a('string').and.to.not.be.empty;\r",
 											"    pm.expect(responseData.verified).to.be.a('boolean');\r",
 											"    pm.expect(responseData.lastTimeVerified).to.be.null; // Assuming null is expected\r",
 											"    pm.expect(responseData.submitterEmail).to.be.a('string').and.to.not.be.empty;\r",
@@ -11730,6 +10997,106 @@
 									"path": [
 										"artifacts",
 										"{{artifactId6}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Tear Down",
+					"item": [
+						{
+							"name": "Log in as Admin 1",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.environment.set(\"token_ADMIN1\", pm.response.json().token);\r",
+											"\r",
+											"pm.test(\"El código de estado es 201\", function() {\r",
+											"    pm.response.to.have.status(201)\r",
+											"});\r",
+											"\r",
+											"pm.test(\"Información presente\", function() {\r",
+											"    pm.expect(pm.response.json().token).to.be.a('string').and.to.not.be.empty;\r",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n   \"username\": \"{{ADMIN1_USERNAME}}\",\r\n   \"password\": \"{{ADMIN1_PASSWORD}}\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/users/login",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"users",
+										"login"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete All",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{token_ADMIN1}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/organizations",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"organizations"
 									]
 								}
 							},
