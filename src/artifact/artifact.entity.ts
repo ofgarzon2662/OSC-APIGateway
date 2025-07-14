@@ -133,6 +133,14 @@ export class ArtifactEntity {
   @IsOptional()
   submittedAt: Date;
 
+  @Column({
+    type: process.env.NODE_ENV === 'test' ? 'datetime' : 'timestamp',
+    nullable: true,
+  })
+  @IsDate()
+  @IsOptional()
+  lastTimeUpdated: Date;
+
   @UpdateDateColumn()
   updatedAt: Date;
 

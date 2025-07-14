@@ -1,4 +1,4 @@
-import { IsString, IsUUID, IsDate, IsOptional } from 'class-validator';
+import { IsString, IsUUID, IsDate, IsOptional, IsBoolean } from 'class-validator';
 
 export class ListArtifactDto {
   @IsUUID()
@@ -12,5 +12,16 @@ export class ListArtifactDto {
 
   @IsDate()
   @IsOptional()
+  submittedAt: Date;
+
+  @IsBoolean()
+  verified: boolean;
+
+  @IsDate()
+  @IsOptional()
   lastTimeVerified: Date;
+
+  @IsDate()
+  @IsOptional()
+  lastTimeUpdated: Date;
 } 

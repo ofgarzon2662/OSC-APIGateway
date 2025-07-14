@@ -230,7 +230,10 @@ export class ArtifactService {
       id: artifact.id,
       title: artifact.title,
       description: artifact.description,
-      lastTimeVerified: artifact.lastTimeVerified
+      submittedAt: artifact.submittedAt,
+      verified: artifact.verified,
+      lastTimeVerified: artifact.lastTimeVerified,
+      lastTimeUpdated: artifact.lastTimeUpdated
     }));
   }
 
@@ -343,7 +346,10 @@ export class ArtifactService {
       id: savedArtifact.id,
       title: savedArtifact.title,
       description: savedArtifact.description,
-      lastTimeVerified: savedArtifact.lastTimeVerified
+      submittedAt: savedArtifact.submittedAt,
+      verified: savedArtifact.verified,
+      lastTimeVerified: savedArtifact.lastTimeVerified,
+      lastTimeUpdated: savedArtifact.lastTimeUpdated
     };
   }
 

@@ -122,7 +122,10 @@ describe('ArtifactService', () => {
           id: dbArtifact.id,
           title: dbArtifact.title,
           description: dbArtifact.description,
-          lastTimeVerified: dbArtifact.lastTimeVerified
+          submittedAt: dbArtifact.submittedAt,
+          verified: dbArtifact.verified,
+          lastTimeVerified: dbArtifact.lastTimeVerified,
+          lastTimeUpdated: dbArtifact.lastTimeUpdated
         });
       });
     });
@@ -199,7 +202,10 @@ describe('ArtifactService', () => {
         id: expect.any(String),
         title: artifactDto.title,
         description: artifactDto.description,
-        lastTimeVerified: null
+        submittedAt: expect.any(Date),
+        verified: false,
+        lastTimeVerified: null,
+        lastTimeUpdated: null
       });
       
       // Verify it's saved in the database
