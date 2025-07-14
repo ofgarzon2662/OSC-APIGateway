@@ -194,8 +194,11 @@ describe('RabbitMQService', () => {
         dois: [],
         fundingAgencies: [],
         acknowledgements: '',
-        fileName: 'test.zip',
-        hash: 'abc',
+        manifest: [{
+          hash: 'c962a21457493b5a625f73b6144bbfce33177b9288cbbb141eae532a3d4a5cd5',
+          filename: 'Figure Data - SQL.csv',
+          algorithm: 'sha256'
+        }],
         submitterEmail: 'test@test.com',
         submitterUsername: 'testuser',
         submittedAt: new Date().toISOString(),

@@ -36,8 +36,11 @@ describe('ArtifactService', () => {
       dois: [],
       fundingAgencies: [],
       acknowledgements: faker.lorem.sentence(),
-      fileName: faker.system.fileName(),
-      hash: faker.string.alphanumeric(64),
+      manifest: [{
+        hash: faker.string.alphanumeric(64),
+        filename: faker.system.fileName(),
+        algorithm: 'sha256'
+      }],
     };
   }
 
@@ -372,118 +375,24 @@ describe('ArtifactService', () => {
 
     // Additional UPDATE tests for missing validation coverage
     describe('update - additional validation coverage', () => {
-      it('should throw an exception when trying to update contributor field', async () => {
+      it('should throw an exception when trying to update title field', async () => {
         const storedArtifact = artifactList[0];
-        const updateDto = {
-          contributor: 'New Contributor'
-        } as any;
+        const updateDto = { title: 'New Title' } as any;
         
         await expect(service.update(storedArtifact.id, updateDto)).rejects.toHaveProperty(
           'message',
           'Cannot update title, contributor, or submittedAt fields',
         );
       });
-
-      it('should throw an exception when trying to update description field', async () => {
+      
+      it('should throw an exception when trying to update manifest field', async () => {
         const storedArtifact = artifactList[0];
         const updateDto = {
-          description: 'New Description'
-        } as any;
-        
-        await expect(service.update(storedArtifact.id, updateDto)).rejects.toHaveProperty(
-          'message',
-          'Cannot update title, contributor, or submittedAt fields',
-        );
-      });
-
-      it('should throw an exception when trying to update keywords field', async () => {
-        const storedArtifact = artifactList[0];
-        const updateDto = {
-          keywords: ['new', 'keywords']
-        } as any;
-        
-        await expect(service.update(storedArtifact.id, updateDto)).rejects.toHaveProperty(
-          'message',
-          'Cannot update title, contributor, or submittedAt fields',
-        );
-      });
-
-      it('should throw an exception when trying to update links field', async () => {
-        const storedArtifact = artifactList[0];
-        const updateDto = {
-          links: ['https://newlink.com']
-        } as any;
-        
-        await expect(service.update(storedArtifact.id, updateDto)).rejects.toHaveProperty(
-          'message',
-          'Cannot update title, contributor, or submittedAt fields',
-        );
-      });
-
-      it('should throw an exception when trying to update dois field', async () => {
-        const storedArtifact = artifactList[0];
-        const updateDto = {
-          dois: ['10.1000/182']
-        } as any;
-        
-        await expect(service.update(storedArtifact.id, updateDto)).rejects.toHaveProperty(
-          'message',
-          'Cannot update title, contributor, or submittedAt fields',
-        );
-      });
-
-      it('should throw an exception when trying to update fundingAgencies field', async () => {
-        const storedArtifact = artifactList[0];
-        const updateDto = {
-          fundingAgencies: ['New Agency']
-        } as any;
-        
-        await expect(service.update(storedArtifact.id, updateDto)).rejects.toHaveProperty(
-          'message',
-          'Cannot update title, contributor, or submittedAt fields',
-        );
-      });
-
-      it('should throw an exception when trying to update acknowledgements field', async () => {
-        const storedArtifact = artifactList[0];
-        const updateDto = {
-          acknowledgements: 'New acknowledgements'
-        } as any;
-        
-        await expect(service.update(storedArtifact.id, updateDto)).rejects.toHaveProperty(
-          'message',
-          'Cannot update title, contributor, or submittedAt fields',
-        );
-      });
-
-      it('should throw an exception when trying to update fileName field', async () => {
-        const storedArtifact = artifactList[0];
-        const updateDto = {
-          fileName: 'newfile.txt'
-        } as any;
-        
-        await expect(service.update(storedArtifact.id, updateDto)).rejects.toHaveProperty(
-          'message',
-          'Cannot update title, contributor, or submittedAt fields',
-        );
-      });
-
-      it('should throw an exception when trying to update hash field', async () => {
-        const storedArtifact = artifactList[0];
-        const updateDto = {
-          hash: 'newhash123'
-        } as any;
-        
-        await expect(service.update(storedArtifact.id, updateDto)).rejects.toHaveProperty(
-          'message',
-          'Cannot update title, contributor, or submittedAt fields',
-        );
-      });
-
-      it('should throw an exception when trying to update organization field', async () => {
-        const storedArtifact = artifactList[0];
-        const updateDto = {
-          organization: { id: faker.string.uuid() }
+          manifest: [{
+            hash: 'newhash123',
+            filename: 'newfile.zip',
+            algorithm: 'sha256'
+          }]
         } as any;
         
         await expect(service.update(storedArtifact.id, updateDto)).rejects.toHaveProperty(

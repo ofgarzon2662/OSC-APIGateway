@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "0bf7f175-cd4b-47df-90ff-061c5d474327",
+		"_postman_id": "c9c19b7f-acf2-4007-8ec7-3bb3bcc25bd6",
 		"name": "OSC-APIGW FrontE Testing",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "29465325"
@@ -260,7 +260,7 @@
 									"",
 									"/* ── 3. Response matches request data ── */",
 									"pm.test(\"Response matches request data\", () => {",
-									"  pm.expect(res.username).to.eql(env.get(\"PI1_USERNAME\"), \"Username mismatch\");",
+									"  pm.expect(res.username).to.eql(\"juanpablo\", \"Username mismatch\");",
 									"  pm.expect(res.name)     .to.eql(\"Juan Pablo\",            \"Name mismatch\");",
 									"  // If your API echoes the email, add:",
 									"  // pm.expect(res.email).to.eql(env.get(\"PI1_EMAIL\"),  \"Email mismatch\");",
@@ -271,10 +271,6 @@
 									"  pm.expect(roleS).to.include(\"pi\");",
 									"});",
 									"",
-									"/* ── 5. Persist for later requests ── */",
-									"env.set(\"pi_user_id_e2e_test\",  res.id);",
-									"env.set(\"pi_username_e2e_test\", res.username);",
-									"env.set(\"pi_password\", env.get(\"PI1_PASSWORD\"));",
 									""
 								],
 								"type": "text/javascript",
@@ -307,7 +303,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Juan Pablo\",\r\n  \"email\": \"{{PI1_EMAIL}}\",\r\n  \"username\": \"{{PI1_USERNAME}}\",\r\n  \"password\": \"{{PI1_PASSWORD}}\",\r\n  \"role\": \"pi\"\r\n}\r\n",
+							"raw": "{\r\n  \"name\": \"Juan Pablo\",\r\n  \"email\": \"{{pi_email_e2e_test}}\",\r\n  \"username\": \"{{pi_username_e2e_test}}\",\r\n  \"password\": \"{{pi_password_e2e_test}}\",\r\n  \"role\": \"pi\"\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
