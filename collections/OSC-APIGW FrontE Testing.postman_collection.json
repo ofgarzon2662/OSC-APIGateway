@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "c9c19b7f-acf2-4007-8ec7-3bb3bcc25bd6",
+		"_postman_id": "a69de8df-b8da-462f-8a48-7d7a31d43aa2",
 		"name": "OSC-APIGW FrontE Testing",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "29465325"
@@ -427,6 +427,79 @@
 					"response": []
 				},
 				{
+					"name": "Log in as PI",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.environment.set(\"pi_token_e2e_testing\", pm.response.json().token);\r",
+									"\r",
+									"pm.test(\"El código de estado es 201\", function() {\r",
+									"    pm.response.to.have.status(201)\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Información presente\", function() {\r",
+									"    pm.expect(pm.response.json().token).to.be.a('string').and.to.not.be.empty;\r",
+									"});\r",
+									"var template = `\r",
+									"<style type=\"text/css\">\r",
+									"    .tftable {font-size:14px;color:#333333;width:100%;border-width: 1px;border-color: #87ceeb;border-collapse: collapse;}\r",
+									"    .tftable th {font-size:18px;background-color:#87ceeb;border-width: 1px;padding: 8px;border-style: solid;border-color: #87ceeb;text-align:left;}\r",
+									"    .tftable tr {background-color:#ffffff;}\r",
+									"    .tftable td {font-size:14px;border-width: 1px;padding: 8px;border-style: solid;border-color: #87ceeb;}\r",
+									"    .tftable tr:hover {background-color:#e0ffff;}\r",
+									"</style>\r",
+									"\r",
+									"<table class=\"tftable\" border=\"1\">\r",
+									"    <tr>\r",
+									"        <th>Message</th>\r",
+									"        <th>StatusCode</th>\r",
+									"    </tr>\r",
+									"    <tr>\r",
+									"        <td>{{response.message}}</td>\r",
+									"        <td>{{response.statusCode}}</td>\r",
+									"    </tr>\r",
+									"</table>\r",
+									"`;\r",
+									"\r",
+									"function constructVisualizerPayload() {\r",
+									"    return {response: pm.response.json()}\r",
+									"}\r",
+									"\r",
+									"pm.visualizer.set(template, constructVisualizerPayload());"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n   \"username\": \"{{pi_username_e2e_test}}\",\r\n   \"password\": \"{{pi_password_e2e_test}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Admin Get All Orgs",
 					"event": [
 						{
@@ -520,6 +593,202 @@
 							"path": [
 								"organizations",
 								"{{orgId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Artifacts Creation",
+			"item": [
+				{
+					"name": "PI Creates 100 Artifacts",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test HTTP Status Code\r",
+									"pm.test(\"Status code is 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// ---------- helpers ----------",
+									"function randomInt(min, max) {",
+									"  return Math.floor(Math.random() * (max - min + 1)) + min;",
+									"}",
+									"",
+									"function generateRandomHexHash(len = 64) {",
+									"  const chars = 'abcdef0123456789';",
+									"  let out = '';",
+									"  for (let i = 0; i < len; i++) out += chars[randomInt(0, chars.length - 1)];",
+									"  return out;",
+									"}",
+									"",
+									"// ---------- artifact hash (if you still use it elsewhere) ----------",
+									"pm.environment.set('artifacthash', generateRandomHexHash());",
+									"",
+									"// ---------- keywords ----------",
+									"(function generateKeywords() {",
+									"  const pool = [",
+									"    'science','tech','art','research','data','dev','api','storage','home','gadget',",
+									"    'software','hardware','testing','automation','backend','frontend','mobile',",
+									"    'cloud','security','education','health','finance','business','crypto','web3'",
+									"  ];",
+									"",
+									"  const maxTotal     = 1000;",
+									"  const maxSingle    = 50;",
+									"  const desiredCount = randomInt(2, 8);",
+									"  const out          = [];",
+									"  let totalChars     = 0;",
+									"",
+									"  while (out.length < desiredCount) {",
+									"    let kw = pool[randomInt(0, pool.length - 1)];",
+									"    if (Math.random() > 0.6) kw += `-${pool[randomInt(0, pool.length - 1)]}`;",
+									"    if (kw.length > maxSingle) continue;",
+									"    if (totalChars + kw.length > maxTotal) break;",
+									"    out.push(kw);",
+									"    totalChars += kw.length;",
+									"  }",
+									"  pm.environment.set('randomKeywords', JSON.stringify(out));",
+									"})();",
+									"",
+									"// ---------- links ----------",
+									"(function generateLinks() {",
+									"  const domainPool = [",
+									"    'https://example.com',",
+									"    'https://osc.dev',",
+									"    'https://github.com/osc-nsg',",
+									"    'https://medium.com',",
+									"    'https://docs.osc.ai',",
+									"    'https://npmjs.com',",
+									"    'https://research.org'",
+									"  ];",
+									"  const count = randomInt(0, 6);",
+									"  const links = [];",
+									"",
+									"  for (let i = 0; i < count; i++) {",
+									"    const base = domainPool[randomInt(0, domainPool.length - 1)];",
+									"    const path = Math.random() > 0.5 ? `/product/${generateRandomHexHash(4)}` : '';",
+									"    links.push(`${base}${path}`);",
+									"  }",
+									"  pm.environment.set('randomLinks', JSON.stringify(links));",
+									"})();",
+									"",
+									"// ---------- acknowledgements ----------",
+									"(function generateAcknowledgement() {",
+									"  const phrases = [",
+									"    'Thanks to all contributors',",
+									"    'Made possible by our amazing community',",
+									"    'Special appreciation to the OSC team',",
+									"    'Huge shout-out to our testers and reviewers',",
+									"    'Grateful for the continuous support from partners',",
+									"    'Inspired by open-source enthusiasts worldwide'",
+									"  ];",
+									"  const howMany = randomInt(2, 4);",
+									"  const parts   = [];",
+									"  for (let i = 0; i < howMany; i++) {",
+									"    parts.push(phrases[randomInt(0, phrases.length - 1)]);",
+									"  }",
+									"  pm.environment.set('acknowledgementText', parts.join('. ') + '.');",
+									"})();",
+									"",
+									"// ---------- manifest (1 – 50 items) ----------",
+									"(function generateManifest() {",
+									"  const adjectives = ['quick','smart','cool','sample','test','data','report'];",
+									"  const nouns      = ['file','dataset','results','analysis','diagram'];",
+									"  const exts       = ['txt','csv','json','bin','png','jpg','pdf'];",
+									"",
+									"  function rand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }",
+									"  function randFileName() { return `${rand(adjectives)}_${rand(nouns)}.${rand(exts)}`; }",
+									"",
+									"  const howMany  = randomInt(1, 50);   // ensure at least 1",
+									"  const manifest = [];",
+									"",
+									"  for (let i = 0; i < howMany; i++) {",
+									"    manifest.push({",
+									"      hash: generateRandomHexHash(64),",
+									"      filename: randFileName(),",
+									"      algorithm: 'sha256'",
+									"    });",
+									"  }",
+									"  pm.environment.set('randomManifest', JSON.stringify(manifest));",
+									"})();",
+									"",
+									"// ---------- DOIs ----------",
+									"(function generateDois() {",
+									"  function randomDoi() {",
+									"    const prefix = `10.${randomInt(10000, 99999)}`;           // 10.12345",
+									"    const suffix = generateRandomHexHash(8);                  // 8-char hex",
+									"    return `${prefix}/${suffix}`;",
+									"  }",
+									"  const howMany = randomInt(1, 4);                            // at least 1",
+									"  const dois = Array.from({ length: howMany }, randomDoi);",
+									"  pm.environment.set('randomDois', JSON.stringify(dois));",
+									"})();",
+									"",
+									"// ---------- Funding agencies ----------",
+									"(function generateAgencies() {",
+									"  const pool = [",
+									"    'NASA','NSF','NIH','DOE','NOAA','DARPA','ESA','EU','WHO','CDC','UN','CNES'",
+									"  ];",
+									"  const howMany = randomInt(1, 5);                            // at least 1",
+									"  const out = [];",
+									"  while (out.length < howMany) {",
+									"    const pick = pool[randomInt(0, pool.length - 1)];",
+									"    if (!out.includes(pick)) out.push(pick);",
+									"  }",
+									"  pm.environment.set('randomAgencies', JSON.stringify(out));",
+									"})();",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{pi_token_e2e_testing}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"title\": \"{{$randomProductName}} {{$randomPhrase}} {{$randomAlphaNumeric}}\",\r\n  \"description\": \"{{$randomPhrase}} {{$randomPhrase}} {{$randomPhrase}} {{$randomPhrase}} {{$randomPhrase}} {{$randomAlphaNumeric}} This needs to be bigger than 50 characters This needs to be bigger than 50 characters This needs to be bigger than 50 characters\",\r\n  \"manifest\": {{randomManifest}},\r\n  \"keywords\": {{randomKeywords}},\r\n  \"links\": {{randomLinks}},\r\n  \"dois\": {{randomDois}},\r\n  \"fundingAgencies\": {{randomAgencies}},\r\n  \"acknowledgements\": \"{{acknowledgementText}}\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/artifacts",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"artifacts"
 							]
 						}
 					},
