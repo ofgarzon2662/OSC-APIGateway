@@ -1,6 +1,20 @@
-import { IsString, IsUUID, IsEmail, IsArray, IsUrl, IsDate, IsBoolean, IsEnum, IsOptional, IsObject } from 'class-validator';
+import {
+  IsString,
+  IsUUID,
+  IsEmail,
+  IsArray,
+  IsUrl,
+  IsDate,
+  IsBoolean,
+  IsEnum,
+  IsOptional,
+  IsObject,
+  ValidateNested,
+} from 'class-validator';
 import { SubmissionState } from '../enums/submission-state.enum';
 import { GetOrganizationDto } from './get-organization.dto';
+import { ManifestItem } from '../artifact.entity';
+import { Type } from 'class-transformer';
 
 export class GetArtifactDto {
   @IsUUID()
@@ -36,13 +50,10 @@ export class GetArtifactDto {
   @IsOptional()
   acknowledgements: string;
 
-  @IsString()
-  @IsOptional()
-  fileName: string;
-
-  @IsString()
-  @IsOptional()
-  hash: string;
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ManifestItem)
+  manifest: ManifestItem[];
 
   @IsBoolean()
   verified: boolean;

@@ -17,8 +17,25 @@ import {
   Length,
   Matches,
   IsOptional,
+  ValidateNested,
 } from 'class-validator';
 import { SubmissionState } from './enums/submission-state.enum';
+import { Type } from 'class-transformer';
+
+export class ManifestItem {
+  @IsString()
+  @IsNotEmpty()
+  @Matches(/^[a-f0-9]{64}$/)
+  hash: string;
+
+  @IsString()
+  @IsNotEmpty()
+  filename: string;
+
+  @IsString()
+  @IsNotEmpty()
+  algorithm: string;
+}
 
 @Entity()
 export class ArtifactEntity {
@@ -70,17 +87,11 @@ export class ArtifactEntity {
   @Length(0, 3000)
   acknowledgements: string;
 
-  @Column()
-  @IsString()
-  @IsNotEmpty()
-  @Length(1, 1000)
-  fileName: string;
-
-  @Column()
-  @IsString()
-  @IsNotEmpty()
-  @Matches(/^[a-f0-9]{64}$/)
-  hash: string;
+  @Column({ type: process.env.NODE_ENV === 'test' ? 'simple-json' : 'jsonb', default: '[]' })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ManifestItem)
+  manifest: ManifestItem[];
 
   /* --------------- States & dates --------------- */
 
@@ -121,6 +132,14 @@ export class ArtifactEntity {
   @IsDate()
   @IsOptional()
   submittedAt: Date;
+
+  @Column({
+    type: process.env.NODE_ENV === 'test' ? 'datetime' : 'timestamp',
+    nullable: true,
+  })
+  @IsDate()
+  @IsOptional()
+  lastTimeUpdated: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;

@@ -1,5 +1,17 @@
-import { IsNotEmpty, IsString, IsArray, IsUrl, IsUUID, IsEmail, Length, Matches, IsOptional, IsDate, IsBoolean, IsEnum } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsArray,
+  Length,
+  IsOptional,
+  IsDate,
+  IsBoolean,
+  IsEnum,
+  ValidateNested,
+} from 'class-validator';
 import { SubmissionState } from '../enums/submission-state.enum';
+import { ManifestItem } from '../artifact.entity';
+import { Type } from 'class-transformer';
 
 export class CreateArtifactDto {
   @IsString()
@@ -37,15 +49,11 @@ export class CreateArtifactDto {
   @Length(0, 3000)
   acknowledgements: string;
 
-  @IsString()
-  @IsNotEmpty()
-  @Length(1, 1000)
-  fileName: string;
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ManifestItem)
+  manifest: ManifestItem[];
 
-  @IsString()
-  @IsNotEmpty()
-  hash: string;
-  
   @IsDate()
   @IsOptional()
   submittedAt?: Date;

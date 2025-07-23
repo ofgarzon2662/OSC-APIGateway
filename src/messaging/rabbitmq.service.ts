@@ -1,6 +1,7 @@
 import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { connect, Connection, Channel } from 'amqplib';
+import { ManifestItem } from 'src/artifact/artifact.entity';
 
 export interface ArtifactCreatedEvent {
   artifactId: string;
@@ -11,8 +12,7 @@ export interface ArtifactCreatedEvent {
   dois: string[];
   fundingAgencies: string[];
   acknowledgements: string;
-  fileName: string;
-  hash: string;
+  manifest: ManifestItem[];
   submitterEmail: string;
   submitterUsername: string;
   submittedAt: string;

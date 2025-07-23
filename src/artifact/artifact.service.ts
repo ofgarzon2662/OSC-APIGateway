@@ -186,7 +186,7 @@ export class ArtifactService {
       'fundingAgencies' in updateArtifactDto ||
       'acknowledgements' in updateArtifactDto ||
       'fileName' in updateArtifactDto ||
-      'hash' in updateArtifactDto ||
+      'manifest' in updateArtifactDto ||
       'organization' in updateArtifactDto
     ) {
       throw new BusinessLogicException(
@@ -230,7 +230,11 @@ export class ArtifactService {
       id: artifact.id,
       title: artifact.title,
       description: artifact.description,
-      lastTimeVerified: artifact.lastTimeVerified
+      keywords: artifact.keywords,
+      submittedAt: artifact.submittedAt,
+      verified: artifact.verified,
+      lastTimeVerified: artifact.lastTimeVerified,
+      lastTimeUpdated: artifact.lastTimeUpdated
     }));
   }
 
@@ -252,8 +256,7 @@ export class ArtifactService {
       dois: artifact.dois,
       fundingAgencies: artifact.fundingAgencies,
       acknowledgements: artifact.acknowledgements,
-      fileName: artifact.fileName,
-      hash: artifact.hash,
+      manifest: artifact.manifest,
       verified: artifact.verified,
       lastTimeVerified: artifact.lastTimeVerified,
       submissionState: artifact.submissionState,
@@ -275,6 +278,7 @@ export class ArtifactService {
     createArtifactDto: CreateArtifactDto, 
     submitterInfo: SubmitterInfo
   ): Promise<ListArtifactDto> {
+
     // Validate the creator's information
     if (!submitterInfo.email || !validator.isEmail(submitterInfo.email)) {
       throw new BusinessLogicException(
@@ -289,27 +293,29 @@ export class ArtifactService {
         BusinessError.PRECONDITION_FAILED,
       );
     }
+  
+    // Validate the DTO
+    this.validateCreateArtifactDto(createArtifactDto);
     
     // Find the organization
     const organization = await this.findOrganizationOrThrow();
     
-    // Validate the create artifact DTO
-    this.validateCreateArtifactDto(createArtifactDto);
-    
-    // Check if an artifact with the same title already exists
+    // Check if an artifact with this title already exists for this organization
     await this.checkTitleUniqueness(createArtifactDto.title, organization);
-    
-    // Create the artifact
-    const artifact = this.artifactRepository.create({
+        
+    // Create new artifact
+    const newArtifact = this.artifactRepository.create({
       ...createArtifactDto,
-      organization,
+      organization: organization,
       submitterEmail: submitterInfo.email,
       submitterUsername: submitterInfo.username,
-      submissionState: SubmissionState.PENDING
+      submittedAt: new Date(),
+      submissionState: SubmissionState.PENDING,
     });
-    
-    const savedArtifact = await this.artifactRepository.save(artifact);
-    
+
+    // Save the new artifact
+    const savedArtifact = await this.artifactRepository.save(newArtifact);
+
     // Publish artifact.created event to RabbitMQ without awaiting
     const artifactCreatedEvent: ArtifactCreatedEvent = {
       artifactId: savedArtifact.id,
@@ -320,35 +326,36 @@ export class ArtifactService {
       dois: savedArtifact.dois,
       fundingAgencies: savedArtifact.fundingAgencies,
       acknowledgements: savedArtifact.acknowledgements,
-      fileName: savedArtifact.fileName,
-      hash: savedArtifact.hash,
+      manifest: savedArtifact.manifest,
       submitterEmail: savedArtifact.submitterEmail,
       submitterUsername: savedArtifact.submitterUsername,
       submittedAt: savedArtifact.submittedAt?.toISOString() || new Date().toISOString(),
       organizationName: organization.name,
       version: 'v1'
     };
-    
     this.rabbitMQService.publishArtifactCreated(artifactCreatedEvent).catch(error => {
-        // Log the error for observability but do not fail the request.
-        // The artifact is already saved with PENDING state.
-        // A separate reconciliation job can handle these failures later.
-        console.error(
-          `Failed to publish artifact.created event for artifactId: ${savedArtifact.id}. Error: ${error.message}`,
-          error,
-        );
-    });
-    
-    // Return only the minimal fields
+      // Log the error for observability but do not fail the request.
+      // The artifact is already saved with PENDING state.
+      // A separate reconciliation job can handle these failures later.
+      console.error(
+        `Failed to publish artifact.created event for artifactId: ${savedArtifact.id}. Error: ${error.message}`,
+        error,
+      );
+  });
+
     return {
       id: savedArtifact.id,
       title: savedArtifact.title,
       description: savedArtifact.description,
-      lastTimeVerified: savedArtifact.lastTimeVerified
+      keywords: savedArtifact.keywords,
+      submittedAt: savedArtifact.submittedAt,
+      verified: savedArtifact.verified,
+      lastTimeVerified: savedArtifact.lastTimeVerified,
+      lastTimeUpdated: savedArtifact.lastTimeUpdated
     };
   }
 
-  // Update an Artifact - Only allow updating specific fields
+  // Update an Artifact (General Purpose - Limited fields)
   async update(id: string, updateArtifactDto: UpdateArtifactDto): Promise<ArtifactEntity> {
     // First, verify that an organization exists
     await this.findOrganizationOrThrow();
