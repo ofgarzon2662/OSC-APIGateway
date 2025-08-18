@@ -121,7 +121,14 @@ export class ArtifactService {
         BusinessError.BAD_REQUEST,
       );
     }
-    
+
+    if (!createArtifactDto.footprint || !/^[a-f0-9]{64}$/.test(createArtifactDto.footprint)) {
+      throw new BusinessLogicException(
+        'A valid SHA-256 footprint hash is required (64 hex characters).',
+        BusinessError.PRECONDITION_FAILED,
+      );
+    }
+
     const totalKeywordsLength = createArtifactDto.keywords.join('').length;
     if (totalKeywordsLength > 1000) {
       throw new BusinessLogicException(
@@ -187,6 +194,7 @@ export class ArtifactService {
       'acknowledgements' in updateArtifactDto ||
       'fileName' in updateArtifactDto ||
       'manifest' in updateArtifactDto ||
+      'footprint' in updateArtifactDto ||
       'organization' in updateArtifactDto
     ) {
       throw new BusinessLogicException(
@@ -231,6 +239,7 @@ export class ArtifactService {
       title: artifact.title,
       description: artifact.description,
       keywords: artifact.keywords,
+      footprint: artifact.footprint,
       submittedAt: artifact.submittedAt,
       verified: artifact.verified,
       lastTimeVerified: artifact.lastTimeVerified,
@@ -322,6 +331,7 @@ export class ArtifactService {
       title: savedArtifact.title,
       description: savedArtifact.description,
       keywords: savedArtifact.keywords,
+      footprint: savedArtifact.footprint,
       links: savedArtifact.links,
       dois: savedArtifact.dois,
       fundingAgencies: savedArtifact.fundingAgencies,
@@ -348,6 +358,7 @@ export class ArtifactService {
       title: savedArtifact.title,
       description: savedArtifact.description,
       keywords: savedArtifact.keywords,
+      footprint: savedArtifact.footprint,
       submittedAt: savedArtifact.submittedAt,
       verified: savedArtifact.verified,
       lastTimeVerified: savedArtifact.lastTimeVerified,

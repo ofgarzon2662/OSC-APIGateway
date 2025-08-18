@@ -14,6 +14,9 @@ export class ListArtifactDto {
   @IsString({ each: true })
   keywords: string[];
 
+  @IsString()
+  footprint: string;
+
   @IsDate()
   @IsOptional()
   submittedAt: Date;

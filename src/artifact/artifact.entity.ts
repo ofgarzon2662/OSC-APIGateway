@@ -93,6 +93,12 @@ export class ArtifactEntity {
   @Type(() => ManifestItem)
   manifest: ManifestItem[];
 
+  @Column()
+  @IsString()
+  @IsNotEmpty()
+  @Matches(/^[a-f0-9]{64}$/)
+  footprint: string;
+
   /* --------------- States & dates --------------- */
 
   @Column({ default: false })

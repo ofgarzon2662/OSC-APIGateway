@@ -8,6 +8,7 @@ export interface ArtifactCreatedEvent {
   title: string;
   description: string;
   keywords: string[];
+  footprint: string;
   links: string[];
   dois: string[];
   fundingAgencies: string[];

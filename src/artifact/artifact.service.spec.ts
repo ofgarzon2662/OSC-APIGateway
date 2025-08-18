@@ -41,6 +41,7 @@ describe('ArtifactService', () => {
         filename: faker.system.fileName(),
         algorithm: 'sha256'
       }],
+      footprint: faker.string.hexadecimal({ length: 64, prefix: '' }).toLowerCase()
     };
   }
 
@@ -126,7 +127,8 @@ describe('ArtifactService', () => {
           submittedAt: dbArtifact.submittedAt,
           verified: dbArtifact.verified,
           lastTimeVerified: dbArtifact.lastTimeVerified,
-          lastTimeUpdated: dbArtifact.lastTimeUpdated
+          lastTimeUpdated: dbArtifact.lastTimeUpdated,
+          footprint: dbArtifact.footprint
         });
       });
     });
@@ -207,7 +209,8 @@ describe('ArtifactService', () => {
         submittedAt: expect.any(Date),
         verified: false,
         lastTimeVerified: null,
-        lastTimeUpdated: null
+        lastTimeUpdated: null,
+        footprint: artifactDto.footprint
       });
       
       // Verify it's saved in the database

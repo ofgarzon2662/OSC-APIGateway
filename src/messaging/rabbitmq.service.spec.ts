@@ -190,6 +190,7 @@ describe('RabbitMQService', () => {
         title: 'Test Artifact',
         description: 'A test description',
         keywords: ['test'],
+        footprint: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
         links: [],
         dois: [],
         fundingAgencies: [],
