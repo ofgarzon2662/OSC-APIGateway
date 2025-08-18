@@ -223,6 +223,33 @@ export class ArtifactService {
     }
   }
 
+  // Update artifact details (PI / Collaborator)
+  async updateDetails(id: string, dto: import('./dto/update-artifact-details.dto').UpdateArtifactDetailsDto): Promise<ArtifactEntity> {
+    // Validate ID
+    this.validateId(id, 'artifactId');
+
+    // Disallow updating title or description if somehow included
+    if ('title' in dto || 'description' in dto) {
+      throw new BusinessLogicException('Cannot update title or description', BusinessError.BAD_REQUEST);
+    }
+
+    // Fetch artifact and organization
+    const artifact = await this.findArtifactOrThrow(id, false);
+
+    // Merge changes
+    Object.assign(artifact, dto);
+
+    // Re‐run create validations on the merged artefact to ensure keywords/links constraints etc.
+    this.validateCreateArtifactDto({
+      ...artifact,
+      title: artifact.title,
+      description: artifact.description,
+    } as any);
+
+    // Save
+    return await this.artifactRepository.save(artifact);
+  }
+
   // Get All Artifacts - Return minimal fields
   async findAll(): Promise<ListArtifactDto[]> {
     // Find the organization
@@ -261,6 +288,7 @@ export class ArtifactService {
       title: artifact.title,
       description: artifact.description,
       keywords: artifact.keywords,
+      footprint: artifact.footprint,
       links: artifact.links,
       dois: artifact.dois,
       fundingAgencies: artifact.fundingAgencies,

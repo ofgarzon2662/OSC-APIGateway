@@ -25,6 +25,7 @@ import { ApiKeyAuthGuard } from '../auth/guards/api-key-auth/api-key-auth.guard'
 import { RolesGuard } from '../auth/roles/roles.guards';
 import { Roles } from '../shared/decorators/roles.decorators';
 import { Role } from '../shared/enums/role.enums';
+import { UpdateArtifactDetailsDto } from './dto/update-artifact-details.dto';
 
 @Controller('artifacts')
 @UseInterceptors(BusinessErrorsInterceptor)
@@ -80,5 +81,15 @@ export class ArtifactController {
     @Body() updateStatusDto: UpdateArtifactDto,
   ): Promise<ArtifactEntity> {
     return await this.artifactService.updateStatus(id, updateStatusDto);
+  }
+
+  @Put(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.PI, Role.COLLABORATOR)
+  async update(
+    @Param('id') id: string,
+    @Body() updateArtifactDetailsDto: UpdateArtifactDetailsDto,
+  ): Promise<ArtifactEntity> {
+    return await this.artifactService.updateDetails(id, updateArtifactDetailsDto);
   }
 }

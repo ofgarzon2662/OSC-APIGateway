@@ -160,6 +160,7 @@ describe('ArtifactService', () => {
       expect(artifact.id).toEqual(fullArtifact.id);
       expect(artifact.title).toEqual(fullArtifact.title);
       expect(artifact.description).toEqual(fullArtifact.description);
+      expect(artifact.footprint).toEqual(fullArtifact.footprint);
       expect(artifact.submitterEmail).toEqual(testSubmitter.email);
       expect(artifact.submitterUsername).toEqual(testSubmitter.username);
       expect(artifact.organization.name).toEqual(organization.name);
