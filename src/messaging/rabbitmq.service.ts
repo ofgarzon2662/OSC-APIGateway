@@ -21,6 +21,21 @@ export interface ArtifactCreatedEvent {
   version: string;
 }
 
+export interface ArtifactUpdatedEvent {
+  artifactId: string;
+  keywords?: string[];
+  footprint?: string;
+  links?: string[];
+  dois?: string[];
+  fundingAgencies?: string[];
+  acknowledgements?: string;
+  manifest?: ManifestItem[];
+  verified?: boolean;
+  lastTimeVerified?: string | null;
+  lastTimeUpdated: string;
+  version: string;
+}
+
 @Injectable()
 export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(RabbitMQService.name);
@@ -33,6 +48,7 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
   
   private readonly exchangeName = 'artifact.exchange';
   private readonly artifactCreatedRoutingKey = 'artifact.created';
+  private readonly artifactUpdatedRoutingKey = 'artifact.updated';
 
   constructor(private readonly configService: ConfigService) {}
 
@@ -205,6 +221,45 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
         
         // Wait before retrying
         await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+    }
+  }
+
+  async publishArtifactUpdated(event: ArtifactUpdatedEvent): Promise<void> {
+    const maxRetries = 3;
+    let retryCount = 0;
+
+    while (retryCount < maxRetries) {
+      try {
+        await this.ensureConnection();
+
+        if (!this.channel) throw new Error('RabbitMQ channel is not available');
+
+        const messageBuffer = Buffer.from(JSON.stringify(event));
+
+        const published = this.channel.publish(
+          this.exchangeName,
+          this.artifactUpdatedRoutingKey,
+          messageBuffer,
+          {
+            persistent: true,
+            timestamp: Date.now(),
+            messageId: event.artifactId,
+          },
+        );
+
+        if (published) {
+          this.logger.log(`Published artifact.updated event for artifact: ${event.artifactId}`);
+          return;
+        }
+        throw new Error('Failed to publish message to RabbitMQ');
+      } catch (error) {
+        retryCount++;
+        this.logger.error(`Error publishing artifact.updated event (attempt ${retryCount}/${maxRetries}):`, error);
+        if (retryCount >= maxRetries) throw error;
+        this.connection = null;
+        this.channel = null;
+        await new Promise(res => setTimeout(res, 2000));
       }
     }
   }

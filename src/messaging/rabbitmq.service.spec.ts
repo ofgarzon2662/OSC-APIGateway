@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { RabbitMQService, ArtifactCreatedEvent } from './rabbitmq.service';
+import { ArtifactUpdatedEvent } from './rabbitmq.service';
 import * as amqplib from 'amqplib';
 import { LoggerService } from '@nestjs/common';
 
@@ -254,6 +255,41 @@ describe('RabbitMQService', () => {
       // It should be called twice: once for the failure, once for the success
       expect(mockChannel.publish).toHaveBeenCalledTimes(2);
     }, 10000); // Increase timeout for this test
+  });
+
+  // NEW TESTS FOR UPDATED EVENT
+  describe('publishArtifactUpdated', () => {
+    const updatedEvent: ArtifactUpdatedEvent = {
+      artifactId: '123',
+      keywords: ['upd'],
+      footprint: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+      links: [],
+      dois: [],
+      fundingAgencies: [],
+      acknowledgements: '',
+      manifest: undefined,
+      verified: true,
+      lastTimeVerified: null,
+      lastTimeUpdated: new Date().toISOString(),
+      version: '1',
+    };
+
+    it('should publish an updated event successfully', async () => {
+      await (service as any).connect();
+      await service.publishArtifactUpdated(updatedEvent);
+      expect(mockChannel.publish).toHaveBeenCalledWith(
+        'artifact.exchange',
+        'artifact.updated',
+        expect.any(Buffer),
+        expect.objectContaining({ messageId: updatedEvent.artifactId }),
+      );
+    });
+
+    it('should throw error after retries on updated event', async () => {
+      await (service as any).connect();
+      mockChannel.publish.mockImplementation(() => { throw new Error('fail'); });
+      await expect(service.publishArtifactUpdated(updatedEvent)).rejects.toThrow('fail');
+    }, 10000);
   });
   
   describe('isConnected', () => {

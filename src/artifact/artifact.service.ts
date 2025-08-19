@@ -247,7 +247,35 @@ export class ArtifactService {
     } as any);
 
     // Save
-    return await this.artifactRepository.save(artifact);
+    const saved = await this.artifactRepository.save(artifact);
+
+    // Publish updated event
+    const updatedEvent: import('../messaging/rabbitmq.service').ArtifactUpdatedEvent = {
+      artifactId: saved.id,
+      keywords: saved.keywords,
+      footprint: saved.footprint,
+      links: saved.links,
+      dois: saved.dois,
+      fundingAgencies: saved.fundingAgencies,
+      acknowledgements: saved.acknowledgements,
+      manifest: saved.manifest,
+      verified: saved.verified,
+      lastTimeVerified: saved.lastTimeVerified?.toISOString() || null,
+      lastTimeUpdated: saved.lastTimeUpdated?.toISOString() || new Date().toISOString(),
+      version: 'v1',
+    };
+
+    this.rabbitMQService.publishArtifactUpdated(updatedEvent).catch(err => {
+      // Log the error for observability but do not fail the request.
+      // The artifact is already saved with PENDING state.
+      // A separate reconciliation job can handle these failures later.
+      console.error(
+        `Failed to publish artifact.updated event for artifactId: ${saved.id}. Error: ${err.message}`,
+        err,
+      );
+    });
+ 
+    return saved;
   }
 
   // Get All Artifacts - Return minimal fields
