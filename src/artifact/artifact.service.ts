@@ -14,7 +14,7 @@ import { GetArtifactDto } from './dto/get-artifact.dto';
 import { ListArtifactDto } from './dto/list-artifact.dto';
 import { OrganizationEntity } from '../organization/organization.entity';
 import { SubmissionState } from './enums/submission-state.enum';
-import { RabbitMQService, ArtifactCreatedEvent } from '../messaging/rabbitmq.service';
+import { RabbitMQService } from '../messaging/rabbitmq.service';
 
 // Definir una interfaz para la información del creador del artefacto
 interface SubmitterInfo {
@@ -381,33 +381,23 @@ export class ArtifactService {
     // Save the new artifact
     const savedArtifact = await this.artifactRepository.save(newArtifact);
 
-    // Publish artifact.created event to RabbitMQ without awaiting
-    const artifactCreatedEvent: ArtifactCreatedEvent = {
+    // Publish artifact.submit command
+    const submitCommand: import('../messaging/rabbitmq.service').ArtifactSubmitCommand = {
       artifactId: savedArtifact.id,
+      manifest: savedArtifact.manifest,
       title: savedArtifact.title,
+      footprint: savedArtifact.footprint,
       description: savedArtifact.description,
       keywords: savedArtifact.keywords,
-      footprint: savedArtifact.footprint,
       links: savedArtifact.links,
       dois: savedArtifact.dois,
       fundingAgencies: savedArtifact.fundingAgencies,
       acknowledgements: savedArtifact.acknowledgements,
-      manifest: savedArtifact.manifest,
-      submitterEmail: savedArtifact.submitterEmail,
-      submitterUsername: savedArtifact.submitterUsername,
-      submittedAt: savedArtifact.submittedAt?.toISOString() || new Date().toISOString(),
-      organizationName: organization.name,
-      version: 'v1'
     };
-    this.rabbitMQService.publishArtifactCreated(artifactCreatedEvent).catch(error => {
-      // Log the error for observability but do not fail the request.
-      // The artifact is already saved with PENDING state.
-      // A separate reconciliation job can handle these failures later.
-      console.error(
-        `Failed to publish artifact.created event for artifactId: ${savedArtifact.id}. Error: ${error.message}`,
-        error,
-      );
-  });
+
+    this.rabbitMQService.publishArtifactSubmit(submitCommand).catch(err => {
+      console.error(`Failed to publish artifact.submit for ${savedArtifact.id}`, err);
+    });
 
     return {
       id: savedArtifact.id,

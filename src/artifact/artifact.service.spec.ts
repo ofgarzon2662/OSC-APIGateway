@@ -61,7 +61,8 @@ describe('ArtifactService', () => {
         {
           provide: RabbitMQService,
           useValue: {
-            publishArtifactCreated: jest.fn().mockResolvedValue(undefined),
+            publishArtifactSubmit: jest.fn().mockResolvedValue(undefined),
+            publishArtifactUpdated: jest.fn().mockResolvedValue(undefined),
           },
         },
       ],

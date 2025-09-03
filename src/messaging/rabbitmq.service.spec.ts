@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
-import { RabbitMQService, ArtifactCreatedEvent } from './rabbitmq.service';
+import { RabbitMQService } from './rabbitmq.service';
 import { ArtifactUpdatedEvent } from './rabbitmq.service';
 import * as amqplib from 'amqplib';
 import { LoggerService } from '@nestjs/common';
@@ -185,79 +185,6 @@ describe('RabbitMQService', () => {
     });
   });
   
-  describe('publishArtifactCreated', () => {
-    const event: ArtifactCreatedEvent = {
-        artifactId: '123',
-        title: 'Test Artifact',
-        description: 'A test description',
-        keywords: ['test'],
-        footprint: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
-        links: [],
-        dois: [],
-        fundingAgencies: [],
-        acknowledgements: '',
-        manifest: [{
-          hash: 'c962a21457493b5a625f73b6144bbfce33177b9288cbbb141eae532a3d4a5cd5',
-          filename: 'Figure Data - SQL.csv',
-          algorithm: 'sha256'
-        }],
-        submitterEmail: 'test@test.com',
-        submitterUsername: 'testuser',
-        submittedAt: new Date().toISOString(),
-        organizationName: 'Test Org',
-        version: '1',
-    };
-    
-    it('should publish an event successfully', async () => {
-        await (service as any).connect();
-        await service.publishArtifactCreated(event);
-        
-        expect(mockChannel.publish).toHaveBeenCalledWith(
-            'artifact.exchange',
-            'artifact.created',
-            expect.any(Buffer),
-            expect.objectContaining({
-                persistent: true,
-                messageId: event.artifactId,
-            }),
-        );
-    });
-    
-    it('should throw an error if ensureConnection fails', async () => {
-        // This spy needs to be persistent for all retries within publishArtifactCreated
-        const ensureConnectionSpy = jest.spyOn(service as any, 'ensureConnection').mockRejectedValue(new Error('Connection error'));
-        await expect(service.publishArtifactCreated(event)).rejects.toThrow('Connection error');
-        ensureConnectionSpy.mockRestore();
-    }, 10000); // Increase timeout for this test
-    
-    it('should throw error after max retries', async () => {
-        await (service as any).connect();
-
-        const publishError = new Error('Failed to publish');
-        mockChannel.publish.mockImplementation(() => {
-            throw publishError;
-        });
-        
-        await expect(service.publishArtifactCreated(event)).rejects.toThrow(publishError);
-        expect(mockChannel.publish).toHaveBeenCalledTimes(3);
-    }, 10000); // Increase timeout for this test
-
-    it('should successfully publish after one failure', async () => {
-      await (service as any).connect();
-  
-      // Simulate failure on the first attempt, then success
-      mockChannel.publish
-        .mockImplementationOnce(() => { throw new Error('Publish error'); })
-        .mockReturnValue(true);
-  
-      await service.publishArtifactCreated(event);
-  
-      // It should be called twice: once for the failure, once for the success
-      expect(mockChannel.publish).toHaveBeenCalledTimes(2);
-    }, 10000); // Increase timeout for this test
-  });
-
-  // NEW TESTS FOR UPDATED EVENT
   describe('publishArtifactUpdated', () => {
     const updatedEvent: ArtifactUpdatedEvent = {
       artifactId: '123',

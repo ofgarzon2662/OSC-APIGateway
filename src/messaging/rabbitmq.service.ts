@@ -3,23 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { connect, Connection, Channel } from 'amqplib';
 import { ManifestItem } from 'src/artifact/artifact.entity';
 
-export interface ArtifactCreatedEvent {
-  artifactId: string;
-  title: string;
-  description: string;
-  keywords: string[];
-  footprint: string;
-  links: string[];
-  dois: string[];
-  fundingAgencies: string[];
-  acknowledgements: string;
-  manifest: ManifestItem[];
-  submitterEmail: string;
-  submitterUsername: string;
-  submittedAt: string;
-  organizationName: string;
-  version: string;
-}
+
 
 export interface ArtifactUpdatedEvent {
   artifactId: string;
@@ -36,6 +20,20 @@ export interface ArtifactUpdatedEvent {
   version: string;
 }
 
+// Command sent when an artifact is ready to be submitted downstream
+export interface ArtifactSubmitCommand {
+  artifactId: string;
+  manifest: ManifestItem[];
+  title: string;
+  footprint: string;
+  description?: string;
+  keywords?: string[];
+  links?: string[];
+  dois?: string[];
+  fundingAgencies?: string[];
+  acknowledgements?: string;
+}
+
 @Injectable()
 export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(RabbitMQService.name);
@@ -47,8 +45,8 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
   private readonly reconnectDelay = 5000; // 5 seconds
   
   private readonly exchangeName = 'artifact.exchange';
-  private readonly artifactCreatedRoutingKey = 'artifact.created';
   private readonly artifactUpdatedRoutingKey = 'artifact.updated';
+  private readonly artifactSubmitRoutingKey = 'artifact.submit';
 
   constructor(private readonly configService: ConfigService) {}
 
@@ -173,58 +171,6 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  async publishArtifactCreated(event: ArtifactCreatedEvent): Promise<void> {
-    const maxRetries = 3;
-    let retryCount = 0;
-
-    while (retryCount < maxRetries) {
-      try {
-        await this.ensureConnection();
-
-        if (!this.channel) {
-          throw new Error('RabbitMQ channel is not available');
-        }
-
-        const message = JSON.stringify(event);
-        const messageBuffer = Buffer.from(message);
-        
-        const published = this.channel.publish(
-          this.exchangeName,
-          this.artifactCreatedRoutingKey,
-          messageBuffer,
-          {
-            persistent: true, // Make message persistent
-            timestamp: Date.now(),
-            messageId: event.artifactId,
-          }
-        );
-        
-        if (published) {
-          this.logger.log(`Published artifact.created event for artifact: ${event.artifactId}`);
-          return; // Success, exit the retry loop
-        } else {
-          throw new Error('Failed to publish message to RabbitMQ');
-        }
-        
-      } catch (error) {
-        retryCount++;
-        this.logger.error(`Error publishing artifact.created event (attempt ${retryCount}/${maxRetries}):`, error);
-        
-        if (retryCount >= maxRetries) {
-          this.logger.error(`Failed to publish artifact.created event after ${maxRetries} attempts`);
-          throw error;
-        }
-
-        // Reset connection on error to force reconnection
-        this.connection = null;
-        this.channel = null;
-        
-        // Wait before retrying
-        await new Promise(resolve => setTimeout(resolve, 2000));
-      }
-    }
-  }
-
   async publishArtifactUpdated(event: ArtifactUpdatedEvent): Promise<void> {
     const maxRetries = 3;
     let retryCount = 0;
@@ -260,6 +206,36 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
         this.connection = null;
         this.channel = null;
         await new Promise(res => setTimeout(res, 2000));
+      }
+    }
+  }
+
+  async publishArtifactSubmit(cmd: ArtifactSubmitCommand): Promise<void> {
+    const maxRetries = 3;
+    let retry = 0;
+    while (retry < maxRetries) {
+      try {
+        await this.ensureConnection();
+        if (!this.channel) throw new Error('RabbitMQ channel is not available');
+
+        const buffer = Buffer.from(JSON.stringify(cmd));
+        const ok = this.channel.publish(
+          this.exchangeName,
+          this.artifactSubmitRoutingKey,
+          buffer,
+          { persistent: true, contentType: 'application/json', messageId: cmd.artifactId },
+        );
+        if (ok) {
+          this.logger.log(`Published artifact.submit command for artifact ${cmd.artifactId}`);
+          return;
+        }
+        throw new Error('Failed to publish message');
+      } catch (err) {
+        retry++;
+        this.logger.error(`artifact.submit publish error (${retry}/3)`, err);
+        if (retry >= maxRetries) throw err;
+        this.connection = null; this.channel = null;
+        await new Promise(r => setTimeout(r, 2000));
       }
     }
   }
