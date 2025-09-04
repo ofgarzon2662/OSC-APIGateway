@@ -341,12 +341,10 @@ describe('ArtifactService', () => {
       const storedArtifact = artifactList[0];
       const updateDto = new UpdateArtifactDto();
       updateDto.verified = true;
-      updateDto.lastTimeVerified = new Date();
       
       const updatedArtifact = await service.update(storedArtifact.id, updateDto);
       expect(updatedArtifact).toBeDefined();
       expect(updatedArtifact.verified).toBe(true);
-      expect(updatedArtifact.lastTimeVerified).toEqual(updateDto.lastTimeVerified);
     });
 
     it('should throw an exception for an invalid artifact ID', async () => {
@@ -532,16 +530,17 @@ describe('ArtifactService', () => {
       expect(updatedArtifact.verified).toBe(false);
     });
 
-    it('should update lastTimeVerified when provided', async () => {
+    it('should set lastTimeUpdated from updatedAt when SUCCESS', async () => {
       const storedArtifact = artifactList[0];
-      const verificationDate = new Date('2023-12-07T15:30:00.000Z');
+      const updatedAt = '2023-12-07T15:30:00.000Z';
       const updateStatusDto: UpdateArtifactDto = {
-        lastTimeVerified: verificationDate,
+        submissionState: SubmissionState.SUCCESS,
+        updatedAt,
       };
       
       const updatedArtifact = await service.updateStatus(storedArtifact.id, updateStatusDto);
       
-      expect(updatedArtifact.lastTimeVerified).toEqual(verificationDate);
+      expect(updatedArtifact.lastTimeUpdated).toEqual(new Date(updatedAt));
     });
 
     it('should not update fields when they are null or empty string', async () => {
