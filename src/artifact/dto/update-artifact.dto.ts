@@ -6,10 +6,6 @@ export class UpdateArtifactDto {
   @IsOptional()
   verified?: boolean;
 
-  @IsDateString()
-  @IsOptional()
-  lastTimeVerified?: string;
-
   @IsEnum(SubmissionState)
   @IsOptional()
   submissionState?: SubmissionState;
@@ -18,9 +14,10 @@ export class UpdateArtifactDto {
   @IsOptional()
   submittedAt?: string;
 
+  // From broker; used only when SUCCESS to update our lastTimeUpdated
   @IsDateString()
   @IsOptional()
-  lastTimeUpdated?: string;
+  updatedAt?: string;
 
   @IsString()
   @IsOptional()

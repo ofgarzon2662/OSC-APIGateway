@@ -211,7 +211,7 @@ export class ArtifactService {
    * @throws BusinessLogicException if validation fails
    */
   private validateUpdateStatusDto(updateStatusDto: UpdateArtifactDto): void {
-    const allowedFields = ['submissionState', 'submittedAt', 'blockchainTxId', 'peerId', 'verified', 'lastTimeVerified', 'submissionError', 'lastTimeUpdated'];
+    const allowedFields = ['submissionState', 'submittedAt', 'blockchainTxId', 'peerId', 'verified', 'submissionError', 'updatedAt'];
     const receivedFields = Object.keys(updateStatusDto);
     
     const forbiddenFields = receivedFields.filter(field => !allowedFields.includes(field));
@@ -468,15 +468,9 @@ export class ArtifactService {
       artifact.verified = updateStatusDto.verified;
     }
 
-    if (updateStatusDto.lastTimeVerified !== undefined) {
-      artifact.lastTimeVerified = new Date(updateStatusDto.lastTimeVerified);
-    }
-
-    // If provided, set lastTimeUpdated from payload; otherwise refresh to now
-    if (updateStatusDto.lastTimeUpdated) {
-      artifact.lastTimeUpdated = new Date(updateStatusDto.lastTimeUpdated);
-    } else {
-      artifact.lastTimeUpdated = new Date();
+    // On SUCCESS: set our lastTimeUpdated = updatedAt (from broker)
+    if (updateStatusDto.submissionState === SubmissionState.SUCCESS && updateStatusDto.updatedAt) {
+      artifact.lastTimeUpdated = new Date(updateStatusDto.updatedAt);
     }
 
     // On FAILED, ensure submissionError is set with a concise message
