@@ -9,6 +9,7 @@ import {
 import validator from 'validator';
 import { CreateArtifactDto } from './dto/create-artifact.dto';
 import { UpdateArtifactDto } from './dto/update-artifact.dto';
+import { UpdateArtifactDetailsDto } from './dto/update-artifact-details.dto';
 
 import { GetArtifactDto } from './dto/get-artifact.dto';
 import { ListArtifactDto } from './dto/list-artifact.dto';
@@ -210,7 +211,7 @@ export class ArtifactService {
    * @throws BusinessLogicException if validation fails
    */
   private validateUpdateStatusDto(updateStatusDto: UpdateArtifactDto): void {
-    const allowedFields = ['submissionState', 'submittedAt', 'blockchainTxId', 'peerId', 'verified', 'lastTimeVerified', 'submissionError'];
+    const allowedFields = ['submissionState', 'submittedAt', 'blockchainTxId', 'peerId', 'verified', 'lastTimeVerified', 'submissionError', 'lastTimeUpdated'];
     const receivedFields = Object.keys(updateStatusDto);
     
     const forbiddenFields = receivedFields.filter(field => !allowedFields.includes(field));
@@ -224,7 +225,7 @@ export class ArtifactService {
   }
 
   // Update artifact details (PI / Collaborator)
-  async updateDetails(id: string, dto: import('./dto/update-artifact-details.dto').UpdateArtifactDetailsDto): Promise<ArtifactEntity> {
+  async updateDetails(id: string, dto: UpdateArtifactDetailsDto): Promise<ArtifactEntity> {
     // Validate ID
     this.validateId(id, 'artifactId');
 
@@ -233,49 +234,42 @@ export class ArtifactService {
       throw new BusinessLogicException('Cannot update title or description', BusinessError.BAD_REQUEST);
     }
 
-    // Fetch artifact and organization
-    const artifact = await this.findArtifactOrThrow(id, false);
+    // Fetch current artifact for validation purposes (do not persist changes here)
+    const currentArtifact = await this.findArtifactOrThrow(id, false);
 
-    // Merge changes
-    Object.assign(artifact, dto);
-
-    // Re‐run create validations on the merged artefact to ensure keywords/links constraints etc.
+    // Re‐run create validations on a simulated merged artefact to ensure constraints hold
     this.validateCreateArtifactDto({
-      ...artifact,
-      title: artifact.title,
-      description: artifact.description,
+      ...currentArtifact,
+      ...dto,
+      title: currentArtifact.title,
+      description: currentArtifact.description,
     } as any);
 
-    // Save
-    const saved = await this.artifactRepository.save(artifact);
+    // Build the patch with only provided properties
+    const patch: import('../messaging/rabbitmq.service').ArtifactUpdateCommandPatch = {};
+    const dtoAny: any = dto as any;
+    if (dtoAny.keywords !== undefined) patch.keywords = dtoAny.keywords;
+    if (dtoAny.links !== undefined) patch.links = dtoAny.links;
+    if (dtoAny.dois !== undefined) patch.dois = dtoAny.dois;
+    if (dtoAny.fundingAgencies !== undefined) patch.fundingAgencies = dtoAny.fundingAgencies;
+    if (dtoAny.acknowledgements !== undefined) patch.acknowledgements = dtoAny.acknowledgements;
+    if (dtoAny.manifest !== undefined) patch.manifest = dtoAny.manifest as any;
+    if (dtoAny.footprint !== undefined) patch.footprint = dtoAny.footprint;
+    if (dtoAny.submittedAt !== undefined) patch.submittedAt = dtoAny.submittedAt instanceof Date ? (dtoAny.submittedAt as Date).toISOString() : dtoAny.submittedAt;
+    if (dtoAny.verified !== undefined) patch.verified = dtoAny.verified;
+    if (dtoAny.lastTimeVerified !== undefined) patch.lastTimeVerified = dtoAny.lastTimeVerified instanceof Date ? (dtoAny.lastTimeVerified as Date).toISOString() : dtoAny.lastTimeVerified;
+    if (dtoAny.submissionState !== undefined) patch.submissionState = dtoAny.submissionState;
 
-    // Publish updated event
-    const updatedEvent: import('../messaging/rabbitmq.service').ArtifactUpdatedEvent = {
-      artifactId: saved.id,
-      keywords: saved.keywords,
-      footprint: saved.footprint,
-      links: saved.links,
-      dois: saved.dois,
-      fundingAgencies: saved.fundingAgencies,
-      acknowledgements: saved.acknowledgements,
-      manifest: saved.manifest,
-      verified: saved.verified,
-      lastTimeVerified: saved.lastTimeVerified?.toISOString() || null,
-      lastTimeUpdated: saved.lastTimeUpdated?.toISOString() || new Date().toISOString(),
-      version: 'v1',
+    // Publish artifact.update command to RabbitMQ
+    const updateCommand: import('../messaging/rabbitmq.service').ArtifactUpdateCommand = {
+      artifactId: id,
+      patch,
     };
 
-    this.rabbitMQService.publishArtifactUpdated(updatedEvent).catch(err => {
-      // Log the error for observability but do not fail the request.
-      // The artifact is already saved with PENDING state.
-      // A separate reconciliation job can handle these failures later.
-      console.error(
-        `Failed to publish artifact.updated event for artifactId: ${saved.id}. Error: ${err.message}`,
-        err,
-      );
-    });
- 
-    return saved;
+    await this.rabbitMQService.publishArtifactUpdate(updateCommand);
+
+    // Return the current artifact state; actual changes will be applied downstream
+    return currentArtifact;
   }
 
   // Get All Artifacts - Return minimal fields
@@ -475,7 +469,19 @@ export class ArtifactService {
     }
 
     if (updateStatusDto.lastTimeVerified !== undefined) {
-      artifact.lastTimeVerified = updateStatusDto.lastTimeVerified;
+      artifact.lastTimeVerified = new Date(updateStatusDto.lastTimeVerified);
+    }
+
+    // If provided, set lastTimeUpdated from payload; otherwise refresh to now
+    if (updateStatusDto.lastTimeUpdated) {
+      artifact.lastTimeUpdated = new Date(updateStatusDto.lastTimeUpdated);
+    } else {
+      artifact.lastTimeUpdated = new Date();
+    }
+
+    // On FAILED, ensure submissionError is set with a concise message
+    if (updateStatusDto.submissionState === SubmissionState.FAILED && updateStatusDto.submissionError) {
+      artifact.submissionError = `Error updating the artifact. Details: ${updateStatusDto.submissionError}`;
     }
 
     return await this.artifactRepository.save(artifact);

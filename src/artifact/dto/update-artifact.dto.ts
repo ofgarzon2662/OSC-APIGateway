@@ -1,4 +1,4 @@
-import { IsBoolean, IsDate, IsEnum, IsOptional, IsString, IsDateString } from 'class-validator';
+import { IsBoolean, IsEnum, IsOptional, IsString, IsDateString } from 'class-validator';
 import { SubmissionState } from '../enums/submission-state.enum';
 
 export class UpdateArtifactDto {
@@ -6,9 +6,9 @@ export class UpdateArtifactDto {
   @IsOptional()
   verified?: boolean;
 
-  @IsDate()
+  @IsDateString()
   @IsOptional()
-  lastTimeVerified?: Date;
+  lastTimeVerified?: string;
 
   @IsEnum(SubmissionState)
   @IsOptional()
@@ -17,6 +17,10 @@ export class UpdateArtifactDto {
   @IsDateString()
   @IsOptional()
   submittedAt?: string;
+
+  @IsDateString()
+  @IsOptional()
+  lastTimeUpdated?: string;
 
   @IsString()
   @IsOptional()
