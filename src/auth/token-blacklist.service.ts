@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
 interface DecodedToken {
@@ -7,7 +7,7 @@ interface DecodedToken {
 }
 
 @Injectable()
-export class TokenBlacklistService implements OnModuleInit {
+export class TokenBlacklistService implements OnModuleInit, OnModuleDestroy {
   private readonly blacklistedTokens: Set<string> = new Set();
   private cleanupInterval: NodeJS.Timeout;
   // Default to cleaning up every hour
@@ -23,6 +23,9 @@ export class TokenBlacklistService implements OnModuleInit {
     this.cleanupInterval = setInterval(() => {
       this.cleanupExpiredTokens();
     }, this.CLEANUP_INTERVAL_MS);
+    if (typeof (this.cleanupInterval as any).unref === 'function') {
+      (this.cleanupInterval as any).unref();
+    }
   }
 
   /**
