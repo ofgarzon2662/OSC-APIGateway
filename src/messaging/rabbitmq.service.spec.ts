@@ -229,6 +229,9 @@ describe('RabbitMQService', () => {
     };
 
     it('should publish an update command successfully', async () => {
+      // Ensure previous tests throwing publish do not leak into this test
+      (mockChannel.publish as jest.Mock).mockReset();
+      (mockChannel.publish as jest.Mock).mockReturnValue(true);
       await (service as any).connect();
       await service.publishArtifactUpdate(cmd);
       expect(mockChannel.publish).toHaveBeenCalledWith(
@@ -241,8 +244,11 @@ describe('RabbitMQService', () => {
 
     it('should throw error after retries on update command', async () => {
       await (service as any).connect();
-      mockChannel.publish.mockImplementation(() => { throw new Error('fail'); });
+      (mockChannel.publish as jest.Mock).mockImplementation(() => { throw new Error('fail'); });
       await expect(service.publishArtifactUpdate(cmd)).rejects.toThrow('fail');
+      // Reset publish for other tests
+      (mockChannel.publish as jest.Mock).mockReset();
+      (mockChannel.publish as jest.Mock).mockReturnValue(true);
     }, 10000);
   });
   
