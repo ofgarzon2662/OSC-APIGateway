@@ -80,6 +80,10 @@ export class GetArtifactDto {
   @IsOptional()
   submittedAt: Date;
 
+  @IsDate()
+  @IsOptional()
+  lastTimeUpdated: Date;
+
   @IsString()
   @IsOptional()
   blockchainTxId?: string;

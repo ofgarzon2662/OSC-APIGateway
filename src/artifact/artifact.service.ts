@@ -322,6 +322,7 @@ export class ArtifactService {
       submitterEmail: artifact.submitterEmail,
       submitterUsername: artifact.submitterUsername,
       submittedAt: artifact.submittedAt,
+      lastTimeUpdated: artifact.lastTimeUpdated,
       blockchainTxId: artifact.blockchainTxId,
       peerId: artifact.peerId,
       submissionError: artifact.submissionError,
@@ -475,7 +476,9 @@ export class ArtifactService {
 
     // On FAILED, ensure submissionError is set with a concise message
     if (updateStatusDto.submissionState === SubmissionState.FAILED && updateStatusDto.submissionError) {
-      artifact.submissionError = `Error updating the artifact. Details: ${updateStatusDto.submissionError}`;
+      const isUpdateEvent = !!updateStatusDto.updatedAt; // updatedAt present implies update event
+      const prefix = isUpdateEvent ? 'Error updating the artifact. Details: ' : 'Error submitting the artifact. Details: ';
+      artifact.submissionError = `${prefix}${updateStatusDto.submissionError}`;
     }
 
     return await this.artifactRepository.save(artifact);

@@ -618,6 +618,20 @@ describe('ArtifactService', () => {
       expect(updatedArtifact.submissionError).toContain(err);
     });
 
+    it('should prefix submission failure errors with submitting (no updatedAt)', async () => {
+      const storedArtifact = artifactList[0];
+      const err = 'submit failure';
+      const updateStatusDto: UpdateArtifactDto = {
+        submissionState: SubmissionState.FAILED,
+        submissionError: err,
+      } as any;
+
+      const updatedArtifact = await service.updateStatus(storedArtifact.id, updateStatusDto);
+
+      expect(updatedArtifact.submissionError).toContain('Error submitting the artifact. Details:');
+      expect(updatedArtifact.submissionError).toContain(err);
+    });
+
     it('should reject unknown fields in status update', async () => {
       const storedArtifact = artifactList[0];
       const badDto: any = { title: 'nope' };
