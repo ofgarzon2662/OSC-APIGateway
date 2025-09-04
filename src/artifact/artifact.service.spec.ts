@@ -63,6 +63,7 @@ describe('ArtifactService', () => {
           useValue: {
             publishArtifactSubmit: jest.fn().mockResolvedValue(undefined),
             publishArtifactUpdated: jest.fn().mockResolvedValue(undefined),
+            publishArtifactUpdate: jest.fn().mockResolvedValue(undefined),
           },
         },
       ],
@@ -414,6 +415,47 @@ describe('ArtifactService', () => {
     });
   });
 
+  // UPDATE DETAILS TESTS
+  describe('updateDetails', () => {
+    it('should publish artifact.update with provided patch and not persist immediately', async () => {
+      const storedArtifact = artifactList[0];
+      const dto: any = {
+        keywords: ['ai', 'ml'],
+        footprint: '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
+      };
+
+      const saveSpy = jest.spyOn(artifactRepository, 'save');
+      const publishSpy = jest.spyOn(rabbitMQService, 'publishArtifactUpdate');
+
+      const result = await service.updateDetails(storedArtifact.id, dto);
+
+      // Should return the current artifact (unchanged in DB) and not call save
+      expect(result.id).toBe(storedArtifact.id);
+      expect(saveSpy).not.toHaveBeenCalled();
+
+      // Should publish artifact.update with only provided fields
+      expect(publishSpy).toHaveBeenCalledWith({
+        artifactId: storedArtifact.id,
+        patch: {
+          keywords: ['ai', 'ml'],
+          footprint: '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
+        },
+      });
+    });
+
+    it('should reject title or description in updateDetails DTO', async () => {
+      const storedArtifact = artifactList[0];
+      await expect(service.updateDetails(storedArtifact.id, { title: 'x' } as any)).rejects.toHaveProperty(
+        'message',
+        'Cannot update title or description',
+      );
+      await expect(service.updateDetails(storedArtifact.id, { description: 'y' } as any)).rejects.toHaveProperty(
+        'message',
+        'Cannot update title or description',
+      );
+    });
+  });
+
   // DELETE TESTS
   describe('delete', () => {
     it('should delete an artifact', async () => {
@@ -557,6 +599,29 @@ describe('ArtifactService', () => {
       // blockchainTxId and peerId should remain unchanged since they were empty/null
       expect(updatedArtifact.blockchainTxId).toEqual(storedArtifact.blockchainTxId);
       expect(updatedArtifact.peerId).toEqual(storedArtifact.peerId);
+    });
+
+    it('should leave lastTimeUpdated unchanged on FAILED and set submissionError', async () => {
+      const storedArtifact = artifactList[0];
+      const originalLastTimeUpdated = storedArtifact.lastTimeUpdated;
+      const err = 'bridge failed';
+      const updateStatusDto: UpdateArtifactDto = {
+        submissionState: SubmissionState.FAILED,
+        updatedAt: '2025-01-01T00:00:00.000Z',
+        submissionError: err,
+      } as any;
+
+      const updatedArtifact = await service.updateStatus(storedArtifact.id, updateStatusDto);
+
+      expect(updatedArtifact.lastTimeUpdated).toEqual(originalLastTimeUpdated);
+      expect(updatedArtifact.submissionError).toContain('Error updating the artifact. Details:');
+      expect(updatedArtifact.submissionError).toContain(err);
+    });
+
+    it('should reject unknown fields in status update', async () => {
+      const storedArtifact = artifactList[0];
+      const badDto: any = { title: 'nope' };
+      await expect(service.updateStatus(storedArtifact.id, badDto)).rejects.toHaveProperty('message');
     });
   });
 });

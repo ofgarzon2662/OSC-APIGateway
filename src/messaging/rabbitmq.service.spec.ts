@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { RabbitMQService } from './rabbitmq.service';
-import { ArtifactUpdatedEvent } from './rabbitmq.service';
+import { ArtifactUpdatedEvent, ArtifactUpdateCommand } from './rabbitmq.service';
 import * as amqplib from 'amqplib';
 import { LoggerService } from '@nestjs/common';
 
@@ -216,6 +216,33 @@ describe('RabbitMQService', () => {
       await (service as any).connect();
       mockChannel.publish.mockImplementation(() => { throw new Error('fail'); });
       await expect(service.publishArtifactUpdated(updatedEvent)).rejects.toThrow('fail');
+    }, 10000);
+  });
+
+  describe('publishArtifactUpdate', () => {
+    const cmd: ArtifactUpdateCommand = {
+      artifactId: 'abc-123',
+      patch: {
+        keywords: ['a'],
+        footprint: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+      },
+    };
+
+    it('should publish an update command successfully', async () => {
+      await (service as any).connect();
+      await service.publishArtifactUpdate(cmd);
+      expect(mockChannel.publish).toHaveBeenCalledWith(
+        'artifact.exchange',
+        'artifact.update',
+        expect.any(Buffer),
+        expect.objectContaining({ messageId: cmd.artifactId }),
+      );
+    });
+
+    it('should throw error after retries on update command', async () => {
+      await (service as any).connect();
+      mockChannel.publish.mockImplementation(() => { throw new Error('fail'); });
+      await expect(service.publishArtifactUpdate(cmd)).rejects.toThrow('fail');
     }, 10000);
   });
   
