@@ -8,8 +8,8 @@ import {
 } from '../shared/errors/business-errors';
 import validator from 'validator';
 import { CreateArtifactDto } from './dto/create-artifact.dto';
-import { UpdateArtifactDto } from './dto/update-artifact.dto';
-import { UpdateArtifactDetailsDto } from './dto/update-artifact-details.dto';
+import { UpdateArtifactWorkerDto } from './dto/update-artifact-worker.dto';
+import { UpdateArtifactUserDto } from './dto/update-artifact-user.dto';
 
 import { GetArtifactDto } from './dto/get-artifact.dto';
 import { ListArtifactDto } from './dto/list-artifact.dto';
@@ -183,7 +183,7 @@ export class ArtifactService {
    * @param updateArtifactDto The DTO to validate
    * @throws BusinessLogicException if validation fails
    */
-  private validateUpdateArtifactDto(updateArtifactDto: UpdateArtifactDto): void {
+  private validateUpdateArtifactDto(updateArtifactDto: UpdateArtifactWorkerDto): void {
     if (
       'title' in updateArtifactDto ||
       'contributor' in updateArtifactDto ||
@@ -210,8 +210,8 @@ export class ArtifactService {
    * @param updateStatusDto The DTO to validate
    * @throws BusinessLogicException if validation fails
    */
-  private validateUpdateStatusDto(updateStatusDto: UpdateArtifactDto): void {
-    const allowedFields = ['submissionState', 'submittedAt', 'blockchainTxId', 'peerId', 'verified', 'submissionError', 'updatedAt'];
+  private validateUpdateStatusDto(updateStatusDto: UpdateArtifactWorkerDto): void {
+    const allowedFields = ['submissionState', 'blockchainTxId', 'peerId', 'submissionError', 'updatedAt'];
     const receivedFields = Object.keys(updateStatusDto);
     
     const forbiddenFields = receivedFields.filter(field => !allowedFields.includes(field));
@@ -225,7 +225,7 @@ export class ArtifactService {
   }
 
   // Update artifact details (PI / Collaborator)
-  async updateDetails(id: string, dto: UpdateArtifactDetailsDto): Promise<ArtifactEntity> {
+  async updateDetails(id: string, dto: UpdateArtifactUserDto): Promise<ArtifactEntity> {
     // Validate ID
     this.validateId(id, 'artifactId');
 
@@ -255,10 +255,7 @@ export class ArtifactService {
     if (dtoAny.acknowledgements !== undefined) patch.acknowledgements = dtoAny.acknowledgements;
     if (dtoAny.manifest !== undefined) patch.manifest = dtoAny.manifest as any;
     if (dtoAny.footprint !== undefined) patch.footprint = dtoAny.footprint;
-    if (dtoAny.submittedAt !== undefined) patch.submittedAt = dtoAny.submittedAt instanceof Date ? (dtoAny.submittedAt as Date).toISOString() : dtoAny.submittedAt;
-    if (dtoAny.verified !== undefined) patch.verified = dtoAny.verified;
-    if (dtoAny.lastTimeVerified !== undefined) patch.lastTimeVerified = dtoAny.lastTimeVerified instanceof Date ? (dtoAny.lastTimeVerified as Date).toISOString() : dtoAny.lastTimeVerified;
-    if (dtoAny.submissionState !== undefined) patch.submissionState = dtoAny.submissionState;
+    // User is not allowed to change status fields
 
     // Publish artifact.update command to RabbitMQ
     const updateCommand: import('../messaging/rabbitmq.service').ArtifactUpdateCommand = {
@@ -291,8 +288,7 @@ export class ArtifactService {
       footprint: artifact.footprint,
       submittedAt: artifact.submittedAt,
       verified: artifact.verified,
-      lastTimeVerified: artifact.lastTimeVerified,
-      lastTimeUpdated: artifact.lastTimeUpdated
+      updatedAt: artifact.updatedAt
     }));
   }
 
@@ -317,12 +313,11 @@ export class ArtifactService {
       acknowledgements: artifact.acknowledgements,
       manifest: artifact.manifest,
       verified: artifact.verified,
-      lastTimeVerified: artifact.lastTimeVerified,
       submissionState: artifact.submissionState,
       submitterEmail: artifact.submitterEmail,
       submitterUsername: artifact.submitterUsername,
       submittedAt: artifact.submittedAt,
-      lastTimeUpdated: artifact.lastTimeUpdated,
+      updatedAt: artifact.updatedAt,
       blockchainTxId: artifact.blockchainTxId,
       peerId: artifact.peerId,
       submissionError: artifact.submissionError,
@@ -402,13 +397,12 @@ export class ArtifactService {
       footprint: savedArtifact.footprint,
       submittedAt: savedArtifact.submittedAt,
       verified: savedArtifact.verified,
-      lastTimeVerified: savedArtifact.lastTimeVerified,
-      lastTimeUpdated: savedArtifact.lastTimeUpdated
+      updatedAt: savedArtifact.updatedAt
     };
   }
 
   // Update an Artifact (General Purpose - Limited fields)
-  async update(id: string, updateArtifactDto: UpdateArtifactDto): Promise<ArtifactEntity> {
+  async update(id: string, updateArtifactDto: UpdateArtifactWorkerDto): Promise<ArtifactEntity> {
     // First, verify that an organization exists
     await this.findOrganizationOrThrow();
 
@@ -438,7 +432,7 @@ export class ArtifactService {
       .execute();
   }
 
-  async updateStatus(id: string, updateStatusDto: UpdateArtifactDto): Promise<ArtifactEntity> {
+  async updateStatus(id: string, updateStatusDto: UpdateArtifactWorkerDto): Promise<ArtifactEntity> {
     const artifact = await this.findArtifactOrThrow(id);
     
     // Validate that only allowed fields are being updated
@@ -449,10 +443,8 @@ export class ArtifactService {
       artifact.submissionState = updateStatusDto.submissionState;
     }
     
-    if (updateStatusDto.submittedAt !== undefined) {
-      artifact.submittedAt = new Date(updateStatusDto.submittedAt);
-    }
-    
+    // submittedAt cannot be modified; ignore if present
+
     if (updateStatusDto.blockchainTxId) {
       artifact.blockchainTxId = updateStatusDto.blockchainTxId;
     }
@@ -465,13 +457,11 @@ export class ArtifactService {
       artifact.submissionError = updateStatusDto.submissionError;
     }
 
-    if (updateStatusDto.verified !== undefined) {
-      artifact.verified = updateStatusDto.verified;
-    }
+    // verified cannot be modified by worker DTO; ignore
 
-    // On SUCCESS: set our lastTimeUpdated = updatedAt (from broker)
-    if (updateStatusDto.submissionState === SubmissionState.SUCCESS && updateStatusDto.updatedAt) {
-      artifact.lastTimeUpdated = new Date(updateStatusDto.updatedAt);
+    // Update updatedAt only when provided by worker
+    if (updateStatusDto.updatedAt) {
+      artifact.updatedAt = new Date(updateStatusDto.updatedAt);
     }
 
     // On FAILED, ensure submissionError is set with a concise message

@@ -197,7 +197,7 @@ describe('RabbitMQService', () => {
       manifest: undefined,
       verified: true,
       lastTimeVerified: null,
-      lastTimeUpdated: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
       version: '1',
     };
 
@@ -298,6 +298,19 @@ describe('RabbitMQService', () => {
         
         expect(connectSpy).toHaveBeenCalled();
         connectSpy.mockRestore();
+    });
+
+    it('should throw if connection cannot be established after wait attempts', async () => {
+      jest.useFakeTimers();
+      const connectSpy = jest.spyOn(service as any, 'connect').mockResolvedValue(undefined);
+      (service as any).connection = null;
+      (service as any).channel = null;
+      const ensurePromise = (service as any).ensureConnection();
+      jest.advanceTimersByTime(10000);
+      await expect(ensurePromise).rejects.toThrow('Unable to establish RabbitMQ connection');
+      expect(connectSpy).toHaveBeenCalled();
+      jest.useRealTimers();
+      connectSpy.mockRestore();
     });
   });
 

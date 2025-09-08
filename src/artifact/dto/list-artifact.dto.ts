@@ -24,11 +24,9 @@ export class ListArtifactDto {
   @IsBoolean()
   verified: boolean;
 
-  @IsDate()
-  @IsOptional()
-  lastTimeVerified: Date;
+  // lastTimeVerified removed from list response
 
   @IsDate()
   @IsOptional()
-  lastTimeUpdated: Date;
+  updatedAt: Date;
 } 

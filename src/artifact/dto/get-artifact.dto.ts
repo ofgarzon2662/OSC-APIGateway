@@ -63,9 +63,7 @@ export class GetArtifactDto {
   @IsBoolean()
   verified: boolean;
 
-  @IsDate()
-  @IsOptional()
-  lastTimeVerified: Date;
+  // lastTimeVerified removed from API response
 
   @IsEnum(SubmissionState)
   submissionState: SubmissionState;
@@ -82,7 +80,7 @@ export class GetArtifactDto {
 
   @IsDate()
   @IsOptional()
-  lastTimeUpdated: Date;
+  updatedAt: Date;
 
   @IsString()
   @IsOptional()

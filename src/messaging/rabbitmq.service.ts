@@ -17,7 +17,7 @@ export interface ArtifactUpdatedEvent {
   manifest?: ManifestItem[];
   verified?: boolean;
   lastTimeVerified?: string | null;
-  lastTimeUpdated: string;
+  updatedAt: string;
   version: string;
 }
 
@@ -44,10 +44,7 @@ export interface ArtifactUpdateCommandPatch {
   acknowledgements?: string;
   manifest?: ManifestItem[];
   footprint?: string;
-  submittedAt?: string | Date;
-  verified?: boolean;
-  lastTimeVerified?: string | Date;
-  submissionState?: SubmissionState;
+  // status fields removed from user patch
 }
 
 export interface ArtifactUpdateCommand {

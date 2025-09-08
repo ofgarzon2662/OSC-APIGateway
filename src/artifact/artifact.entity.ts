@@ -145,9 +145,6 @@ export class ArtifactEntity {
   })
   @IsDate()
   @IsOptional()
-  lastTimeUpdated: Date;
-
-  @UpdateDateColumn()
   updatedAt: Date;
 
   /* --------------- Blockchain fields --------------- */

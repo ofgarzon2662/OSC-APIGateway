@@ -15,7 +15,7 @@ import {
 import { ArtifactService } from './artifact.service';
 import { ArtifactEntity } from './artifact.entity';
 import { CreateArtifactDto } from './dto/create-artifact.dto';
-import { UpdateArtifactDto } from './dto/update-artifact.dto';
+import { UpdateArtifactWorkerDto } from './dto/update-artifact-worker.dto';
 
 import { GetArtifactDto } from './dto/get-artifact.dto';
 import { ListArtifactDto } from './dto/list-artifact.dto';
@@ -25,7 +25,7 @@ import { ApiKeyAuthGuard } from '../auth/guards/api-key-auth/api-key-auth.guard'
 import { RolesGuard } from '../auth/roles/roles.guards';
 import { Roles } from '../shared/decorators/roles.decorators';
 import { Role } from '../shared/enums/role.enums';
-import { UpdateArtifactDetailsDto } from './dto/update-artifact-details.dto';
+import { UpdateArtifactUserDto } from './dto/update-artifact-user.dto';
 
 @Controller('artifacts')
 @UseInterceptors(BusinessErrorsInterceptor)
@@ -78,7 +78,7 @@ export class ArtifactController {
   @Roles(Role.SUBMITTER_LISTENER)
   async updateStatus(
     @Param('id') id: string,
-    @Body() updateStatusDto: UpdateArtifactDto,
+    @Body() updateStatusDto: UpdateArtifactWorkerDto,
   ): Promise<ArtifactEntity> {
     return await this.artifactService.updateStatus(id, updateStatusDto);
   }
@@ -88,7 +88,7 @@ export class ArtifactController {
   @Roles(Role.PI, Role.COLLABORATOR)
   async update(
     @Param('id') id: string,
-    @Body() updateArtifactDetailsDto: UpdateArtifactDetailsDto,
+    @Body() updateArtifactDetailsDto: UpdateArtifactUserDto,
   ): Promise<ArtifactEntity> {
     return await this.artifactService.updateDetails(id, updateArtifactDetailsDto);
   }
