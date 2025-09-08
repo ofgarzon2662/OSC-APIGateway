@@ -484,7 +484,7 @@ describe('ArtifactService', () => {
       expect(updatedArtifact.peerId).toEqual(storedArtifact.peerId);
     });
 
-    it('should set submissionError on FAILED; updatedAt may be provided by worker', async () => {
+    it('should set submissionError on FAILED and not update updatedAt', async () => {
       const storedArtifact = artifactList[0];
       const originalUpdatedAt = storedArtifact.updatedAt;
       const err = 'bridge failed';
@@ -496,8 +496,8 @@ describe('ArtifactService', () => {
 
       const updatedArtifact = await service.updateStatus(storedArtifact.id, updateStatusDto);
 
-      // Worker may provide updatedAt even on FAILED; accept it
-      expect(updatedArtifact.updatedAt).toEqual(new Date('2025-01-01T00:00:00.000Z'));
+      // On FAILED, we do not change updatedAt
+      expect(updatedArtifact.updatedAt).toEqual(originalUpdatedAt);
       expect(updatedArtifact.submissionError).toContain('Error updating the artifact. Details:');
       expect(updatedArtifact.submissionError).toContain(err);
     });

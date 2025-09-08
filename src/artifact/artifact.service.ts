@@ -459,12 +459,12 @@ export class ArtifactService {
 
     // verified cannot be modified by worker DTO; ignore
 
-    // Update updatedAt only when provided by worker
-    if (updateStatusDto.updatedAt) {
+    // Update updatedAt only when SUCCESS events provide it
+    if (updateStatusDto.submissionState === SubmissionState.SUCCESS && updateStatusDto.updatedAt) {
       artifact.updatedAt = new Date(updateStatusDto.updatedAt);
     }
 
-    // On FAILED, ensure submissionError is set with a concise message
+    // On FAILED, ensure submissionError is set with a concise message and DO NOT change updatedAt
     if (updateStatusDto.submissionState === SubmissionState.FAILED && updateStatusDto.submissionError) {
       const isUpdateEvent = !!updateStatusDto.updatedAt; // updatedAt present implies update event
       const prefix = isUpdateEvent ? 'Error updating the artifact. Details: ' : 'Error submitting the artifact. Details: ';

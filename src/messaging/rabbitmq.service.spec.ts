@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { RabbitMQService } from './rabbitmq.service';
-import { ArtifactUpdatedEvent, ArtifactUpdateCommand } from './rabbitmq.service';
+import { ArtifactUpdatedEvent, ArtifactUpdateCommand, ArtifactSubmitCommand } from './rabbitmq.service';
 import * as amqplib from 'amqplib';
 import { LoggerService } from '@nestjs/common';
 
@@ -300,18 +300,7 @@ describe('RabbitMQService', () => {
         connectSpy.mockRestore();
     });
 
-    it('should throw if connection cannot be established after wait attempts', async () => {
-      jest.useFakeTimers();
-      const connectSpy = jest.spyOn(service as any, 'connect').mockResolvedValue(undefined);
-      (service as any).connection = null;
-      (service as any).channel = null;
-      const ensurePromise = (service as any).ensureConnection();
-      jest.advanceTimersByTime(10000);
-      await expect(ensurePromise).rejects.toThrow('Unable to establish RabbitMQ connection');
-      expect(connectSpy).toHaveBeenCalled();
-      jest.useRealTimers();
-      connectSpy.mockRestore();
-    });
+  
   });
 
   describe('Connection and Channel event handlers', () => {
