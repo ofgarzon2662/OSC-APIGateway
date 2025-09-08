@@ -76,20 +76,20 @@ export class ArtifactController {
   @Patch(':id')
   @UseGuards(ApiKeyAuthGuard, RolesGuard)
   @Roles(Role.SUBMITTER_LISTENER)
-  async updateStatus(
+  async updateWorker(
     @Param('id') id: string,
     @Body() updateStatusDto: UpdateArtifactWorkerDto,
   ): Promise<ArtifactEntity> {
-    return await this.artifactService.updateStatus(id, updateStatusDto);
+    return await this.artifactService.updateWorker(id, updateStatusDto);
   }
 
   @Put(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.PI, Role.COLLABORATOR)
-  async update(
+  async updateUser(
     @Param('id') id: string,
     @Body() updateArtifactDetailsDto: UpdateArtifactUserDto,
   ): Promise<ArtifactEntity> {
-    return await this.artifactService.updateDetails(id, updateArtifactDetailsDto);
+    return await this.artifactService.updateUser(id, updateArtifactDetailsDto);
   }
 }

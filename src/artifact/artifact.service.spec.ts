@@ -363,9 +363,9 @@ describe('ArtifactService', () => {
     });
   });
 
-  // UPDATE DETAILS TESTS
-  describe('updateDetails', () => {
-    it('should publish artifact.update with provided patch and not persist immediately', async () => {
+  // UPDATE USER TESTS
+  describe('updateUser', () => {
+    it('should persist user fields and publish artifact.update asynchronously', async () => {
       const storedArtifact = artifactList[0];
       const dto: any = {
         keywords: ['ai', 'ml'],
@@ -375,13 +375,13 @@ describe('ArtifactService', () => {
       const saveSpy = jest.spyOn(artifactRepository, 'save');
       const publishSpy = jest.spyOn(rabbitMQService, 'publishArtifactUpdate');
 
-      const result = await service.updateDetails(storedArtifact.id, dto);
+      const result = await service.updateUser(storedArtifact.id, dto);
 
-      // Should return the current artifact (unchanged in DB) and not call save
       expect(result.id).toBe(storedArtifact.id);
-      expect(saveSpy).not.toHaveBeenCalled();
+      expect(result.keywords).toEqual(['ai', 'ml']);
+      expect(result.footprint).toEqual('0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef');
+      expect(saveSpy).toHaveBeenCalled();
 
-      // Should publish artifact.update with only provided fields
       expect(publishSpy).toHaveBeenCalledWith({
         artifactId: storedArtifact.id,
         patch: {
@@ -391,13 +391,13 @@ describe('ArtifactService', () => {
       });
     });
 
-    it('should reject title or description in updateDetails DTO', async () => {
+    it('should reject title or description in updateUser DTO', async () => {
       const storedArtifact = artifactList[0];
-      await expect(service.updateDetails(storedArtifact.id, { title: 'x' } as any)).rejects.toHaveProperty(
+      await expect(service.updateUser(storedArtifact.id, { title: 'x' } as any)).rejects.toHaveProperty(
         'message',
         'Cannot update title or description',
       );
-      await expect(service.updateDetails(storedArtifact.id, { description: 'y' } as any)).rejects.toHaveProperty(
+      await expect(service.updateUser(storedArtifact.id, { description: 'y' } as any)).rejects.toHaveProperty(
         'message',
         'Cannot update title or description',
       );
@@ -444,14 +444,14 @@ describe('ArtifactService', () => {
     });
   });
 
-  // Additional UPDATE STATUS tests for lines 348-378 coverage
-  describe('updateStatus - additional coverage for conditional updates', () => {
+  // UPDATE WORKER TESTS
+  describe('updateWorker - additional coverage for conditional updates', () => {
     it('should accept only updatedAt in status update', async () => {
       const storedArtifact = artifactList[0];
       const updateStatusDto: UpdateArtifactDto = {
         updatedAt: '2025-01-01T00:00:00.000Z',
       } as any;
-      const updatedArtifact = await service.updateStatus(storedArtifact.id, updateStatusDto);
+      const updatedArtifact = await service.updateWorker(storedArtifact.id, updateStatusDto);
       expect(updatedArtifact.updatedAt).toBeDefined();
     });
 
@@ -463,7 +463,7 @@ describe('ArtifactService', () => {
         updatedAt,
       };
       
-      const updatedArtifact = await service.updateStatus(storedArtifact.id, updateStatusDto);
+      const updatedArtifact = await service.updateWorker(storedArtifact.id, updateStatusDto);
       
       expect(updatedArtifact.updatedAt).toBeDefined();
     });
@@ -476,7 +476,7 @@ describe('ArtifactService', () => {
         submissionState: SubmissionState.SUCCESS,
       };
       
-      const updatedArtifact = await service.updateStatus(storedArtifact.id, updateStatusDto);
+      const updatedArtifact = await service.updateWorker(storedArtifact.id, updateStatusDto);
       
       expect(updatedArtifact.submissionState).toBe(SubmissionState.SUCCESS);
       // blockchainTxId and peerId should remain unchanged since they were empty/null
@@ -494,12 +494,34 @@ describe('ArtifactService', () => {
         submissionError: err,
       } as any;
 
-      const updatedArtifact = await service.updateStatus(storedArtifact.id, updateStatusDto);
+      const updatedArtifact = await service.updateWorker(storedArtifact.id, updateStatusDto);
 
       // On FAILED, we do not change updatedAt
       expect(updatedArtifact.updatedAt).toEqual(originalUpdatedAt);
       expect(updatedArtifact.submissionError).toContain('Error updating the artifact. Details:');
       expect(updatedArtifact.submissionError).toContain(err);
+    });
+
+    it('should clear previous submissionError on SUCCESS and update updatedAt', async () => {
+      const storedArtifact = artifactList[0];
+      // First mark as FAILED with an error
+      const failDto: UpdateArtifactDto = {
+        submissionState: SubmissionState.FAILED,
+        updatedAt: '2025-01-01T00:00:00.000Z',
+        submissionError: 'temporary outage',
+      } as any;
+      const failedArtifact = await service.updateWorker(storedArtifact.id, failDto);
+      expect(failedArtifact.submissionError).toContain('Error updating the artifact');
+
+      // Then mark as SUCCESS with new updatedAt
+      const successAt = '2025-01-02T00:00:00.000Z';
+      const successDto: UpdateArtifactDto = {
+        submissionState: SubmissionState.SUCCESS,
+        updatedAt: successAt,
+      } as any;
+      const successArtifact = await service.updateWorker(storedArtifact.id, successDto);
+      expect(successArtifact.submissionError).toBeNull();
+      expect(successArtifact.updatedAt).toEqual(new Date(successAt));
     });
 
     it('should prefix submission failure errors with submitting (no updatedAt)', async () => {
@@ -510,7 +532,7 @@ describe('ArtifactService', () => {
         submissionError: err,
       } as any;
 
-      const updatedArtifact = await service.updateStatus(storedArtifact.id, updateStatusDto);
+      const updatedArtifact = await service.updateWorker(storedArtifact.id, updateStatusDto);
 
       expect(updatedArtifact.submissionError).toContain('Error submitting the artifact. Details:');
       expect(updatedArtifact.submissionError).toContain(err);
@@ -519,7 +541,7 @@ describe('ArtifactService', () => {
     it('should reject unknown fields in status update', async () => {
       const storedArtifact = artifactList[0];
       const badDto: any = { title: 'nope' };
-      await expect(service.updateStatus(storedArtifact.id, badDto)).rejects.toHaveProperty('message');
+      await expect(service.updateWorker(storedArtifact.id, badDto)).rejects.toHaveProperty('message');
     });
   });
 });

@@ -225,7 +225,7 @@ export class ArtifactService {
   }
 
   // Update artifact details (PI / Collaborator)
-  async updateDetails(id: string, dto: UpdateArtifactUserDto): Promise<ArtifactEntity> {
+  async updateUser(id: string, dto: UpdateArtifactUserDto): Promise<ArtifactEntity> {
     // Validate ID
     this.validateId(id, 'artifactId');
 
@@ -257,16 +257,25 @@ export class ArtifactService {
     if (dtoAny.footprint !== undefined) patch.footprint = dtoAny.footprint;
     // User is not allowed to change status fields
 
-    // Publish artifact.update command to RabbitMQ
+    // Persist user-field changes immediately on our DB
+    if (patch.keywords !== undefined) currentArtifact.keywords = patch.keywords;
+    if (patch.links !== undefined) currentArtifact.links = patch.links;
+    if (patch.dois !== undefined) currentArtifact.dois = patch.dois;
+    if (patch.fundingAgencies !== undefined) currentArtifact.fundingAgencies = patch.fundingAgencies;
+    if (patch.acknowledgements !== undefined) currentArtifact.acknowledgements = patch.acknowledgements;
+    if (patch.manifest !== undefined) currentArtifact.manifest = patch.manifest as any;
+    if (patch.footprint !== undefined) currentArtifact.footprint = patch.footprint;
+
+    const saved = await this.artifactRepository.save(currentArtifact);
+
+    // Publish artifact.update command to RabbitMQ asynchronously (fire-and-forget)
     const updateCommand: import('../messaging/rabbitmq.service').ArtifactUpdateCommand = {
       artifactId: id,
       patch,
     };
+    this.rabbitMQService.publishArtifactUpdate(updateCommand).catch(() => {});
 
-    await this.rabbitMQService.publishArtifactUpdate(updateCommand);
-
-    // Return the current artifact state; actual changes will be applied downstream
-    return currentArtifact;
+    return saved;
   }
 
   // Get All Artifacts - Return minimal fields
@@ -432,7 +441,7 @@ export class ArtifactService {
       .execute();
   }
 
-  async updateStatus(id: string, updateStatusDto: UpdateArtifactWorkerDto): Promise<ArtifactEntity> {
+  async updateWorker(id: string, updateStatusDto: UpdateArtifactWorkerDto): Promise<ArtifactEntity> {
     const artifact = await this.findArtifactOrThrow(id);
     
     // Validate that only allowed fields are being updated
@@ -459,9 +468,12 @@ export class ArtifactService {
 
     // verified cannot be modified by worker DTO; ignore
 
-    // Update updatedAt only when SUCCESS events provide it
-    if (updateStatusDto.submissionState === SubmissionState.SUCCESS && updateStatusDto.updatedAt) {
-      artifact.updatedAt = new Date(updateStatusDto.updatedAt);
+    // On SUCCESS: set updatedAt if provided and clear any previous submissionError
+    if (updateStatusDto.submissionState === SubmissionState.SUCCESS) {
+      if (updateStatusDto.updatedAt) {
+        artifact.updatedAt = new Date(updateStatusDto.updatedAt);
+      }
+      artifact.submissionError = null;
     }
 
     // On FAILED, ensure submissionError is set with a concise message and DO NOT change updatedAt
