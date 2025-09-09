@@ -11,6 +11,7 @@ import { UpdateArtifactWorkerDto as UpdateArtifactDto } from './dto/update-artif
 import { OrganizationEntity } from '../organization/organization.entity';
 import { CreateArtifactDto } from './dto/create-artifact.dto';
 import { RabbitMQService } from '../messaging/rabbitmq.service';
+import { GhwService } from './ghw.service';
 
 describe('ArtifactService', () => {
   let service: ArtifactService;
@@ -61,9 +62,17 @@ describe('ArtifactService', () => {
         {
           provide: RabbitMQService,
           useValue: {
+            publishArtifactCreated: jest.fn().mockResolvedValue(undefined),
             publishArtifactSubmit: jest.fn().mockResolvedValue(undefined),
             publishArtifactUpdated: jest.fn().mockResolvedValue(undefined),
             publishArtifactUpdate: jest.fn().mockResolvedValue(undefined),
+          },
+        },
+        {
+          provide: GhwService,
+          useValue: {
+            fetchHistory: jest.fn().mockResolvedValue({ items: [] }),
+            refresh: jest.fn().mockResolvedValue({ ok: true }),
           },
         },
       ],
