@@ -16,6 +16,7 @@ import { ListArtifactDto } from './dto/list-artifact.dto';
 import { OrganizationEntity } from '../organization/organization.entity';
 import { SubmissionState } from './enums/submission-state.enum';
 import { RabbitMQService } from '../messaging/rabbitmq.service';
+import { GhwService } from './ghw.service';
 
 // Definir una interfaz para la información del creador del artefacto
 interface SubmitterInfo {
@@ -31,6 +32,7 @@ export class ArtifactService {
     @InjectRepository(OrganizationEntity)
     private readonly organizationRepository: Repository<OrganizationEntity>,
     private readonly rabbitMQService: RabbitMQService,
+    private readonly ghwService: GhwService,
   ) {}
 
   // Private helper methods to reduce code duplication
@@ -335,6 +337,58 @@ export class ArtifactService {
         // Do not include other organization fields like description, id
       } : undefined,
     };
+  }
+
+  // --- History via GHW ---
+  async getHistory(
+    id: string,
+    params: { offset?: string; limit?: string; order?: 'asc'|'desc'; includeValue?: string },
+    correlationId?: string,
+  ): Promise<any> {
+    this.validateId(id, 'artifactId');
+    const artifactId = id.toLowerCase();
+
+    const offset = Math.max(0, Number(params.offset ?? 0) || 0);
+    let limit = Number(params.limit ?? 100) || 100;
+    if (limit < 1) limit = 1;
+    if (limit > 500) limit = 500;
+    const order = (params.order === 'asc' || params.order === 'desc') ? params.order : 'desc';
+    const includeValue = params.includeValue === undefined ? true : String(params.includeValue).toLowerCase() !== 'false';
+
+    const corr = correlationId || `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
+    try {
+      const resp = await this.ghwService.fetchHistory({ artifactId, offset, limit, order, includeValue }, corr);
+      (resp as any).nextOffset = resp?.hasMore ? offset + limit : undefined;
+      return resp;
+    } catch (err: any) {
+      if (err?.message === 'CONNECT_TIMEOUT' || err?.message === 'READ_TIMEOUT') {
+        throw new BusinessLogicException('Upstream timeout contacting GHW', BusinessError.GATEWAY_TIMEOUT);
+      }
+      const status = err?.statusCode;
+      if (status) {
+        throw new BusinessLogicException(`GHW error ${status}`, BusinessError.BAD_GATEWAY);
+      }
+      throw new BusinessLogicException('GHW error', BusinessError.BAD_GATEWAY);
+    }
+  }
+
+  async refreshHistory(id: string, correlationId?: string): Promise<any> {
+    this.validateId(id, 'artifactId');
+    const artifactId = id.toLowerCase();
+    const corr = correlationId || `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    try {
+      return await this.ghwService.refresh(artifactId, corr);
+    } catch (err: any) {
+      if (err?.message === 'CONNECT_TIMEOUT' || err?.message === 'READ_TIMEOUT') {
+        throw new BusinessLogicException('Upstream timeout contacting GHW', BusinessError.GATEWAY_TIMEOUT);
+      }
+      const status = err?.statusCode;
+      if (status) {
+        throw new BusinessLogicException(`GHW error ${status}`, BusinessError.BAD_GATEWAY);
+      }
+      throw new BusinessLogicException('GHW error', BusinessError.BAD_GATEWAY);
+    }
   }
 
   // Create one Artifact

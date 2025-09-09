@@ -110,38 +110,7 @@ export class ArtifactController {
     @Query('includeValue') includeValueQ?: string,
     @Headers('x-correlation-id') corrId?: string,
   ): Promise<any> {
-    const uuidRegex = /^[0-9a-fA-F-]{36}$/;
-    if (!id || !uuidRegex.test(id)) {
-      throw new BadRequestException('Invalid artifactId');
-    }
-    const artifactId = id.toLowerCase();
-
-    const offset = Math.max(0, Number(offsetQ ?? 0) || 0);
-    let limit = Number(limitQ ?? 100) || 100;
-    if (limit < 1) limit = 1;
-    if (limit > 500) limit = 500;
-    const order = (orderQ === 'asc' || orderQ === 'desc') ? orderQ : 'desc';
-    const includeValue = includeValueQ === undefined ? true : String(includeValueQ).toLowerCase() !== 'false';
-
-    const correlationId = corrId || `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-
-    try {
-      const resp = await this.ghwService.fetchHistory({ artifactId, offset, limit, order, includeValue }, correlationId);
-      (resp as any).nextOffset = resp?.hasMore ? offset + limit : undefined;
-      return resp;
-    } catch (err: any) {
-      if (err?.message === 'CONNECT_TIMEOUT' || err?.message === 'READ_TIMEOUT') {
-        const { GatewayTimeoutException } = require('@nestjs/common');
-        throw new GatewayTimeoutException('Upstream timeout contacting GHW');
-      }
-      const status = err?.statusCode;
-      if (status) {
-        const { BadGatewayException } = require('@nestjs/common');
-        throw new BadGatewayException(`GHW error ${status}`);
-      }
-      const { BadGatewayException } = require('@nestjs/common');
-      throw new BadGatewayException('GHW error');
-    }
+    return this.artifactService.getHistory(id, { offset: offsetQ, limit: limitQ, order: orderQ, includeValue: includeValueQ }, corrId);
   }
 
   @Post(':id/history/refresh')
@@ -150,27 +119,6 @@ export class ArtifactController {
     @Param('id') id: string,
     @Headers('x-correlation-id') corrId?: string,
   ): Promise<any> {
-    const uuidRegex = /^[0-9a-fA-F-]{36}$/;
-    if (!id || !uuidRegex.test(id)) {
-      throw new BadRequestException('Invalid artifactId');
-    }
-    const artifactId = id.toLowerCase();
-    const correlationId = corrId || `${Date.now()}-${Math.random().toString(16).slice(2)}`;
-
-    try {
-      return await this.ghwService.refresh(artifactId, correlationId);
-    } catch (err: any) {
-      if (err?.message === 'CONNECT_TIMEOUT' || err?.message === 'READ_TIMEOUT') {
-        const { GatewayTimeoutException } = require('@nestjs/common');
-        throw new GatewayTimeoutException('Upstream timeout contacting GHW');
-      }
-      const status = err?.statusCode;
-      if (status) {
-        const { BadGatewayException } = require('@nestjs/common');
-        throw new BadGatewayException(`GHW error ${status}`);
-      }
-      const { BadGatewayException } = require('@nestjs/common');
-      throw new BadGatewayException('GHW error');
-    }
+    return this.artifactService.refreshHistory(id, corrId);
   }
 }
