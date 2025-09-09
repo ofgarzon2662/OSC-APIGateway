@@ -11,6 +11,9 @@ import {
   UseGuards,
   Req,
   UnauthorizedException,
+  Query,
+  Headers,
+  BadRequestException,
 } from '@nestjs/common';
 import { ArtifactService } from './artifact.service';
 import { ArtifactEntity } from './artifact.entity';
@@ -26,11 +29,15 @@ import { RolesGuard } from '../auth/roles/roles.guards';
 import { Roles } from '../shared/decorators/roles.decorators';
 import { Role } from '../shared/enums/role.enums';
 import { UpdateArtifactUserDto } from './dto/update-artifact-user.dto';
+import { GhwService } from './ghw.service';
 
 @Controller('artifacts')
 @UseInterceptors(BusinessErrorsInterceptor)
 export class ArtifactController {
-  constructor(private readonly artifactService: ArtifactService) {}
+  constructor(
+    private readonly artifactService: ArtifactService,
+    private readonly ghwService: GhwService,
+  ) {}
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -91,5 +98,79 @@ export class ArtifactController {
     @Body() updateArtifactDetailsDto: UpdateArtifactUserDto,
   ): Promise<ArtifactEntity> {
     return await this.artifactService.updateUser(id, updateArtifactDetailsDto);
+  }
+
+  @Get(':id/history')
+  @UseGuards(JwtAuthGuard)
+  async getHistory(
+    @Param('id') id: string,
+    @Query('offset') offsetQ?: string,
+    @Query('limit') limitQ?: string,
+    @Query('order') orderQ?: 'asc' | 'desc',
+    @Query('includeValue') includeValueQ?: string,
+    @Headers('x-correlation-id') corrId?: string,
+  ): Promise<any> {
+    const uuidRegex = /^[0-9a-fA-F-]{36}$/;
+    if (!id || !uuidRegex.test(id)) {
+      throw new BadRequestException('Invalid artifactId');
+    }
+    const artifactId = id.toLowerCase();
+
+    const offset = Math.max(0, Number(offsetQ ?? 0) || 0);
+    let limit = Number(limitQ ?? 100) || 100;
+    if (limit < 1) limit = 1;
+    if (limit > 500) limit = 500;
+    const order = (orderQ === 'asc' || orderQ === 'desc') ? orderQ : 'desc';
+    const includeValue = includeValueQ === undefined ? true : String(includeValueQ).toLowerCase() !== 'false';
+
+    const correlationId = corrId || `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
+    try {
+      const resp = await this.ghwService.fetchHistory({ artifactId, offset, limit, order, includeValue }, correlationId);
+      (resp as any).nextOffset = resp?.hasMore ? offset + limit : undefined;
+      return resp;
+    } catch (err: any) {
+      if (err?.message === 'CONNECT_TIMEOUT' || err?.message === 'READ_TIMEOUT') {
+        const { GatewayTimeoutException } = require('@nestjs/common');
+        throw new GatewayTimeoutException('Upstream timeout contacting GHW');
+      }
+      const status = err?.statusCode;
+      if (status) {
+        const { BadGatewayException } = require('@nestjs/common');
+        throw new BadGatewayException(`GHW error ${status}`);
+      }
+      const { BadGatewayException } = require('@nestjs/common');
+      throw new BadGatewayException('GHW error');
+    }
+  }
+
+  @Post(':id/history/refresh')
+  @UseGuards(JwtAuthGuard)
+  async refreshHistory(
+    @Param('id') id: string,
+    @Headers('x-correlation-id') corrId?: string,
+  ): Promise<any> {
+    const uuidRegex = /^[0-9a-fA-F-]{36}$/;
+    if (!id || !uuidRegex.test(id)) {
+      throw new BadRequestException('Invalid artifactId');
+    }
+    const artifactId = id.toLowerCase();
+    const correlationId = corrId || `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
+    try {
+      return await this.ghwService.refresh(artifactId, correlationId);
+    } catch (err: any) {
+      if (err?.message === 'CONNECT_TIMEOUT' || err?.message === 'READ_TIMEOUT') {
+        const { GatewayTimeoutException } = require('@nestjs/common');
+        throw new GatewayTimeoutException('Upstream timeout contacting GHW');
+      }
+      const status = err?.statusCode;
+      if (status) {
+        const { BadGatewayException } = require('@nestjs/common');
+        throw new BadGatewayException(`GHW error ${status}`);
+      }
+      const { BadGatewayException } = require('@nestjs/common');
+      throw new BadGatewayException('GHW error');
+    }
   }
 }

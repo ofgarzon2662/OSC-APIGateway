@@ -5,14 +5,17 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ArtifactEntity } from './artifact.entity';
 import { OrganizationEntity } from '../organization/organization.entity';
 import { MessagingModule } from '../messaging/messaging.module';
+import { ConfigModule } from '@nestjs/config';
+import { GhwService } from './ghw.service';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([ArtifactEntity, OrganizationEntity]),
-    MessagingModule
+    MessagingModule,
+    ConfigModule,
   ],
   controllers: [ArtifactController],
-  providers: [ArtifactService],
+  providers: [ArtifactService, GhwService],
   exports: [ArtifactService]
 })
 export class ArtifactModule {}
