@@ -2,8 +2,7 @@ import {
   Column,
   Entity,
   ManyToOne,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
+  PrimaryGeneratedColumn
 } from 'typeorm';
 import {
   IsNotEmpty,

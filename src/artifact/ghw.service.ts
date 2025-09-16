@@ -84,7 +84,8 @@ export class GhwService {
             const json = data ? JSON.parse(data) : {};
             resolve(json);
           } catch (e) {
-            reject(e);
+            const error = e instanceof Error ? e : new Error(typeof e === 'string' ? e : 'INVALID_JSON');
+            reject(error);
           }
         });
       });

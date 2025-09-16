@@ -17,6 +17,7 @@ import { OrganizationEntity } from '../organization/organization.entity';
 import { SubmissionState } from './enums/submission-state.enum';
 import { RabbitMQService } from '../messaging/rabbitmq.service';
 import { GhwService } from './ghw.service';
+import { randomUUID } from 'crypto';
 
 // Definir una interfaz para la información del creador del artefacto
 interface SubmitterInfo {
@@ -255,7 +256,7 @@ export class ArtifactService {
     if (dtoAny.dois !== undefined) patch.dois = dtoAny.dois;
     if (dtoAny.fundingAgencies !== undefined) patch.fundingAgencies = dtoAny.fundingAgencies;
     if (dtoAny.acknowledgements !== undefined) patch.acknowledgements = dtoAny.acknowledgements;
-    if (dtoAny.manifest !== undefined) patch.manifest = dtoAny.manifest as any;
+    if (dtoAny.manifest !== undefined) patch.manifest = dtoAny.manifest;
     if (dtoAny.footprint !== undefined) patch.footprint = dtoAny.footprint;
     // User is not allowed to change status fields
 
@@ -355,12 +356,14 @@ export class ArtifactService {
     const order = (params.order === 'asc' || params.order === 'desc') ? params.order : 'desc';
     const includeValue = params.includeValue === undefined ? true : String(params.includeValue).toLowerCase() !== 'false';
 
-    const corr = correlationId || `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    const corr = correlationId || randomUUID();
 
     try {
       const resp = await this.ghwService.fetchHistory({ artifactId, offset, limit, order, includeValue }, corr);
-      (resp as any).nextOffset = resp?.hasMore ? offset + limit : undefined;
-      return resp;
+      return {
+        ...resp,
+        nextOffset: resp?.hasMore ? offset + limit : undefined,
+      } as any;
     } catch (err: any) {
       if (err?.message === 'CONNECT_TIMEOUT' || err?.message === 'READ_TIMEOUT') {
         throw new BusinessLogicException('Upstream timeout contacting GHW', BusinessError.GATEWAY_TIMEOUT);
@@ -376,7 +379,7 @@ export class ArtifactService {
   async refreshHistory(id: string, correlationId?: string): Promise<any> {
     this.validateId(id, 'artifactId');
     const artifactId = id.toLowerCase();
-    const corr = correlationId || `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    const corr = correlationId || randomUUID();
     try {
       return await this.ghwService.refresh(artifactId, corr);
     } catch (err: any) {

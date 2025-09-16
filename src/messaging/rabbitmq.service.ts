@@ -2,7 +2,6 @@ import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/commo
 import { ConfigService } from '@nestjs/config';
 import { connect, Connection, Channel } from 'amqplib';
 import { ManifestItem } from 'src/artifact/artifact.entity';
-import { SubmissionState } from 'src/artifact/enums/submission-state.enum';
 
 
 
@@ -73,6 +72,50 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
     await this.connect();
   }
 
+  private async publishJsonWithRetry(
+    routingKey: string,
+    payload: unknown,
+    options: {
+      messageId?: string;
+      addTimestamp?: boolean;
+      logSuccess: string;
+      logPrefix: string;
+    },
+  ): Promise<void> {
+    const maxRetries = 3;
+    let retry = 0;
+    while (retry < maxRetries) {
+      try {
+        await this.ensureConnection();
+        if (!this.channel) throw new Error('RabbitMQ channel is not available');
+
+        const buffer = Buffer.from(JSON.stringify(payload));
+        const published = this.channel.publish(
+          this.exchangeName,
+          routingKey,
+          buffer,
+          {
+            persistent: true,
+            contentType: 'application/json',
+            messageId: options.messageId,
+            timestamp: options.addTimestamp ? Date.now() : undefined,
+          },
+        );
+
+        if (published) {
+          this.logger.log(options.logSuccess);
+          return;
+        }
+        throw new Error('Failed to publish message');
+      } catch (err) {
+        retry++;
+        this.logger.error(`${options.logPrefix} publish error (${retry}/3)`, err as any);
+        if (retry >= maxRetries) throw err;
+        this.connection = null; this.channel = null;
+        await new Promise(r => setTimeout(r, 2000));
+      }
+    }
+  }
   async onModuleDestroy() {
     await this.disconnect();
   }
@@ -191,102 +234,28 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
   }
 
   async publishArtifactUpdated(event: ArtifactUpdatedEvent): Promise<void> {
-    const maxRetries = 3;
-    let retryCount = 0;
-
-    while (retryCount < maxRetries) {
-      try {
-        await this.ensureConnection();
-
-        if (!this.channel) throw new Error('RabbitMQ channel is not available');
-
-        const messageBuffer = Buffer.from(JSON.stringify(event));
-
-        const published = this.channel.publish(
-          this.exchangeName,
-          this.artifactUpdatedRoutingKey,
-          messageBuffer,
-          {
-            persistent: true,
-            timestamp: Date.now(),
-            messageId: event.artifactId,
-          },
-        );
-
-        if (published) {
-          this.logger.log(`Published artifact.updated event for artifact: ${event.artifactId}`);
-          return;
-        }
-        throw new Error('Failed to publish message to RabbitMQ');
-      } catch (error) {
-        retryCount++;
-        this.logger.error(`Error publishing artifact.updated event (attempt ${retryCount}/${maxRetries}):`, error);
-        if (retryCount >= maxRetries) throw error;
-        this.connection = null;
-        this.channel = null;
-        await new Promise(res => setTimeout(res, 2000));
-      }
-    }
+    await this.publishJsonWithRetry(this.artifactUpdatedRoutingKey, event, {
+      messageId: event.artifactId,
+      addTimestamp: true,
+      logSuccess: `Published artifact.updated event for artifact: ${event.artifactId}`,
+      logPrefix: 'artifact.updated',
+    });
   }
 
   async publishArtifactSubmit(cmd: ArtifactSubmitCommand): Promise<void> {
-    const maxRetries = 3;
-    let retry = 0;
-    while (retry < maxRetries) {
-      try {
-        await this.ensureConnection();
-        if (!this.channel) throw new Error('RabbitMQ channel is not available');
-
-        const buffer = Buffer.from(JSON.stringify(cmd));
-        const ok = this.channel.publish(
-          this.exchangeName,
-          this.artifactSubmitRoutingKey,
-          buffer,
-          { persistent: true, contentType: 'application/json', messageId: cmd.artifactId },
-        );
-        if (ok) {
-          this.logger.log(`Published artifact.submit command for artifact ${cmd.artifactId}`);
-          return;
-        }
-        throw new Error('Failed to publish message');
-      } catch (err) {
-        retry++;
-        this.logger.error(`artifact.submit publish error (${retry}/3)`, err);
-        if (retry >= maxRetries) throw err;
-        this.connection = null; this.channel = null;
-        await new Promise(r => setTimeout(r, 2000));
-      }
-    }
+    await this.publishJsonWithRetry(this.artifactSubmitRoutingKey, cmd, {
+      messageId: cmd.artifactId,
+      logSuccess: `Published artifact.submit command for artifact ${cmd.artifactId}`,
+      logPrefix: 'artifact.submit',
+    });
   }
 
   async publishArtifactUpdate(cmd: ArtifactUpdateCommand): Promise<void> {
-    const maxRetries = 3;
-    let retry = 0;
-    while (retry < maxRetries) {
-      try {
-        await this.ensureConnection();
-        if (!this.channel) throw new Error('RabbitMQ channel is not available');
-
-        const buffer = Buffer.from(JSON.stringify(cmd));
-        const ok = this.channel.publish(
-          this.exchangeName,
-          this.artifactUpdateRoutingKey,
-          buffer,
-          { persistent: true, contentType: 'application/json', messageId: cmd.artifactId },
-        );
-        if (ok) {
-          this.logger.log(`Published artifact.update command for artifact ${cmd.artifactId}`);
-          return;
-        }
-        throw new Error('Failed to publish message');
-      } catch (err) {
-        retry++;
-        this.logger.error(`artifact.update publish error (${retry}/3)`, err);
-        if (retry >= maxRetries) throw err;
-        this.connection = null; this.channel = null;
-        await new Promise(r => setTimeout(r, 2000));
-      }
-    }
+    await this.publishJsonWithRetry(this.artifactUpdateRoutingKey, cmd, {
+      messageId: cmd.artifactId,
+      logSuccess: `Published artifact.update command for artifact ${cmd.artifactId}`,
+      logPrefix: 'artifact.update',
+    });
   }
 
   // Health check method
