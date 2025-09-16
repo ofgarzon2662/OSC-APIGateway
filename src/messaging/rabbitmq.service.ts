@@ -109,7 +109,7 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
         throw new Error('Failed to publish message');
       } catch (err) {
         retry++;
-        this.logger.error(`${options.logPrefix} publish error (${retry}/3)`, err as any);
+        this.logger.error(`${options.logPrefix} publish error (${retry}/3)`, err);
         if (retry >= maxRetries) throw err;
         this.connection = null; this.channel = null;
         await new Promise(r => setTimeout(r, 2000));

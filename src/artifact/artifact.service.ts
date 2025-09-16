@@ -363,7 +363,7 @@ export class ArtifactService {
       return {
         ...resp,
         nextOffset: resp?.hasMore ? offset + limit : undefined,
-      } as any;
+      };
     } catch (err: any) {
       if (err?.message === 'CONNECT_TIMEOUT' || err?.message === 'READ_TIMEOUT') {
         throw new BusinessLogicException('Upstream timeout contacting GHW', BusinessError.GATEWAY_TIMEOUT);

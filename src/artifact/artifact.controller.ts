@@ -12,8 +12,7 @@ import {
   Req,
   UnauthorizedException,
   Query,
-  Headers,
-  BadRequestException,
+  Headers
 } from '@nestjs/common';
 import { ArtifactService } from './artifact.service';
 import { ArtifactEntity } from './artifact.entity';

@@ -20,6 +20,7 @@ describe('ArtifactService', () => {
   let artifactList: ArtifactEntity[];
   let organization: OrganizationEntity;
   let rabbitMQService: RabbitMQService;
+  let ghwService: GhwService;
   
   // Test submitter info
   const testSubmitter = {
@@ -80,6 +81,7 @@ describe('ArtifactService', () => {
 
     service = module.get<ArtifactService>(ArtifactService);
     rabbitMQService = module.get<RabbitMQService>(RabbitMQService);
+    ghwService = module.get<GhwService>(GhwService);
     artifactRepository = module.get<Repository<ArtifactEntity>>(
       getRepositoryToken(ArtifactEntity),
     );
@@ -455,6 +457,27 @@ describe('ArtifactService', () => {
 
   // UPDATE WORKER TESTS
   describe('updateWorker - additional coverage for conditional updates', () => {
+    it('should include nextOffset and pass correlationId to GHW history', async () => {
+      const storedArtifact = artifactList[0];
+      const spy = jest.spyOn(ghwService, 'fetchHistory').mockResolvedValue({ items: [], hasMore: true } as any);
+      const result = await service.getHistory(storedArtifact.id, { offset: '0', limit: '2', order: 'desc', includeValue: 'true' }, 'corr-123');
+      expect(spy).toHaveBeenCalledWith({ artifactId: storedArtifact.id.toLowerCase(), offset: 0, limit: 2, order: 'desc', includeValue: true }, 'corr-123');
+      expect((result as any).nextOffset).toBe(2);
+    });
+
+    it('should propagate timeout errors from GHW as gateway timeout', async () => {
+      const storedArtifact = artifactList[0];
+      jest.spyOn(ghwService, 'fetchHistory').mockRejectedValueOnce(new Error('CONNECT_TIMEOUT'));
+      await expect(service.getHistory(storedArtifact.id, {}, 'c')).rejects.toHaveProperty('type', BusinessError.GATEWAY_TIMEOUT);
+    });
+
+    it('should map upstream status code to BAD_GATEWAY', async () => {
+      const storedArtifact = artifactList[0];
+      const err: any = new Error('UPSTREAM_500');
+      err.statusCode = 500;
+      jest.spyOn(ghwService, 'fetchHistory').mockRejectedValueOnce(err);
+      await expect(service.getHistory(storedArtifact.id, {}, 'c')).rejects.toHaveProperty('type', BusinessError.BAD_GATEWAY);
+    });
     it('should accept only updatedAt in status update', async () => {
       const storedArtifact = artifactList[0];
       const updateStatusDto: UpdateArtifactDto = {

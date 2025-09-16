@@ -84,7 +84,14 @@ export class GhwService {
             const json = data ? JSON.parse(data) : {};
             resolve(json);
           } catch (e) {
-            const error = e instanceof Error ? e : new Error(typeof e === 'string' ? e : 'INVALID_JSON');
+            let error: Error;
+            if (e instanceof Error) {
+              error = e;
+            } else if (typeof e === 'string') {
+              error = new Error(e);
+            } else {
+              error = new Error('INVALID_JSON');
+            }
             reject(error);
           }
         });
