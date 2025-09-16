@@ -305,6 +305,14 @@ describe('ArtifactService', () => {
 
     // Additional CREATE tests for missing validation coverage
     describe('create - additional validation coverage', () => {
+      it('should throw an exception for invalid footprint format', async () => {
+        const artifactDto = generateRandomArtifact();
+        artifactDto.footprint = 'abc';
+        await expect(service.create(artifactDto, testSubmitter)).rejects.toHaveProperty(
+          'message',
+          'A valid SHA-256 footprint hash is required (64 hex characters).',
+        );
+      });
       it('should throw an exception for keywords array exceeding 1000 characters', async () => {
         const artifactDto = generateRandomArtifact();
         // Create keywords that total over 1000 characters
@@ -343,6 +351,17 @@ describe('ArtifactService', () => {
         );
       });
     });
+
+    it('should still resolve even if publishArtifactSubmit fails (logs error)', async () => {
+      const artifactDto = generateRandomArtifact();
+      const spy = jest.spyOn(rabbitMQService, 'publishArtifactSubmit').mockRejectedValueOnce(new Error('broker down'));
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      const result = await service.create(artifactDto, testSubmitter);
+      expect(result.id).toBeDefined();
+      expect(spy).toHaveBeenCalled();
+      expect(consoleSpy).toHaveBeenCalled();
+      consoleSpy.mockRestore();
+    });
   });
 
   // UPDATE TESTS
@@ -371,6 +390,14 @@ describe('ArtifactService', () => {
         'message',
         'No organization exists in the system',
       );
+    });
+
+    it('should save when patch is empty (no-op update)', async () => {
+      const storedArtifact = artifactList[0];
+      const saveSpy = jest.spyOn(artifactRepository, 'save');
+      const updated = await service.update(storedArtifact.id, {} as any);
+      expect(updated.id).toBe(storedArtifact.id);
+      expect(saveSpy).toHaveBeenCalled();
     });
   });
 
@@ -574,6 +601,42 @@ describe('ArtifactService', () => {
       const storedArtifact = artifactList[0];
       const badDto: any = { title: 'nope' };
       await expect(service.updateWorker(storedArtifact.id, badDto)).rejects.toHaveProperty('message');
+    });
+
+    it('should set blockchainTxId and peerId when provided', async () => {
+      const storedArtifact = artifactList[0];
+      const dto: UpdateArtifactDto = {
+        blockchainTxId: '0xabc',
+        peerId: 'peer-1',
+      } as any;
+      const updated = await service.updateWorker(storedArtifact.id, dto);
+      expect(updated.blockchainTxId).toBe('0xabc');
+      expect(updated.peerId).toBe('peer-1');
+    });
+  });
+
+  // Refresh history tests to cover mapping and success
+  describe('refreshHistory', () => {
+    it('should call GHW refresh and return result', async () => {
+      const storedArtifact = artifactList[0];
+      const spy = jest.spyOn(ghwService, 'refresh').mockResolvedValueOnce({ ok: true } as any);
+      const out = await service.refreshHistory(storedArtifact.id, 'c-1');
+      expect(spy).toHaveBeenCalled();
+      expect(out).toEqual({ ok: true });
+    });
+
+    it('should map upstream timeout to GATEWAY_TIMEOUT', async () => {
+      const storedArtifact = artifactList[0];
+      jest.spyOn(ghwService, 'refresh').mockRejectedValueOnce(new Error('CONNECT_TIMEOUT'));
+      await expect(service.refreshHistory(storedArtifact.id, 'c')).rejects.toHaveProperty('type', BusinessError.GATEWAY_TIMEOUT);
+    });
+
+    it('should map upstream status code to BAD_GATEWAY for refresh', async () => {
+      const storedArtifact = artifactList[0];
+      const err: any = new Error('UPSTREAM_504');
+      err.statusCode = 504;
+      jest.spyOn(ghwService, 'refresh').mockRejectedValueOnce(err);
+      await expect(service.refreshHistory(storedArtifact.id, 'c')).rejects.toHaveProperty('type', BusinessError.BAD_GATEWAY);
     });
   });
 });
