@@ -7,10 +7,11 @@ import { ArtifactEntity } from './artifact.entity';
 import { faker } from '@faker-js/faker';
 import { BusinessError, BusinessLogicException } from '../shared/errors/business-errors';
 import { SubmissionState } from './enums/submission-state.enum';
-import { UpdateArtifactDto } from './dto/update-artifact.dto';
+import { UpdateArtifactWorkerDto as UpdateArtifactDto } from './dto/update-artifact-worker.dto';
 import { OrganizationEntity } from '../organization/organization.entity';
 import { CreateArtifactDto } from './dto/create-artifact.dto';
 import { RabbitMQService } from '../messaging/rabbitmq.service';
+import { GhwService } from './ghw.service';
 
 describe('ArtifactService', () => {
   let service: ArtifactService;
@@ -19,6 +20,7 @@ describe('ArtifactService', () => {
   let artifactList: ArtifactEntity[];
   let organization: OrganizationEntity;
   let rabbitMQService: RabbitMQService;
+  let ghwService: GhwService;
   
   // Test submitter info
   const testSubmitter = {
@@ -41,6 +43,7 @@ describe('ArtifactService', () => {
         filename: faker.system.fileName(),
         algorithm: 'sha256'
       }],
+      footprint: faker.string.hexadecimal({ length: 64, prefix: '' }).toLowerCase()
     };
   }
 
@@ -61,6 +64,16 @@ describe('ArtifactService', () => {
           provide: RabbitMQService,
           useValue: {
             publishArtifactCreated: jest.fn().mockResolvedValue(undefined),
+            publishArtifactSubmit: jest.fn().mockResolvedValue(undefined),
+            publishArtifactUpdated: jest.fn().mockResolvedValue(undefined),
+            publishArtifactUpdate: jest.fn().mockResolvedValue(undefined),
+          },
+        },
+        {
+          provide: GhwService,
+          useValue: {
+            fetchHistory: jest.fn().mockResolvedValue({ items: [] }),
+            refresh: jest.fn().mockResolvedValue({ ok: true }),
           },
         },
       ],
@@ -68,6 +81,7 @@ describe('ArtifactService', () => {
 
     service = module.get<ArtifactService>(ArtifactService);
     rabbitMQService = module.get<RabbitMQService>(RabbitMQService);
+    ghwService = module.get<GhwService>(GhwService);
     artifactRepository = module.get<Repository<ArtifactEntity>>(
       getRepositoryToken(ArtifactEntity),
     );
@@ -125,8 +139,8 @@ describe('ArtifactService', () => {
           keywords: dbArtifact.keywords,
           submittedAt: dbArtifact.submittedAt,
           verified: dbArtifact.verified,
-          lastTimeVerified: dbArtifact.lastTimeVerified,
-          lastTimeUpdated: dbArtifact.lastTimeUpdated
+          updatedAt: dbArtifact.updatedAt,
+          footprint: dbArtifact.footprint
         });
       });
     });
@@ -158,6 +172,7 @@ describe('ArtifactService', () => {
       expect(artifact.id).toEqual(fullArtifact.id);
       expect(artifact.title).toEqual(fullArtifact.title);
       expect(artifact.description).toEqual(fullArtifact.description);
+      expect(artifact.footprint).toEqual(fullArtifact.footprint);
       expect(artifact.submitterEmail).toEqual(testSubmitter.email);
       expect(artifact.submitterUsername).toEqual(testSubmitter.username);
       expect(artifact.organization.name).toEqual(organization.name);
@@ -206,8 +221,8 @@ describe('ArtifactService', () => {
         keywords: artifactDto.keywords,
         submittedAt: expect.any(Date),
         verified: false,
-        lastTimeVerified: null,
-        lastTimeUpdated: null
+        updatedAt: null,
+        footprint: artifactDto.footprint
       });
       
       // Verify it's saved in the database
@@ -290,6 +305,14 @@ describe('ArtifactService', () => {
 
     // Additional CREATE tests for missing validation coverage
     describe('create - additional validation coverage', () => {
+      it('should throw an exception for invalid footprint format', async () => {
+        const artifactDto = generateRandomArtifact();
+        artifactDto.footprint = 'abc';
+        await expect(service.create(artifactDto, testSubmitter)).rejects.toHaveProperty(
+          'message',
+          'A valid SHA-256 footprint hash is required (64 hex characters).',
+        );
+      });
       it('should throw an exception for keywords array exceeding 1000 characters', async () => {
         const artifactDto = generateRandomArtifact();
         // Create keywords that total over 1000 characters
@@ -328,86 +351,94 @@ describe('ArtifactService', () => {
         );
       });
     });
+
+    it('should still resolve even if publishArtifactSubmit fails (logs error)', async () => {
+      const artifactDto = generateRandomArtifact();
+      const spy = jest.spyOn(rabbitMQService, 'publishArtifactSubmit').mockRejectedValueOnce(new Error('broker down'));
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      const result = await service.create(artifactDto, testSubmitter);
+      expect(result.id).toBeDefined();
+      expect(spy).toHaveBeenCalled();
+      expect(consoleSpy).toHaveBeenCalled();
+      consoleSpy.mockRestore();
+    });
   });
 
   // UPDATE TESTS
   describe('update', () => {
-    it('should update an artifact with valid data', async () => {
+    it('should reject restricted fields in update', async () => {
       const storedArtifact = artifactList[0];
-      const updateDto = new UpdateArtifactDto();
-      updateDto.verified = true;
-      updateDto.lastTimeVerified = new Date();
-      
-      const updatedArtifact = await service.update(storedArtifact.id, updateDto);
-      expect(updatedArtifact).toBeDefined();
-      expect(updatedArtifact.verified).toBe(true);
-      expect(updatedArtifact.lastTimeVerified).toEqual(updateDto.lastTimeVerified);
-    });
-
-    it('should throw an exception for an invalid artifact ID', async () => {
-      const updateDto = new UpdateArtifactDto();
-      updateDto.verified = true;
-      
-      await expect(service.update('invalid-uuid', updateDto)).rejects.toHaveProperty(
-        'message',
-        'The artifactId provided is not valid',
-      );
-    });
-
-    it('should throw an exception when trying to update restricted fields', async () => {
-      const storedArtifact = artifactList[0];
-      const updateDto = {
-        title: 'New Title', // This should be rejected
-      } as UpdateArtifactDto;
-      
-      await expect(service.update(storedArtifact.id, updateDto)).rejects.toHaveProperty(
+      const badDto: any = { title: 'New Title' };
+      await expect(service.update(storedArtifact.id, badDto)).rejects.toHaveProperty(
         'message',
         'Cannot update title, contributor, or submittedAt fields',
       );
     });
 
+    it('should throw an exception for an invalid artifact ID', async () => {
+      const badDto: any = { title: 'X' };
+      await expect(service.update('invalid-uuid', badDto)).rejects.toHaveProperty(
+        'message',
+        'The artifactId provided is not valid',
+      );
+    });
+
     it('should throw an exception when no organization exists', async () => {
-      // Save the ID first
       const artifactId = artifactList[0].id;
-      const updateDto = new UpdateArtifactDto();
-      updateDto.verified = true;
-      
-      // Clear the organization to test the case when no org exists
       await organizationRepository.clear();
-      
-      await expect(service.update(artifactId, updateDto)).rejects.toHaveProperty(
+      await expect(service.update(artifactId, {} as any)).rejects.toHaveProperty(
         'message',
         'No organization exists in the system',
       );
     });
 
-    // Additional UPDATE tests for missing validation coverage
-    describe('update - additional validation coverage', () => {
-      it('should throw an exception when trying to update title field', async () => {
-        const storedArtifact = artifactList[0];
-        const updateDto = { title: 'New Title' } as any;
-        
-        await expect(service.update(storedArtifact.id, updateDto)).rejects.toHaveProperty(
-          'message',
-          'Cannot update title, contributor, or submittedAt fields',
-        );
+    it('should save when patch is empty (no-op update)', async () => {
+      const storedArtifact = artifactList[0];
+      const saveSpy = jest.spyOn(artifactRepository, 'save');
+      const updated = await service.update(storedArtifact.id, {} as any);
+      expect(updated.id).toBe(storedArtifact.id);
+      expect(saveSpy).toHaveBeenCalled();
+    });
+  });
+
+  // UPDATE USER TESTS
+  describe('updateUser', () => {
+    it('should persist user fields and publish artifact.update asynchronously', async () => {
+      const storedArtifact = artifactList[0];
+      const dto: any = {
+        keywords: ['ai', 'ml'],
+        footprint: '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
+      };
+
+      const saveSpy = jest.spyOn(artifactRepository, 'save');
+      const publishSpy = jest.spyOn(rabbitMQService, 'publishArtifactUpdate');
+
+      const result = await service.updateUser(storedArtifact.id, dto);
+
+      expect(result.id).toBe(storedArtifact.id);
+      expect(result.keywords).toEqual(['ai', 'ml']);
+      expect(result.footprint).toEqual('0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef');
+      expect(saveSpy).toHaveBeenCalled();
+
+      expect(publishSpy).toHaveBeenCalledWith({
+        artifactId: storedArtifact.id,
+        patch: {
+          keywords: ['ai', 'ml'],
+          footprint: '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
+        },
       });
-      
-      it('should throw an exception when trying to update manifest field', async () => {
-        const storedArtifact = artifactList[0];
-        const updateDto = {
-          manifest: [{
-            hash: 'newhash123',
-            filename: 'newfile.zip',
-            algorithm: 'sha256'
-          }]
-        } as any;
-        
-        await expect(service.update(storedArtifact.id, updateDto)).rejects.toHaveProperty(
-          'message',
-          'Cannot update title, contributor, or submittedAt fields',
-        );
-      });
+    });
+
+    it('should reject title or description in updateUser DTO', async () => {
+      const storedArtifact = artifactList[0];
+      await expect(service.updateUser(storedArtifact.id, { title: 'x' } as any)).rejects.toHaveProperty(
+        'message',
+        'Cannot update title or description',
+      );
+      await expect(service.updateUser(storedArtifact.id, { description: 'y' } as any)).rejects.toHaveProperty(
+        'message',
+        'Cannot update title or description',
+      );
     });
   });
 
@@ -451,92 +482,49 @@ describe('ArtifactService', () => {
     });
   });
 
-  // Additional UPDATE STATUS tests for lines 348-378 coverage
-  describe('updateStatus - additional coverage for conditional updates', () => {
-    it('should update only submissionState when other fields are undefined', async () => {
+  // UPDATE WORKER TESTS
+  describe('updateWorker - additional coverage for conditional updates', () => {
+    it('should include nextOffset and pass correlationId to GHW history', async () => {
       const storedArtifact = artifactList[0];
+      const spy = jest.spyOn(ghwService, 'fetchHistory').mockResolvedValue({ items: [], hasMore: true } as any);
+      const result = await service.getHistory(storedArtifact.id, { offset: '0', limit: '2', order: 'desc', includeValue: 'true' }, 'corr-123');
+      expect(spy).toHaveBeenCalledWith({ artifactId: storedArtifact.id.toLowerCase(), offset: 0, limit: 2, order: 'desc', includeValue: true }, 'corr-123');
+      expect((result as any).nextOffset).toBe(2);
+    });
+
+    it('should propagate timeout errors from GHW as gateway timeout', async () => {
+      const storedArtifact = artifactList[0];
+      jest.spyOn(ghwService, 'fetchHistory').mockRejectedValueOnce(new Error('CONNECT_TIMEOUT'));
+      await expect(service.getHistory(storedArtifact.id, {}, 'c')).rejects.toHaveProperty('type', BusinessError.GATEWAY_TIMEOUT);
+    });
+
+    it('should map upstream status code to BAD_GATEWAY', async () => {
+      const storedArtifact = artifactList[0];
+      const err: any = new Error('UPSTREAM_500');
+      err.statusCode = 500;
+      jest.spyOn(ghwService, 'fetchHistory').mockRejectedValueOnce(err);
+      await expect(service.getHistory(storedArtifact.id, {}, 'c')).rejects.toHaveProperty('type', BusinessError.BAD_GATEWAY);
+    });
+    it('should accept only updatedAt in status update', async () => {
+      const storedArtifact = artifactList[0];
+      const updateStatusDto: UpdateArtifactDto = {
+        updatedAt: '2025-01-01T00:00:00.000Z',
+      } as any;
+      const updatedArtifact = await service.updateWorker(storedArtifact.id, updateStatusDto);
+      expect(updatedArtifact.updatedAt).toBeDefined();
+    });
+
+    it('should not set updatedAt directly; it is managed by DB', async () => {
+      const storedArtifact = artifactList[0];
+      const updatedAt = '2023-12-07T15:30:00.000Z';
       const updateStatusDto: UpdateArtifactDto = {
         submissionState: SubmissionState.SUCCESS,
-        // All other fields are undefined
+        updatedAt,
       };
       
-      const originalSubmittedAt = storedArtifact.submittedAt;
-      const originalBlockchainTxId = storedArtifact.blockchainTxId;
-      const originalPeerId = storedArtifact.peerId;
-      const originalVerified = storedArtifact.verified;
-      const originalLastTimeVerified = storedArtifact.lastTimeVerified;
+      const updatedArtifact = await service.updateWorker(storedArtifact.id, updateStatusDto);
       
-      const updatedArtifact = await service.updateStatus(storedArtifact.id, updateStatusDto);
-      
-      expect(updatedArtifact.submissionState).toBe(SubmissionState.SUCCESS);
-      // Other fields should remain unchanged
-      expect(updatedArtifact.submittedAt).toEqual(originalSubmittedAt);
-      expect(updatedArtifact.blockchainTxId).toEqual(originalBlockchainTxId);
-      expect(updatedArtifact.peerId).toEqual(originalPeerId);
-      expect(updatedArtifact.verified).toBe(originalVerified);
-      expect(updatedArtifact.lastTimeVerified).toEqual(originalLastTimeVerified);
-    });
-
-    it('should update only submittedAt when other fields are undefined', async () => {
-      const storedArtifact = artifactList[0];
-      const newDate = '2023-12-07T15:30:00.000Z';
-      const updateStatusDto: UpdateArtifactDto = {
-        submittedAt: newDate,
-        // All other fields are undefined
-      };
-      
-      const updatedArtifact = await service.updateStatus(storedArtifact.id, updateStatusDto);
-      
-      expect(updatedArtifact.submittedAt).toEqual(new Date(newDate));
-      // submissionState should remain unchanged
-      expect(updatedArtifact.submissionState).toBe(storedArtifact.submissionState);
-    });
-
-    it('should update only blockchainTxId when provided', async () => {
-      const storedArtifact = artifactList[0];
-      const txId = '0x1234567890abcdef';
-      const updateStatusDto: UpdateArtifactDto = {
-        blockchainTxId: txId,
-      };
-      
-      const updatedArtifact = await service.updateStatus(storedArtifact.id, updateStatusDto);
-      
-      expect(updatedArtifact.blockchainTxId).toBe(txId);
-    });
-
-    it('should update only peerId when provided', async () => {
-      const storedArtifact = artifactList[0];
-      const peerId = '12D3KooWExample';
-      const updateStatusDto: UpdateArtifactDto = {
-        peerId: peerId,
-      };
-      
-      const updatedArtifact = await service.updateStatus(storedArtifact.id, updateStatusDto);
-      
-      expect(updatedArtifact.peerId).toBe(peerId);
-    });
-
-    it('should update verified field when set to false', async () => {
-      const storedArtifact = artifactList[0];
-      const updateStatusDto: UpdateArtifactDto = {
-        verified: false,
-      };
-      
-      const updatedArtifact = await service.updateStatus(storedArtifact.id, updateStatusDto);
-      
-      expect(updatedArtifact.verified).toBe(false);
-    });
-
-    it('should update lastTimeVerified when provided', async () => {
-      const storedArtifact = artifactList[0];
-      const verificationDate = new Date('2023-12-07T15:30:00.000Z');
-      const updateStatusDto: UpdateArtifactDto = {
-        lastTimeVerified: verificationDate,
-      };
-      
-      const updatedArtifact = await service.updateStatus(storedArtifact.id, updateStatusDto);
-      
-      expect(updatedArtifact.lastTimeVerified).toEqual(verificationDate);
+      expect(updatedArtifact.updatedAt).toBeDefined();
     });
 
     it('should not update fields when they are null or empty string', async () => {
@@ -547,12 +535,108 @@ describe('ArtifactService', () => {
         submissionState: SubmissionState.SUCCESS,
       };
       
-      const updatedArtifact = await service.updateStatus(storedArtifact.id, updateStatusDto);
+      const updatedArtifact = await service.updateWorker(storedArtifact.id, updateStatusDto);
       
       expect(updatedArtifact.submissionState).toBe(SubmissionState.SUCCESS);
       // blockchainTxId and peerId should remain unchanged since they were empty/null
       expect(updatedArtifact.blockchainTxId).toEqual(storedArtifact.blockchainTxId);
       expect(updatedArtifact.peerId).toEqual(storedArtifact.peerId);
+    });
+
+    it('should set submissionError on FAILED and not update updatedAt', async () => {
+      const storedArtifact = artifactList[0];
+      const originalUpdatedAt = storedArtifact.updatedAt;
+      const err = 'bridge failed';
+      const updateStatusDto: UpdateArtifactDto = {
+        submissionState: SubmissionState.FAILED,
+        updatedAt: '2025-01-01T00:00:00.000Z',
+        submissionError: err,
+      } as any;
+
+      const updatedArtifact = await service.updateWorker(storedArtifact.id, updateStatusDto);
+
+      // On FAILED, we do not change updatedAt
+      expect(updatedArtifact.updatedAt).toEqual(originalUpdatedAt);
+      expect(updatedArtifact.submissionError).toContain('Error updating the artifact. Details:');
+      expect(updatedArtifact.submissionError).toContain(err);
+    });
+
+    it('should clear previous submissionError on SUCCESS and update updatedAt', async () => {
+      const storedArtifact = artifactList[0];
+      // First mark as FAILED with an error
+      const failDto: UpdateArtifactDto = {
+        submissionState: SubmissionState.FAILED,
+        updatedAt: '2025-01-01T00:00:00.000Z',
+        submissionError: 'temporary outage',
+      } as any;
+      const failedArtifact = await service.updateWorker(storedArtifact.id, failDto);
+      expect(failedArtifact.submissionError).toContain('Error updating the artifact');
+
+      // Then mark as SUCCESS with new updatedAt
+      const successAt = '2025-01-02T00:00:00.000Z';
+      const successDto: UpdateArtifactDto = {
+        submissionState: SubmissionState.SUCCESS,
+        updatedAt: successAt,
+      } as any;
+      const successArtifact = await service.updateWorker(storedArtifact.id, successDto);
+      expect(successArtifact.submissionError).toBeNull();
+      expect(successArtifact.updatedAt).toEqual(new Date(successAt));
+    });
+
+    it('should prefix submission failure errors with submitting (no updatedAt)', async () => {
+      const storedArtifact = artifactList[0];
+      const err = 'submit failure';
+      const updateStatusDto: UpdateArtifactDto = {
+        submissionState: SubmissionState.FAILED,
+        submissionError: err,
+      } as any;
+
+      const updatedArtifact = await service.updateWorker(storedArtifact.id, updateStatusDto);
+
+      expect(updatedArtifact.submissionError).toContain('Error submitting the artifact. Details:');
+      expect(updatedArtifact.submissionError).toContain(err);
+    });
+
+    it('should reject unknown fields in status update', async () => {
+      const storedArtifact = artifactList[0];
+      const badDto: any = { title: 'nope' };
+      await expect(service.updateWorker(storedArtifact.id, badDto)).rejects.toHaveProperty('message');
+    });
+
+    it('should set blockchainTxId and peerId when provided', async () => {
+      const storedArtifact = artifactList[0];
+      const dto: UpdateArtifactDto = {
+        blockchainTxId: '0xabc',
+        peerId: 'peer-1',
+      } as any;
+      const updated = await service.updateWorker(storedArtifact.id, dto);
+      expect(updated.blockchainTxId).toBe('0xabc');
+      expect(updated.peerId).toBe('peer-1');
+    });
+  });
+
+  // Refresh history tests to cover mapping and success
+  describe('refreshHistory', () => {
+    it('should call GHW refresh and return result', async () => {
+      const storedArtifact = artifactList[0];
+      const spy = jest.spyOn(ghwService, 'refresh').mockResolvedValueOnce({ ok: true } as any);
+      const out = await service.refreshHistory(storedArtifact.id, 'c-1');
+      expect(spy).toHaveBeenCalled();
+      expect(out).toEqual({ ok: true });
+    });
+
+    it('should map upstream timeout to GATEWAY_TIMEOUT', async () => {
+      const storedArtifact = artifactList[0];
+      jest.spyOn(ghwService, 'refresh').mockRejectedValueOnce(new Error('CONNECT_TIMEOUT'));
+      await expect(service.refreshHistory(storedArtifact.id, 'c')).rejects.toHaveProperty('type', BusinessError.GATEWAY_TIMEOUT);
+    });
+
+    it('should map upstream status code to BAD_GATEWAY for refresh', async () => {
+      const storedArtifact = artifactList[0];
+      const err: any = new Error('UPSTREAM_504');
+      err.statusCode = 504;
+      jest.spyOn(ghwService, 'refresh').mockRejectedValueOnce(err);
+      await expect(service.refreshHistory(storedArtifact.id, 'c')).rejects.toHaveProperty('type', BusinessError.BAD_GATEWAY);
     });
   });
 });

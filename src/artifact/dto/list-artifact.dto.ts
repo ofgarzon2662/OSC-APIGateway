@@ -14,6 +14,9 @@ export class ListArtifactDto {
   @IsString({ each: true })
   keywords: string[];
 
+  @IsString()
+  footprint: string;
+
   @IsDate()
   @IsOptional()
   submittedAt: Date;
@@ -21,11 +24,9 @@ export class ListArtifactDto {
   @IsBoolean()
   verified: boolean;
 
-  @IsDate()
-  @IsOptional()
-  lastTimeVerified: Date;
+  // lastTimeVerified removed from list response
 
   @IsDate()
   @IsOptional()
-  lastTimeUpdated: Date;
+  updatedAt: Date;
 } 

@@ -10,6 +10,7 @@ import {
   IsOptional,
   IsObject,
   ValidateNested,
+  Matches,
 } from 'class-validator';
 import { SubmissionState } from '../enums/submission-state.enum';
 import { GetOrganizationDto } from './get-organization.dto';
@@ -30,6 +31,10 @@ export class GetArtifactDto {
   @IsString({ each: true })
   @IsOptional()
   keywords: string[];
+
+  @IsString()
+  @Matches(/^[a-f0-9]{64}$/)
+  footprint: string;
 
   @IsArray()
   @IsUrl({}, { each: true })
@@ -58,9 +63,7 @@ export class GetArtifactDto {
   @IsBoolean()
   verified: boolean;
 
-  @IsDate()
-  @IsOptional()
-  lastTimeVerified: Date;
+  // lastTimeVerified removed from API response
 
   @IsEnum(SubmissionState)
   submissionState: SubmissionState;
@@ -74,6 +77,10 @@ export class GetArtifactDto {
   @IsDate()
   @IsOptional()
   submittedAt: Date;
+
+  @IsDate()
+  @IsOptional()
+  updatedAt: Date;
 
   @IsString()
   @IsOptional()

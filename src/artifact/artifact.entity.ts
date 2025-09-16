@@ -2,8 +2,7 @@ import {
   Column,
   Entity,
   ManyToOne,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
+  PrimaryGeneratedColumn
 } from 'typeorm';
 import {
   IsNotEmpty,
@@ -93,6 +92,12 @@ export class ArtifactEntity {
   @Type(() => ManifestItem)
   manifest: ManifestItem[];
 
+  @Column()
+  @IsString()
+  @IsNotEmpty()
+  @Matches(/^[a-f0-9]{64}$/)
+  footprint: string;
+
   /* --------------- States & dates --------------- */
 
   @Column({ default: false })
@@ -139,9 +144,6 @@ export class ArtifactEntity {
   })
   @IsDate()
   @IsOptional()
-  lastTimeUpdated: Date;
-
-  @UpdateDateColumn()
   updatedAt: Date;
 
   /* --------------- Blockchain fields --------------- */

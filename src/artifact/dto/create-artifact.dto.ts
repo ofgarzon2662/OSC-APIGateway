@@ -8,6 +8,7 @@ import {
   IsBoolean,
   IsEnum,
   ValidateNested,
+  Matches
 } from 'class-validator';
 import { SubmissionState } from '../enums/submission-state.enum';
 import { ManifestItem } from '../artifact.entity';
@@ -53,6 +54,11 @@ export class CreateArtifactDto {
   @ValidateNested({ each: true })
   @Type(() => ManifestItem)
   manifest: ManifestItem[];
+
+  @IsString()
+  @IsNotEmpty()
+  @Matches(/^[a-f0-9]{64}$/)
+  footprint: string;
 
   @IsDate()
   @IsOptional()

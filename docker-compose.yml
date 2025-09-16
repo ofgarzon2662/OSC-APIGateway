@@ -75,6 +75,9 @@ services:
       RABBITMQ_PORT: ${RABBITMQ_PORT}
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASS: ${RABBITMQ_PASS}
+
+      # GHW Configuration (for external GHW connection)
+      GHW_URL: ${GHW_URL}
       
       # App Config
       NODE_ENV: development

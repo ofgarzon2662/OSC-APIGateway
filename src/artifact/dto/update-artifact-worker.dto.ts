@@ -1,22 +1,16 @@
-import { IsBoolean, IsDate, IsEnum, IsOptional, IsString, IsDateString } from 'class-validator';
+import { IsBoolean, IsEnum, IsOptional, IsString, IsDateString } from 'class-validator';
 import { SubmissionState } from '../enums/submission-state.enum';
 
-export class UpdateArtifactDto {
-  @IsBoolean()
-  @IsOptional()
-  verified?: boolean;
-
-  @IsDate()
-  @IsOptional()
-  lastTimeVerified?: Date;
-
+export class UpdateArtifactWorkerDto {
+  
   @IsEnum(SubmissionState)
   @IsOptional()
   submissionState?: SubmissionState;
 
+  // From broker; used only to convey when the update happened
   @IsDateString()
   @IsOptional()
-  submittedAt?: string;
+  updatedAt?: string;
 
   @IsString()
   @IsOptional()

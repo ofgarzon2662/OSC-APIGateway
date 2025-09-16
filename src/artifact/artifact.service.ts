@@ -8,13 +8,16 @@ import {
 } from '../shared/errors/business-errors';
 import validator from 'validator';
 import { CreateArtifactDto } from './dto/create-artifact.dto';
-import { UpdateArtifactDto } from './dto/update-artifact.dto';
+import { UpdateArtifactWorkerDto } from './dto/update-artifact-worker.dto';
+import { UpdateArtifactUserDto } from './dto/update-artifact-user.dto';
 
 import { GetArtifactDto } from './dto/get-artifact.dto';
 import { ListArtifactDto } from './dto/list-artifact.dto';
 import { OrganizationEntity } from '../organization/organization.entity';
 import { SubmissionState } from './enums/submission-state.enum';
-import { RabbitMQService, ArtifactCreatedEvent } from '../messaging/rabbitmq.service';
+import { RabbitMQService } from '../messaging/rabbitmq.service';
+import { GhwService } from './ghw.service';
+import { randomUUID } from 'crypto';
 
 // Definir una interfaz para la información del creador del artefacto
 interface SubmitterInfo {
@@ -30,6 +33,7 @@ export class ArtifactService {
     @InjectRepository(OrganizationEntity)
     private readonly organizationRepository: Repository<OrganizationEntity>,
     private readonly rabbitMQService: RabbitMQService,
+    private readonly ghwService: GhwService,
   ) {}
 
   // Private helper methods to reduce code duplication
@@ -121,7 +125,14 @@ export class ArtifactService {
         BusinessError.BAD_REQUEST,
       );
     }
-    
+
+    if (!createArtifactDto.footprint || !/^[a-f0-9]{64}$/.test(createArtifactDto.footprint)) {
+      throw new BusinessLogicException(
+        'A valid SHA-256 footprint hash is required (64 hex characters).',
+        BusinessError.PRECONDITION_FAILED,
+      );
+    }
+
     const totalKeywordsLength = createArtifactDto.keywords.join('').length;
     if (totalKeywordsLength > 1000) {
       throw new BusinessLogicException(
@@ -175,7 +186,7 @@ export class ArtifactService {
    * @param updateArtifactDto The DTO to validate
    * @throws BusinessLogicException if validation fails
    */
-  private validateUpdateArtifactDto(updateArtifactDto: UpdateArtifactDto): void {
+  private validateUpdateArtifactDto(updateArtifactDto: UpdateArtifactWorkerDto): void {
     if (
       'title' in updateArtifactDto ||
       'contributor' in updateArtifactDto ||
@@ -187,6 +198,7 @@ export class ArtifactService {
       'acknowledgements' in updateArtifactDto ||
       'fileName' in updateArtifactDto ||
       'manifest' in updateArtifactDto ||
+      'footprint' in updateArtifactDto ||
       'organization' in updateArtifactDto
     ) {
       throw new BusinessLogicException(
@@ -201,8 +213,8 @@ export class ArtifactService {
    * @param updateStatusDto The DTO to validate
    * @throws BusinessLogicException if validation fails
    */
-  private validateUpdateStatusDto(updateStatusDto: UpdateArtifactDto): void {
-    const allowedFields = ['submissionState', 'submittedAt', 'blockchainTxId', 'peerId', 'verified', 'lastTimeVerified', 'submissionError'];
+  private validateUpdateStatusDto(updateStatusDto: UpdateArtifactWorkerDto): void {
+    const allowedFields = ['submissionState', 'blockchainTxId', 'peerId', 'submissionError', 'updatedAt'];
     const receivedFields = Object.keys(updateStatusDto);
     
     const forbiddenFields = receivedFields.filter(field => !allowedFields.includes(field));
@@ -213,6 +225,60 @@ export class ArtifactService {
         BusinessError.BAD_REQUEST,
       );
     }
+  }
+
+  // Update artifact details (PI / Collaborator)
+  async updateUser(id: string, dto: UpdateArtifactUserDto): Promise<ArtifactEntity> {
+    // Validate ID
+    this.validateId(id, 'artifactId');
+
+    // Disallow updating title or description if somehow included
+    if ('title' in dto || 'description' in dto) {
+      throw new BusinessLogicException('Cannot update title or description', BusinessError.BAD_REQUEST);
+    }
+
+    // Fetch current artifact for validation purposes (do not persist changes here)
+    const currentArtifact = await this.findArtifactOrThrow(id, false);
+
+    // Re‐run create validations on a simulated merged artefact to ensure constraints hold
+    this.validateCreateArtifactDto({
+      ...currentArtifact,
+      ...dto,
+      title: currentArtifact.title,
+      description: currentArtifact.description,
+    } as any);
+
+    // Build the patch with only provided properties
+    const patch: import('../messaging/rabbitmq.service').ArtifactUpdateCommandPatch = {};
+    const dtoAny: any = dto as any;
+    if (dtoAny.keywords !== undefined) patch.keywords = dtoAny.keywords;
+    if (dtoAny.links !== undefined) patch.links = dtoAny.links;
+    if (dtoAny.dois !== undefined) patch.dois = dtoAny.dois;
+    if (dtoAny.fundingAgencies !== undefined) patch.fundingAgencies = dtoAny.fundingAgencies;
+    if (dtoAny.acknowledgements !== undefined) patch.acknowledgements = dtoAny.acknowledgements;
+    if (dtoAny.manifest !== undefined) patch.manifest = dtoAny.manifest;
+    if (dtoAny.footprint !== undefined) patch.footprint = dtoAny.footprint;
+    // User is not allowed to change status fields
+
+    // Persist user-field changes immediately on our DB
+    if (patch.keywords !== undefined) currentArtifact.keywords = patch.keywords;
+    if (patch.links !== undefined) currentArtifact.links = patch.links;
+    if (patch.dois !== undefined) currentArtifact.dois = patch.dois;
+    if (patch.fundingAgencies !== undefined) currentArtifact.fundingAgencies = patch.fundingAgencies;
+    if (patch.acknowledgements !== undefined) currentArtifact.acknowledgements = patch.acknowledgements;
+    if (patch.manifest !== undefined) currentArtifact.manifest = patch.manifest as any;
+    if (patch.footprint !== undefined) currentArtifact.footprint = patch.footprint;
+
+    const saved = await this.artifactRepository.save(currentArtifact);
+
+    // Publish artifact.update command to RabbitMQ asynchronously (fire-and-forget)
+    const updateCommand: import('../messaging/rabbitmq.service').ArtifactUpdateCommand = {
+      artifactId: id,
+      patch,
+    };
+    this.rabbitMQService.publishArtifactUpdate(updateCommand).catch(() => {});
+
+    return saved;
   }
 
   // Get All Artifacts - Return minimal fields
@@ -231,10 +297,10 @@ export class ArtifactService {
       title: artifact.title,
       description: artifact.description,
       keywords: artifact.keywords,
+      footprint: artifact.footprint,
       submittedAt: artifact.submittedAt,
       verified: artifact.verified,
-      lastTimeVerified: artifact.lastTimeVerified,
-      lastTimeUpdated: artifact.lastTimeUpdated
+      updatedAt: artifact.updatedAt
     }));
   }
 
@@ -252,17 +318,18 @@ export class ArtifactService {
       title: artifact.title,
       description: artifact.description,
       keywords: artifact.keywords,
+      footprint: artifact.footprint,
       links: artifact.links,
       dois: artifact.dois,
       fundingAgencies: artifact.fundingAgencies,
       acknowledgements: artifact.acknowledgements,
       manifest: artifact.manifest,
       verified: artifact.verified,
-      lastTimeVerified: artifact.lastTimeVerified,
       submissionState: artifact.submissionState,
       submitterEmail: artifact.submitterEmail,
       submitterUsername: artifact.submitterUsername,
       submittedAt: artifact.submittedAt,
+      updatedAt: artifact.updatedAt,
       blockchainTxId: artifact.blockchainTxId,
       peerId: artifact.peerId,
       submissionError: artifact.submissionError,
@@ -271,6 +338,60 @@ export class ArtifactService {
         // Do not include other organization fields like description, id
       } : undefined,
     };
+  }
+
+  // --- History via GHW ---
+  async getHistory(
+    id: string,
+    params: { offset?: string; limit?: string; order?: 'asc'|'desc'; includeValue?: string },
+    correlationId?: string,
+  ): Promise<any> {
+    this.validateId(id, 'artifactId');
+    const artifactId = id.toLowerCase();
+
+    const offset = Math.max(0, Number(params.offset ?? 0) || 0);
+    let limit = Number(params.limit ?? 100) || 100;
+    if (limit < 1) limit = 1;
+    if (limit > 500) limit = 500;
+    const order = (params.order === 'asc' || params.order === 'desc') ? params.order : 'desc';
+    const includeValue = params.includeValue === undefined ? true : String(params.includeValue).toLowerCase() !== 'false';
+
+    const corr = correlationId || randomUUID();
+
+    try {
+      const resp = await this.ghwService.fetchHistory({ artifactId, offset, limit, order, includeValue }, corr);
+      return {
+        ...resp,
+        nextOffset: resp?.hasMore ? offset + limit : undefined,
+      };
+    } catch (err: any) {
+      if (err?.message === 'CONNECT_TIMEOUT' || err?.message === 'READ_TIMEOUT') {
+        throw new BusinessLogicException('Upstream timeout contacting GHW', BusinessError.GATEWAY_TIMEOUT);
+      }
+      const status = err?.statusCode;
+      if (status) {
+        throw new BusinessLogicException(`GHW error ${status}`, BusinessError.BAD_GATEWAY);
+      }
+      throw new BusinessLogicException('GHW error', BusinessError.BAD_GATEWAY);
+    }
+  }
+
+  async refreshHistory(id: string, correlationId?: string): Promise<any> {
+    this.validateId(id, 'artifactId');
+    const artifactId = id.toLowerCase();
+    const corr = correlationId || randomUUID();
+    try {
+      return await this.ghwService.refresh(artifactId, corr);
+    } catch (err: any) {
+      if (err?.message === 'CONNECT_TIMEOUT' || err?.message === 'READ_TIMEOUT') {
+        throw new BusinessLogicException('Upstream timeout contacting GHW', BusinessError.GATEWAY_TIMEOUT);
+      }
+      const status = err?.statusCode;
+      if (status) {
+        throw new BusinessLogicException(`GHW error ${status}`, BusinessError.BAD_GATEWAY);
+      }
+      throw new BusinessLogicException('GHW error', BusinessError.BAD_GATEWAY);
+    }
   }
 
   // Create one Artifact
@@ -316,47 +437,38 @@ export class ArtifactService {
     // Save the new artifact
     const savedArtifact = await this.artifactRepository.save(newArtifact);
 
-    // Publish artifact.created event to RabbitMQ without awaiting
-    const artifactCreatedEvent: ArtifactCreatedEvent = {
+    // Publish artifact.submit command
+    const submitCommand: import('../messaging/rabbitmq.service').ArtifactSubmitCommand = {
       artifactId: savedArtifact.id,
+      manifest: savedArtifact.manifest,
       title: savedArtifact.title,
+      footprint: savedArtifact.footprint,
       description: savedArtifact.description,
       keywords: savedArtifact.keywords,
       links: savedArtifact.links,
       dois: savedArtifact.dois,
       fundingAgencies: savedArtifact.fundingAgencies,
       acknowledgements: savedArtifact.acknowledgements,
-      manifest: savedArtifact.manifest,
-      submitterEmail: savedArtifact.submitterEmail,
-      submitterUsername: savedArtifact.submitterUsername,
-      submittedAt: savedArtifact.submittedAt?.toISOString() || new Date().toISOString(),
-      organizationName: organization.name,
-      version: 'v1'
     };
-    this.rabbitMQService.publishArtifactCreated(artifactCreatedEvent).catch(error => {
-      // Log the error for observability but do not fail the request.
-      // The artifact is already saved with PENDING state.
-      // A separate reconciliation job can handle these failures later.
-      console.error(
-        `Failed to publish artifact.created event for artifactId: ${savedArtifact.id}. Error: ${error.message}`,
-        error,
-      );
-  });
+
+    this.rabbitMQService.publishArtifactSubmit(submitCommand).catch(err => {
+      console.error(`Failed to publish artifact.submit for ${savedArtifact.id}`, err);
+    });
 
     return {
       id: savedArtifact.id,
       title: savedArtifact.title,
       description: savedArtifact.description,
       keywords: savedArtifact.keywords,
+      footprint: savedArtifact.footprint,
       submittedAt: savedArtifact.submittedAt,
       verified: savedArtifact.verified,
-      lastTimeVerified: savedArtifact.lastTimeVerified,
-      lastTimeUpdated: savedArtifact.lastTimeUpdated
+      updatedAt: savedArtifact.updatedAt
     };
   }
 
   // Update an Artifact (General Purpose - Limited fields)
-  async update(id: string, updateArtifactDto: UpdateArtifactDto): Promise<ArtifactEntity> {
+  async update(id: string, updateArtifactDto: UpdateArtifactWorkerDto): Promise<ArtifactEntity> {
     // First, verify that an organization exists
     await this.findOrganizationOrThrow();
 
@@ -386,7 +498,7 @@ export class ArtifactService {
       .execute();
   }
 
-  async updateStatus(id: string, updateStatusDto: UpdateArtifactDto): Promise<ArtifactEntity> {
+  async updateWorker(id: string, updateStatusDto: UpdateArtifactWorkerDto): Promise<ArtifactEntity> {
     const artifact = await this.findArtifactOrThrow(id);
     
     // Validate that only allowed fields are being updated
@@ -397,10 +509,8 @@ export class ArtifactService {
       artifact.submissionState = updateStatusDto.submissionState;
     }
     
-    if (updateStatusDto.submittedAt !== undefined) {
-      artifact.submittedAt = new Date(updateStatusDto.submittedAt);
-    }
-    
+    // submittedAt cannot be modified; ignore if present
+
     if (updateStatusDto.blockchainTxId) {
       artifact.blockchainTxId = updateStatusDto.blockchainTxId;
     }
@@ -413,12 +523,21 @@ export class ArtifactService {
       artifact.submissionError = updateStatusDto.submissionError;
     }
 
-    if (updateStatusDto.verified !== undefined) {
-      artifact.verified = updateStatusDto.verified;
+    // verified cannot be modified by worker DTO; ignore
+
+    // On SUCCESS: set updatedAt if provided and clear any previous submissionError
+    if (updateStatusDto.submissionState === SubmissionState.SUCCESS) {
+      if (updateStatusDto.updatedAt) {
+        artifact.updatedAt = new Date(updateStatusDto.updatedAt);
+      }
+      artifact.submissionError = null;
     }
 
-    if (updateStatusDto.lastTimeVerified !== undefined) {
-      artifact.lastTimeVerified = updateStatusDto.lastTimeVerified;
+    // On FAILED, ensure submissionError is set with a concise message and DO NOT change updatedAt
+    if (updateStatusDto.submissionState === SubmissionState.FAILED && updateStatusDto.submissionError) {
+      const isUpdateEvent = !!updateStatusDto.updatedAt; // updatedAt present implies update event
+      const prefix = isUpdateEvent ? 'Error updating the artifact. Details: ' : 'Error submitting the artifact. Details: ';
+      artifact.submissionError = `${prefix}${updateStatusDto.submissionError}`;
     }
 
     return await this.artifactRepository.save(artifact);

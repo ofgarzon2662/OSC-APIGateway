@@ -8,4 +8,6 @@ export enum BusinessError {
   PRECONDITION_FAILED,
   BAD_REQUEST,
   UNAUTHORIZED,
+  BAD_GATEWAY,
+  GATEWAY_TIMEOUT,
 }

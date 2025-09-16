@@ -3,21 +3,52 @@ import { ConfigService } from '@nestjs/config';
 import { connect, Connection, Channel } from 'amqplib';
 import { ManifestItem } from 'src/artifact/artifact.entity';
 
-export interface ArtifactCreatedEvent {
+
+
+export interface ArtifactUpdatedEvent {
   artifactId: string;
-  title: string;
-  description: string;
-  keywords: string[];
-  links: string[];
-  dois: string[];
-  fundingAgencies: string[];
-  acknowledgements: string;
-  manifest: ManifestItem[];
-  submitterEmail: string;
-  submitterUsername: string;
-  submittedAt: string;
-  organizationName: string;
+  keywords?: string[];
+  footprint?: string;
+  links?: string[];
+  dois?: string[];
+  fundingAgencies?: string[];
+  acknowledgements?: string;
+  manifest?: ManifestItem[];
+  verified?: boolean;
+  lastTimeVerified?: string | null;
+  updatedAt: string;
   version: string;
+}
+
+// Command sent when an artifact is ready to be submitted downstream
+export interface ArtifactSubmitCommand {
+  artifactId: string;
+  manifest: ManifestItem[];
+  title: string;
+  footprint: string;
+  description?: string;
+  keywords?: string[];
+  links?: string[];
+  dois?: string[];
+  fundingAgencies?: string[];
+  acknowledgements?: string;
+}
+
+// Command to request updating artifact details downstream
+export interface ArtifactUpdateCommandPatch {
+  keywords?: string[];
+  links?: string[];
+  dois?: string[];
+  fundingAgencies?: string[];
+  acknowledgements?: string;
+  manifest?: ManifestItem[];
+  footprint?: string;
+  // status fields removed from user patch
+}
+
+export interface ArtifactUpdateCommand {
+  artifactId: string;
+  patch: ArtifactUpdateCommandPatch;
 }
 
 @Injectable()
@@ -31,7 +62,9 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
   private readonly reconnectDelay = 5000; // 5 seconds
   
   private readonly exchangeName = 'artifact.exchange';
-  private readonly artifactCreatedRoutingKey = 'artifact.created';
+  private readonly artifactUpdatedRoutingKey = 'artifact.updated';
+  private readonly artifactSubmitRoutingKey = 'artifact.submit';
+  private readonly artifactUpdateRoutingKey = 'artifact.update';
 
   constructor(private readonly configService: ConfigService) {}
 
@@ -39,6 +72,50 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
     await this.connect();
   }
 
+  private async publishJsonWithRetry(
+    routingKey: string,
+    payload: unknown,
+    options: {
+      messageId?: string;
+      addTimestamp?: boolean;
+      logSuccess: string;
+      logPrefix: string;
+    },
+  ): Promise<void> {
+    const maxRetries = 3;
+    let retry = 0;
+    while (retry < maxRetries) {
+      try {
+        await this.ensureConnection();
+        if (!this.channel) throw new Error('RabbitMQ channel is not available');
+
+        const buffer = Buffer.from(JSON.stringify(payload));
+        const published = this.channel.publish(
+          this.exchangeName,
+          routingKey,
+          buffer,
+          {
+            persistent: true,
+            contentType: 'application/json',
+            messageId: options.messageId,
+            timestamp: options.addTimestamp ? Date.now() : undefined,
+          },
+        );
+
+        if (published) {
+          this.logger.log(options.logSuccess);
+          return;
+        }
+        throw new Error('Failed to publish message');
+      } catch (err) {
+        retry++;
+        this.logger.error(`${options.logPrefix} publish error (${retry}/3)`, err);
+        if (retry >= maxRetries) throw err;
+        this.connection = null; this.channel = null;
+        await new Promise(r => setTimeout(r, 2000));
+      }
+    }
+  }
   async onModuleDestroy() {
     await this.disconnect();
   }
@@ -156,56 +233,29 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  async publishArtifactCreated(event: ArtifactCreatedEvent): Promise<void> {
-    const maxRetries = 3;
-    let retryCount = 0;
+  async publishArtifactUpdated(event: ArtifactUpdatedEvent): Promise<void> {
+    await this.publishJsonWithRetry(this.artifactUpdatedRoutingKey, event, {
+      messageId: event.artifactId,
+      addTimestamp: true,
+      logSuccess: `Published artifact.updated event for artifact: ${event.artifactId}`,
+      logPrefix: 'artifact.updated',
+    });
+  }
 
-    while (retryCount < maxRetries) {
-      try {
-        await this.ensureConnection();
+  async publishArtifactSubmit(cmd: ArtifactSubmitCommand): Promise<void> {
+    await this.publishJsonWithRetry(this.artifactSubmitRoutingKey, cmd, {
+      messageId: cmd.artifactId,
+      logSuccess: `Published artifact.submit command for artifact ${cmd.artifactId}`,
+      logPrefix: 'artifact.submit',
+    });
+  }
 
-        if (!this.channel) {
-          throw new Error('RabbitMQ channel is not available');
-        }
-
-        const message = JSON.stringify(event);
-        const messageBuffer = Buffer.from(message);
-        
-        const published = this.channel.publish(
-          this.exchangeName,
-          this.artifactCreatedRoutingKey,
-          messageBuffer,
-          {
-            persistent: true, // Make message persistent
-            timestamp: Date.now(),
-            messageId: event.artifactId,
-          }
-        );
-        
-        if (published) {
-          this.logger.log(`Published artifact.created event for artifact: ${event.artifactId}`);
-          return; // Success, exit the retry loop
-        } else {
-          throw new Error('Failed to publish message to RabbitMQ');
-        }
-        
-      } catch (error) {
-        retryCount++;
-        this.logger.error(`Error publishing artifact.created event (attempt ${retryCount}/${maxRetries}):`, error);
-        
-        if (retryCount >= maxRetries) {
-          this.logger.error(`Failed to publish artifact.created event after ${maxRetries} attempts`);
-          throw error;
-        }
-
-        // Reset connection on error to force reconnection
-        this.connection = null;
-        this.channel = null;
-        
-        // Wait before retrying
-        await new Promise(resolve => setTimeout(resolve, 2000));
-      }
-    }
+  async publishArtifactUpdate(cmd: ArtifactUpdateCommand): Promise<void> {
+    await this.publishJsonWithRetry(this.artifactUpdateRoutingKey, cmd, {
+      messageId: cmd.artifactId,
+      logSuccess: `Published artifact.update command for artifact ${cmd.artifactId}`,
+      logPrefix: 'artifact.update',
+    });
   }
 
   // Health check method

@@ -23,6 +23,10 @@ export class BusinessErrorsInterceptor implements NestInterceptor {
           );
         else if (error.type === BusinessError.BAD_REQUEST)
           throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+        else if (error.type === BusinessError.BAD_GATEWAY)
+          throw new HttpException(error.message, HttpStatus.BAD_GATEWAY);
+        else if (error.type === BusinessError.GATEWAY_TIMEOUT)
+          throw new HttpException(error.message, HttpStatus.GATEWAY_TIMEOUT);
         else throw error;
       }),
     );
