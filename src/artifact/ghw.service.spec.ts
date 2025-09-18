@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { GhwService } from './ghw.service';
 import * as http from 'http';
 import * as https from 'https';
+import { EventEmitter } from 'events';
 
 // Helper to create a mock IncomingMessage with minimal behavior
 function createMockResponse(statusCode: number, body: string, protocol: 'http'|'https' = 'http') {
@@ -16,6 +17,13 @@ function createMockResponse(statusCode: number, body: string, protocol: 'http'|'
     res.emit('end');
   });
   return res as unknown as http.IncomingMessage;
+}
+
+function createFakeRequest() {
+  const req = new EventEmitter() as any;
+  req.end = () => {};
+  req.destroy = (err: Error) => req.emit('error', err);
+  return req as any;
 }
 
 describe('GhwService', () => {
@@ -49,11 +57,11 @@ describe('GhwService', () => {
   it('fetchHistory sends correct query, headers, and parses JSON', async () => {
     const body = JSON.stringify({ items: [1], hasMore: true });
     requestSpy.mockImplementation((options: any, cb: (res: http.IncomingMessage) => void) => {
-      const req = new http.ClientRequest(options);
+      const req = createFakeRequest();
       process.nextTick(() => cb(createMockResponse(200, body)));
       // Simulate socket connect immediately so connect timeout clears
       process.nextTick(() => {
-        (req as any).emit('socket', { on: (event: string, h: any) => { if (event === 'connect') setImmediate(h); } });
+        req.emit('socket', { on: (event: string, h: any) => { if (event === 'connect') setImmediate(h); } });
       });
       return req as any;
     });
@@ -73,10 +81,10 @@ describe('GhwService', () => {
 
   it('maps non-2xx status to error with statusCode', async () => {
     requestSpy.mockImplementation((_options: any, cb: (res: http.IncomingMessage) => void) => {
-      const req = new http.ClientRequest('http://x');
+      const req = createFakeRequest();
       process.nextTick(() => cb(createMockResponse(502, 'oops')));
       process.nextTick(() => {
-        (req as any).emit('socket', { on: (_: any, h: any) => setImmediate(h) });
+        req.emit('socket', { on: (_: any, h: any) => setImmediate(h) });
       });
       return req as any;
     });
@@ -87,10 +95,10 @@ describe('GhwService', () => {
 
   it('propagates JSON.parse errors as Error instances for invalid JSON', async () => {
     requestSpy.mockImplementation((_options: any, cb: (res: http.IncomingMessage) => void) => {
-      const req = new http.ClientRequest('http://x');
+      const req = createFakeRequest();
       process.nextTick(() => cb(createMockResponse(200, '{not-json')));
       process.nextTick(() => {
-        (req as any).emit('socket', { on: (_: any, h: any) => setImmediate(h) });
+        req.emit('socket', { on: (_: any, h: any) => setImmediate(h) });
       });
       return req as any;
     });
@@ -101,17 +109,17 @@ describe('GhwService', () => {
 
   it('times out on read (READ_TIMEOUT)', async () => {
     requestSpy.mockImplementation((options: any, cb: (res: http.IncomingMessage) => void) => {
-      const req = new http.ClientRequest(options);
+      const req = createFakeRequest();
       // Emit socket connect to clear connect-timeout timer
       process.nextTick(() => {
-        (req as any).emit('socket', { on: (event: string, h: any) => { if (event === 'connect') setImmediate(h); } });
+        req.emit('socket', { on: (event: string, h: any) => { if (event === 'connect') setImmediate(h); } });
       });
 
       // Mock res with setTimeout calling handler immediately
       const res: any = new http.IncomingMessage(null as any);
       res.setTimeout = (_ms: number, handler: () => void) => { handler(); return res; };
       // Make destroy emit error
-      (req as any).destroy = (err: Error) => req.emit('error', err);
+      req.destroy = (err: Error) => req.emit('error', err);
 
       process.nextTick(() => cb(res));
       return req as any;
@@ -123,9 +131,9 @@ describe('GhwService', () => {
 
   it('times out on connect (CONNECT_TIMEOUT)', async () => {
     requestSpy.mockImplementation((_options: any) => {
-      const req = new http.ClientRequest('http://x');
+      const req = createFakeRequest();
       // simulate connect timeout by emitting error soon after
-      process.nextTick(() => (req as any).emit('error', new Error('CONNECT_TIMEOUT')));
+      process.nextTick(() => req.emit('error', new Error('CONNECT_TIMEOUT')));
       return req as any;
     });
 
@@ -135,10 +143,10 @@ describe('GhwService', () => {
 
   it('refresh uses /history/refresh endpoint and parses response', async () => {
     requestSpy.mockImplementation((options: any, cb: (res: http.IncomingMessage) => void) => {
-      const req = new http.ClientRequest(options);
+      const req = createFakeRequest();
       process.nextTick(() => cb(createMockResponse(200, JSON.stringify({ ok: true }))));
       process.nextTick(() => {
-        (req as any).emit('socket', { on: (event: string, h: any) => { if (event === 'connect') setImmediate(h); } });
+        req.emit('socket', { on: (event: string, h: any) => { if (event === 'connect') setImmediate(h); } });
       });
       return req as any;
     });
