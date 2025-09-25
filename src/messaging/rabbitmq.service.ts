@@ -112,7 +112,7 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
         this.logger.error(`${options.logPrefix} publish error (${retry}/3)`, err);
         if (retry >= maxRetries) throw err;
         this.connection = null; this.channel = null;
-        await new Promise(r => setTimeout(r, 2000));
+        await this.sleep(2000);
       }
     }
   }
@@ -186,11 +186,12 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
       this.reconnectAttempts++;
       this.logger.log(`Attempting to reconnect to RabbitMQ (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
       
-      setTimeout(() => {
+      const timer: any = setTimeout(() => {
         this.connect().catch((error) => {
           this.logger.error('Reconnection attempt failed:', error);
         });
       }, this.reconnectDelay);
+      timer?.unref?.();
     } else {
       this.logger.error('Max reconnection attempts reached. Manual intervention required.');
     }
@@ -206,13 +207,20 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
     let attempts = 0;
     const maxWaitAttempts = 10;
     while (!this.isConnected() && attempts < maxWaitAttempts) {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await this.sleep(1000);
       attempts++;
     }
 
     if (!this.isConnected()) {
       throw new Error('Unable to establish RabbitMQ connection');
     }
+  }
+
+  private sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => {
+      const t: any = setTimeout(resolve, ms);
+      t?.unref?.();
+    });
   }
 
   private async disconnect(): Promise<void> {

@@ -101,6 +101,8 @@ export class GhwService {
       const connectTimer = setTimeout(() => {
         req.destroy(new Error('CONNECT_TIMEOUT'));
       }, connectTimeoutMs);
+      // Do not keep the event loop alive because of this timer
+      (connectTimer as any)?.unref?.();
 
       req.on('socket', (socket) => {
         socket.on('connect', () => {
