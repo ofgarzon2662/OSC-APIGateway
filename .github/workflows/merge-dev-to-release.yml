@@ -34,7 +34,7 @@ jobs:
       - name: Extract and Validate Service Coverage
         run: |
           # Extract line coverage for all service files
-          COVERAGE_LIST=$(grep "service.ts" test-output.txt | awk '{print $5}' | tr -d '%')
+          COVERAGE_LIST=$(grep "service.ts" test-output.txt | awk '{print $9}' | tr -d '%')
           echo "Extracted Coverage for Services:"
           echo "$COVERAGE_LIST"
       
