@@ -21,12 +21,14 @@ WORKDIR /app
 
 # Add root CAs so TLS works (RDS, etc.)
 RUN apk --no-cache add ca-certificates curl && update-ca-certificates \
-  && curl -fsSL https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem -o /usr/local/share/ca-certificates/aws-rds-global-bundle.crt \
-  && curl -fsSL https://truststore.pki.rds.amazonaws.com/us-west-2/us-west-2-bundle.pem -o /usr/local/share/ca-certificates/aws-rds-us-west-2-bundle.crt \
+  && curl -fsSL https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem -o /tmp/rds-global.pem \
+  && curl -fsSL https://truststore.pki.rds.amazonaws.com/us-west-2/us-west-2-bundle.pem -o /tmp/rds-us-west-2.pem \
+  && cat /tmp/rds-global.pem /tmp/rds-us-west-2.pem > /usr/local/share/ca-certificates/aws-rds-combined.crt \
+  && rm -f /tmp/rds-global.pem /tmp/rds-us-west-2.pem \
   && update-ca-certificates
 
 # Ensure Node picks up the additional CA bundle
-ENV NODE_EXTRA_CA_CERTS=/usr/local/share/ca-certificates/aws-rds-global-bundle.crt
+ENV NODE_EXTRA_CA_CERTS=/usr/local/share/ca-certificates/aws-rds-combined.crt
 
 # Create non-root user for security
 RUN addgroup -g 1001 -S nodejs

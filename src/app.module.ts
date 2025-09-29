@@ -28,7 +28,7 @@ import { HealthController } from './health/health.controller';
         let sslOption: any = undefined;
 
         if (useSsl) {
-          const caPath = process.env.PGSSL_CA_PATH || '/usr/local/share/ca-certificates/aws-rds-global-bundle.crt';
+          const caPath = process.env.PGSSL_CA_PATH || '/usr/local/share/ca-certificates/aws-rds-combined.crt';
           let caContent: string | undefined = undefined;
           try {
             if (caPath && fs.existsSync(caPath)) {
