@@ -1,16 +1,33 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
+import * as express from 'express';
+
+const ALLOWED_ORIGINS = (process.env.CORS_ORIGINS || '')
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean);
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  
-  // Configurar CORS
+  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+
+  // Add Vary header to help caches handle per-origin responses
+  app.use((req, res, next) => {
+    res.setHeader('Vary', 'Origin');
+    next();
+  });
+
+  // Configure CORS using env-driven allowlist
   app.enableCors({
-    origin: ['http://localhost:4200'], // Ajusta esto según el puerto de tu frontend Angular
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    origin: (origin, cb) => {
+      if (!origin || ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
+      return cb(new Error(`Origin ${origin} not allowed by CORS`), false);
+    },
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    allowedHeaders: 'Content-Type, Authorization, X-Requested-With, Accept',
     credentials: true,
+    optionsSuccessStatus: 204,
+    exposedHeaders: 'Content-Disposition',
   });
 
   app.enableVersioning({
@@ -19,6 +36,6 @@ async function bootstrap() {
     defaultVersion: '1',
   });
   app.useGlobalPipes(new ValidationPipe());
-  await app.listen(3000);
+  await app.listen(process.env.PORT || 3000);
 }
 bootstrap();
