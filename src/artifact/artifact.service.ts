@@ -248,6 +248,18 @@ export class ArtifactService {
       throw new BusinessLogicException('Cannot update title or description', BusinessError.BAD_REQUEST);
     }
 
+    // Require submission_comment on every user update and validate bounds
+    if (
+      !dto.submission_comment ||
+      dto.submission_comment.trim().length < 20 ||
+      dto.submission_comment.length > 1000
+    ) {
+      throw new BusinessLogicException(
+        'The submission_comment is required and must be between 20 and 1000 characters long',
+        BusinessError.PRECONDITION_FAILED,
+      );
+    }
+
     // Fetch current artifact for validation purposes (do not persist changes here)
     const currentArtifact = await this.findArtifactOrThrow(id, false);
 
@@ -272,6 +284,7 @@ export class ArtifactService {
     // User is not allowed to change status fields
 
     // Persist user-field changes immediately on our DB
+    currentArtifact.submission_comment = dto.submission_comment;
     if (patch.keywords !== undefined) currentArtifact.keywords = patch.keywords;
     if (patch.links !== undefined) currentArtifact.links = patch.links;
     if (patch.dois !== undefined) currentArtifact.dois = patch.dois;

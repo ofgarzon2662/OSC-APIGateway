@@ -3,9 +3,20 @@ import { AppModule } from './app.module';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
 import * as express from 'express';
 
+// Normalize origins to avoid subtle mismatches (trailing slashes, invisible chars, case)
+function normalizeOrigin(origin?: string): string {
+  if (!origin) return '';
+  const cleaned = origin
+    // remove zero-width and BOM characters that can sneak in from copy/paste
+    .replace(/[\u200B-\u200D\uFEFF]/g, '')
+    .trim()
+    .toLowerCase();
+  return cleaned.endsWith('/') ? cleaned.slice(0, -1) : cleaned;
+}
+
 const ALLOWED_ORIGINS = (process.env.CORS_ORIGINS || '')
   .split(',')
-  .map(s => s.trim())
+  .map(normalizeOrigin)
   .filter(Boolean);
 
 async function bootstrap() {
@@ -20,7 +31,8 @@ async function bootstrap() {
   // Configure CORS using env-driven allowlist
   app.enableCors({
     origin: (origin, cb) => {
-      if (!origin || ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
+      const normalized = normalizeOrigin(origin);
+      if (!origin || ALLOWED_ORIGINS.includes(normalized)) return cb(null, true);
       return cb(new Error(`Origin ${origin} not allowed by CORS`), false);
     },
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',

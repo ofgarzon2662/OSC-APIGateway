@@ -407,6 +407,7 @@ describe('ArtifactService', () => {
     it('should persist user fields and publish artifact.update asynchronously', async () => {
       const storedArtifact = artifactList[0];
       const dto: any = {
+        submission_comment: 'Updating artifact details for traceability and audit purposes.',
         keywords: ['ai', 'ml'],
         footprint: '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
       };
@@ -417,6 +418,7 @@ describe('ArtifactService', () => {
       const result = await service.updateUser(storedArtifact.id, dto);
 
       expect(result.id).toBe(storedArtifact.id);
+      expect(result.submission_comment).toContain('Updating artifact details');
       expect(result.keywords).toEqual(['ai', 'ml']);
       expect(result.footprint).toEqual('0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef');
       expect(saveSpy).toHaveBeenCalled();
