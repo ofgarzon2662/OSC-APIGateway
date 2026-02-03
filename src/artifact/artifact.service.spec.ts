@@ -33,6 +33,7 @@ describe('ArtifactService', () => {
     return {
       title: faker.commerce.productName(),
       description: faker.commerce.productDescription() + ' ' + faker.commerce.productDescription() + ' ' + faker.commerce.productDescription(),
+      submission_comment: faker.lorem.sentence(8) + ' ' + faker.lorem.sentence(8),
       keywords: [faker.commerce.department(), faker.commerce.department()],
       links: [faker.internet.url()],
       dois: [],

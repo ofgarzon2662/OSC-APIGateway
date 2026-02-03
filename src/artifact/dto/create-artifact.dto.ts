@@ -60,6 +60,11 @@ export class CreateArtifactDto {
   @Matches(/^[a-f0-9]{64}$/)
   footprint: string;
 
+  @IsString()
+  @IsNotEmpty()
+  @Length(20, 1000)
+  submission_comment: string;
+
   @IsDate()
   @IsOptional()
   submittedAt?: Date;

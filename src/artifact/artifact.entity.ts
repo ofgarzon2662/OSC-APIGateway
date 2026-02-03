@@ -130,6 +130,12 @@ export class ArtifactEntity {
   @IsNotEmpty()
   submitterUsername: string;
 
+  @Column()
+  @IsString()
+  @IsNotEmpty()
+  @Length(20, 1000)
+  submission_comment: string;
+
   @Column({
     type: process.env.NODE_ENV === 'test' ? 'datetime' : 'timestamp',
     nullable: true,

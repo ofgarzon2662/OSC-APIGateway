@@ -11,6 +11,7 @@ import {
   IsObject,
   ValidateNested,
   Matches,
+  Length,
 } from 'class-validator';
 import { SubmissionState } from '../enums/submission-state.enum';
 import { GetOrganizationDto } from './get-organization.dto';
@@ -26,6 +27,10 @@ export class GetArtifactDto {
 
   @IsString()
   description: string;
+
+  @IsString()
+  @Length(20, 1000)
+  submission_comment: string;
 
   @IsArray()
   @IsString({ each: true })

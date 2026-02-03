@@ -126,6 +126,17 @@ export class ArtifactService {
       );
     }
 
+    if (
+      !createArtifactDto.submission_comment ||
+      createArtifactDto.submission_comment.trim().length < 20 ||
+      createArtifactDto.submission_comment.length > 1000
+    ) {
+      throw new BusinessLogicException(
+        'The submission_comment is required and must be between 20 and 1000 characters long',
+        BusinessError.PRECONDITION_FAILED,
+      );
+    }
+
     if (!createArtifactDto.footprint || !/^[a-f0-9]{64}$/.test(createArtifactDto.footprint)) {
       throw new BusinessLogicException(
         'A valid SHA-256 footprint hash is required (64 hex characters).',
@@ -317,6 +328,7 @@ export class ArtifactService {
       id: artifact.id,
       title: artifact.title,
       description: artifact.description,
+      submission_comment: artifact.submission_comment,
       keywords: artifact.keywords,
       footprint: artifact.footprint,
       links: artifact.links,
