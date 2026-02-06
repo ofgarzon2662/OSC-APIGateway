@@ -239,7 +239,7 @@ export class ArtifactService {
   }
 
   // Update artifact details (PI / Collaborator)
-  async updateUser(id: string, dto: UpdateArtifactUserDto): Promise<ArtifactEntity> {
+  async updateUser(id: string, dto: UpdateArtifactUserDto, contributorEmail?: string): Promise<ArtifactEntity> {
     // Validate ID
     this.validateId(id, 'artifactId');
 
@@ -274,6 +274,7 @@ export class ArtifactService {
     // Build the patch with only provided properties
     const patch: import('../messaging/rabbitmq.service').ArtifactUpdateCommandPatch = {};
     const dtoAny: any = dto as any;
+    if (dtoAny.submission_comment !== undefined) patch.submission_comment = dtoAny.submission_comment;
     if (dtoAny.keywords !== undefined) patch.keywords = dtoAny.keywords;
     if (dtoAny.links !== undefined) patch.links = dtoAny.links;
     if (dtoAny.dois !== undefined) patch.dois = dtoAny.dois;
@@ -299,6 +300,7 @@ export class ArtifactService {
     const updateCommand: import('../messaging/rabbitmq.service').ArtifactUpdateCommand = {
       artifactId: id,
       patch,
+      contributor: contributorEmail,
     };
     this.rabbitMQService.publishArtifactUpdate(updateCommand).catch(() => {});
 
@@ -469,11 +471,13 @@ export class ArtifactService {
       title: savedArtifact.title,
       footprint: savedArtifact.footprint,
       description: savedArtifact.description,
+      submission_comment: savedArtifact.submission_comment,
       keywords: savedArtifact.keywords,
       links: savedArtifact.links,
       dois: savedArtifact.dois,
       fundingAgencies: savedArtifact.fundingAgencies,
       acknowledgements: savedArtifact.acknowledgements,
+      contributor: submitterInfo.email,
     };
 
     this.rabbitMQService.publishArtifactSubmit(submitCommand).catch(err => {

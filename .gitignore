@@ -191,3 +191,5 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 test-output.txt
 collections/OSC-APIGW Local.postman_environment.json
 .cursor.json
+DEPLOY-TO-AWS.sh
+    

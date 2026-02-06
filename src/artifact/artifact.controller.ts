@@ -93,10 +93,11 @@ export class ArtifactController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.PI, Role.COLLABORATOR)
   async updateUser(
+    @Req() req: any,
     @Param('id') id: string,
     @Body() updateArtifactDetailsDto: UpdateArtifactUserDto,
   ): Promise<ArtifactEntity> {
-    return await this.artifactService.updateUser(id, updateArtifactDetailsDto);
+    return await this.artifactService.updateUser(id, updateArtifactDetailsDto, req?.user?.email);
   }
 
   @Get(':id/history')

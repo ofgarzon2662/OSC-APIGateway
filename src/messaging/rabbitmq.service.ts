@@ -27,15 +27,18 @@ export interface ArtifactSubmitCommand {
   title: string;
   footprint: string;
   description?: string;
+  submission_comment?: string;
   keywords?: string[];
   links?: string[];
   dois?: string[];
   fundingAgencies?: string[];
   acknowledgements?: string;
+  contributor?: string;
 }
 
 // Command to request updating artifact details downstream
 export interface ArtifactUpdateCommandPatch {
+  submission_comment?: string;
   keywords?: string[];
   links?: string[];
   dois?: string[];
@@ -49,6 +52,7 @@ export interface ArtifactUpdateCommandPatch {
 export interface ArtifactUpdateCommand {
   artifactId: string;
   patch: ArtifactUpdateCommandPatch;
+  contributor?: string;
 }
 
 @Injectable()
@@ -134,7 +138,9 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
       const rabbitmqUser = this.configService.get<string>('RABBITMQ_USER', 'guest');
       const rabbitmqPass = this.configService.get<string>('RABBITMQ_PASS', 'guest');
 
-      const connectionUrl = `amqp://${rabbitmqUser}:${rabbitmqPass}@${rabbitmqHost}:${rabbitmqPort}`;
+      // Use amqps:// for port 5671 (Amazon MQ), amqp:// for port 5672 (local/docker)
+      const protocol = rabbitmqPort === 5671 ? 'amqps' : 'amqp';
+      const connectionUrl = `${protocol}://${rabbitmqUser}:${rabbitmqPass}@${rabbitmqHost}:${rabbitmqPort}`;
       
       this.logger.log(`Attempting to connect to RabbitMQ at ${rabbitmqHost}:${rabbitmqPort}`);
       
