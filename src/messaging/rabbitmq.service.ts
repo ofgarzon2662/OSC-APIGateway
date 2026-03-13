@@ -39,6 +39,9 @@ export interface ArtifactSubmitCommand {
 
 // Command to request updating artifact details downstream
 export interface ArtifactUpdateCommandPatch {
+  title?: string;
+  description?: string;
+  contributor?: string;
   submission_comment?: string;
   keywords?: string[];
   links?: string[];

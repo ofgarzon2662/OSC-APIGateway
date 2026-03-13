@@ -275,6 +275,10 @@ export class ArtifactService {
 
     // Build the patch with only provided properties
     const patch: import('../messaging/rabbitmq.service').ArtifactUpdateCommandPatch = {};
+    // Always include chaincode-mandatory fields from the existing artifact
+    patch.title = currentArtifact.title;
+    patch.description = currentArtifact.description;
+    if (contributorEmail !== undefined) patch.contributor = contributorEmail;
     const dtoAny: any = dto as any;
     if (dtoAny.submission_comment !== undefined) patch.submission_comment = dtoAny.submission_comment;
     if (dtoAny.keywords !== undefined) patch.keywords = dtoAny.keywords;
@@ -313,21 +317,17 @@ export class ArtifactService {
   }
 
   // Get All Artifacts - Return minimal fields
-  async findAll(
-    { offset, limit }: { offset: number; limit: number } = { offset: 0, limit: 50 },
-  ): Promise<{ items: ListArtifactDto[]; total: number; offset: number; limit: number; hasMore: boolean }> {
+  async findAll(): Promise<ListArtifactDto[]> {
     // Find the organization
     const organization = await this.findOrganizationOrThrow();
 
-    // Find artifacts for the organization with pagination
-    const [artifacts, total] = await this.artifactRepository.findAndCount({
-      where: { organization: { id: organization.id } },
-      skip: offset,
-      take: limit,
+    // Find artifacts for the organization
+    const artifacts = await this.artifactRepository.find({
+      where: { organization: { id: organization.id } }
     });
 
     // Transform the result to include minimal fields
-    const items: ListArtifactDto[] = artifacts.map(artifact => ({
+    return artifacts.map(artifact => ({
       id: artifact.id,
       title: artifact.title,
       description: artifact.description,
@@ -335,10 +335,8 @@ export class ArtifactService {
       footprint: artifact.footprint,
       submittedAt: artifact.submittedAt,
       verified: artifact.verified,
-      updatedAt: artifact.updatedAt,
+      updatedAt: artifact.updatedAt
     }));
-
-    return { items, total, offset, limit, hasMore: offset + items.length < total };
   }
 
   // Get One Artifact - Return all fields

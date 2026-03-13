@@ -28,6 +28,7 @@ import { Roles } from '../shared/decorators/roles.decorators';
 import { Role } from '../shared/enums/role.enums';
 import { UpdateArtifactUserDto } from './dto/update-artifact-user.dto';
 import { GhwService } from './ghw.service';
+import { ListArtifactDto } from './dto/list-artifact.dto';
 
 @Controller('artifacts')
 @UseInterceptors(BusinessErrorsInterceptor)
@@ -59,19 +60,8 @@ export class ArtifactController {
   }
 
   @Get()
-  async findAll(
-    @Query('offset') offsetQ?: string,
-    @Query('limit') limitQ?: string,
-  ): Promise<{ items: import('./dto/list-artifact.dto').ListArtifactDto[]; total: number; offset: number; limit: number; hasMore: boolean }> {
-    const MAX_LIMIT = 200;
-    const DEFAULT_LIMIT = 50;
-
-    let offset = Math.max(0, parseInt(offsetQ ?? '0', 10) || 0);
-    let limit = parseInt(limitQ ?? String(DEFAULT_LIMIT), 10);
-    if (isNaN(limit) || limit < 1) limit = DEFAULT_LIMIT;
-    if (limit > MAX_LIMIT) limit = MAX_LIMIT;
-
-    return await this.artifactService.findAll({ offset, limit });
+  async findAll(): Promise<ListArtifactDto[]> {
+    return await this.artifactService.findAll();
   }
 
   @Get(':id')
