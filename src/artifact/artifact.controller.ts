@@ -20,7 +20,6 @@ import { CreateArtifactDto } from './dto/create-artifact.dto';
 import { UpdateArtifactWorkerDto } from './dto/update-artifact-worker.dto';
 
 import { GetArtifactDto } from './dto/get-artifact.dto';
-import { ListArtifactDto } from './dto/list-artifact.dto';
 import { BusinessErrorsInterceptor } from '../shared/interceptors/business-errors.interceptors';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth/jwt-auth.guard';
 import { ApiKeyAuthGuard } from '../auth/guards/api-key-auth/api-key-auth.guard';
@@ -43,24 +42,36 @@ export class ArtifactController {
   @Roles(Role.PI, Role.COLLABORATOR)
   async create(
     @Req() req: any,
-    @Body() createArtifactDto: CreateArtifactDto
-  ): Promise<ListArtifactDto> {
+    @Body() createArtifactDto: CreateArtifactDto,
+    @Headers('x-correlation-id') corrId?: string,
+  ): Promise<import('./dto/list-artifact.dto').ListArtifactDto> {
     if (!req.user || !req.user.username || !req.user.email) {
       throw new UnauthorizedException('User information is missing from token');
     }
-    
+
     // Extraer username y email directamente del token JWT
     const submitterInfo = {
       username: req.user.username,
       email: req.user.email
     };
-    
-    return await this.artifactService.create(createArtifactDto, submitterInfo);
+
+    return await this.artifactService.create(createArtifactDto, submitterInfo, corrId);
   }
 
   @Get()
-  async findAll(): Promise<ListArtifactDto[]> {
-    return await this.artifactService.findAll();
+  async findAll(
+    @Query('offset') offsetQ?: string,
+    @Query('limit') limitQ?: string,
+  ): Promise<{ items: import('./dto/list-artifact.dto').ListArtifactDto[]; total: number; offset: number; limit: number; hasMore: boolean }> {
+    const MAX_LIMIT = 200;
+    const DEFAULT_LIMIT = 50;
+
+    let offset = Math.max(0, parseInt(offsetQ ?? '0', 10) || 0);
+    let limit = parseInt(limitQ ?? String(DEFAULT_LIMIT), 10);
+    if (isNaN(limit) || limit < 1) limit = DEFAULT_LIMIT;
+    if (limit > MAX_LIMIT) limit = MAX_LIMIT;
+
+    return await this.artifactService.findAll({ offset, limit });
   }
 
   @Get(':id')
@@ -96,8 +107,9 @@ export class ArtifactController {
     @Req() req: any,
     @Param('id') id: string,
     @Body() updateArtifactDetailsDto: UpdateArtifactUserDto,
+    @Headers('x-correlation-id') corrId?: string,
   ): Promise<ArtifactEntity> {
-    return await this.artifactService.updateUser(id, updateArtifactDetailsDto, req?.user?.email);
+    return await this.artifactService.updateUser(id, updateArtifactDetailsDto, req?.user?.email, corrId);
   }
 
   @Get(':id/history')

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ArtifactEntity } from './artifact.entity';
 import { Repository } from 'typeorm';
@@ -27,6 +27,8 @@ interface SubmitterInfo {
 
 @Injectable()
 export class ArtifactService {
+  private readonly logger = new Logger(ArtifactService.name);
+
   constructor(
     @InjectRepository(ArtifactEntity)
     private readonly artifactRepository: Repository<ArtifactEntity>,
@@ -239,7 +241,7 @@ export class ArtifactService {
   }
 
   // Update artifact details (PI / Collaborator)
-  async updateUser(id: string, dto: UpdateArtifactUserDto, contributorEmail?: string): Promise<ArtifactEntity> {
+  async updateUser(id: string, dto: UpdateArtifactUserDto, contributorEmail?: string, correlationId?: string): Promise<ArtifactEntity> {
     // Validate ID
     this.validateId(id, 'artifactId');
 
@@ -301,24 +303,31 @@ export class ArtifactService {
       artifactId: id,
       patch,
       contributor: contributorEmail,
+      ...(correlationId !== undefined && { correlationId }),
     };
-    this.rabbitMQService.publishArtifactUpdate(updateCommand).catch(() => {});
+    this.rabbitMQService.publishArtifactUpdate(updateCommand).catch((err) => {
+      this.logger.error(`Failed to publish artifact.update for ${id} [corrId=${correlationId ?? 'none'}]: ${err?.message ?? err}`);
+    });
 
     return saved;
   }
 
   // Get All Artifacts - Return minimal fields
-  async findAll(): Promise<ListArtifactDto[]> {
+  async findAll(
+    { offset, limit }: { offset: number; limit: number } = { offset: 0, limit: 50 },
+  ): Promise<{ items: ListArtifactDto[]; total: number; offset: number; limit: number; hasMore: boolean }> {
     // Find the organization
     const organization = await this.findOrganizationOrThrow();
-    
-    // Find artifacts for the organization
-    const artifacts = await this.artifactRepository.find({
-      where: { organization: { id: organization.id } }
+
+    // Find artifacts for the organization with pagination
+    const [artifacts, total] = await this.artifactRepository.findAndCount({
+      where: { organization: { id: organization.id } },
+      skip: offset,
+      take: limit,
     });
-    
+
     // Transform the result to include minimal fields
-    return artifacts.map(artifact => ({
+    const items: ListArtifactDto[] = artifacts.map(artifact => ({
       id: artifact.id,
       title: artifact.title,
       description: artifact.description,
@@ -326,8 +335,10 @@ export class ArtifactService {
       footprint: artifact.footprint,
       submittedAt: artifact.submittedAt,
       verified: artifact.verified,
-      updatedAt: artifact.updatedAt
+      updatedAt: artifact.updatedAt,
     }));
+
+    return { items, total, offset, limit, hasMore: offset + items.length < total };
   }
 
   // Get One Artifact - Return all fields
@@ -423,8 +434,9 @@ export class ArtifactService {
 
   // Create one Artifact
   async create(
-    createArtifactDto: CreateArtifactDto, 
-    submitterInfo: SubmitterInfo
+    createArtifactDto: CreateArtifactDto,
+    submitterInfo: SubmitterInfo,
+    correlationId?: string,
   ): Promise<ListArtifactDto> {
 
     // Validate the creator's information
@@ -478,10 +490,11 @@ export class ArtifactService {
       fundingAgencies: savedArtifact.fundingAgencies,
       acknowledgements: savedArtifact.acknowledgements,
       contributor: submitterInfo.email,
+      ...(correlationId !== undefined && { correlationId }),
     };
 
-    this.rabbitMQService.publishArtifactSubmit(submitCommand).catch(err => {
-      console.error(`Failed to publish artifact.submit for ${savedArtifact.id}`, err);
+    this.rabbitMQService.publishArtifactSubmit(submitCommand).catch((err) => {
+      this.logger.error(`Failed to publish artifact.submit for ${savedArtifact.id} [corrId=${correlationId ?? 'none'}]: ${err?.message ?? err}`);
     });
 
     return {

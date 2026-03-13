@@ -1,4 +1,9 @@
 name: Build
+
+permissions:
+  contents: read
+  security-events: write
+
 on:
   push:
     branches:
@@ -41,3 +46,29 @@ jobs:
         with:
           args: >
             -Dsonar.branch.name=${{ github.ref_name }}
+
+      - name: Build Docker image for scanning
+        run: docker build -t osc-apigateway:${{ github.sha }} .
+
+      - name: Run Trivy image scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: osc-apigateway:${{ github.sha }}
+          format: table
+          exit-code: '0'
+          severity: CRITICAL,HIGH
+
+      - name: Run Trivy image scan (SARIF)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: osc-apigateway:${{ github.sha }}
+          format: sarif
+          output: trivy-results.sarif
+          exit-code: '0'
+          severity: CRITICAL,HIGH
+
+      - name: Upload Trivy SARIF to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: trivy-results.sarif

@@ -34,6 +34,7 @@ export interface ArtifactSubmitCommand {
   fundingAgencies?: string[];
   acknowledgements?: string;
   contributor?: string;
+  correlationId?: string;
 }
 
 // Command to request updating artifact details downstream
@@ -53,6 +54,7 @@ export interface ArtifactUpdateCommand {
   artifactId: string;
   patch: ArtifactUpdateCommandPatch;
   contributor?: string;
+  correlationId?: string;
 }
 
 @Injectable()

@@ -126,12 +126,16 @@ describe('ArtifactService', () => {
 
   // FIND ALL TESTS
   describe('findAll', () => {
-    it('should return all artifacts with minimal fields', async () => {
-      const artifacts = await service.findAll();
-      expect(artifacts).toBeDefined();
-      expect(artifacts.length).toBe(artifactList.length);
-      
-      artifacts.forEach((artifact, index) => {
+    it('should return all artifacts with minimal fields in paginated shape', async () => {
+      const result = await service.findAll({ offset: 0, limit: 50 });
+      expect(result).toBeDefined();
+      expect(result.items.length).toBe(artifactList.length);
+      expect(result.total).toBe(artifactList.length);
+      expect(result.offset).toBe(0);
+      expect(result.limit).toBe(50);
+      expect(result.hasMore).toBe(false);
+
+      result.items.forEach((artifact, index) => {
         const dbArtifact = artifactList[index];
         expect(artifact).toEqual({
           id: dbArtifact.id,
@@ -141,16 +145,40 @@ describe('ArtifactService', () => {
           submittedAt: dbArtifact.submittedAt,
           verified: dbArtifact.verified,
           updatedAt: dbArtifact.updatedAt,
-          footprint: dbArtifact.footprint
+          footprint: dbArtifact.footprint,
         });
       });
+    });
+
+    it('should apply limit and offset correctly', async () => {
+      const result = await service.findAll({ offset: 0, limit: 2 });
+      expect(result.items.length).toBe(2);
+      expect(result.total).toBe(artifactList.length);
+      expect(result.limit).toBe(2);
+      expect(result.offset).toBe(0);
+      expect(result.hasMore).toBe(true);
+    });
+
+    it('should return empty items when offset exceeds total', async () => {
+      const result = await service.findAll({ offset: 100, limit: 10 });
+      expect(result.items.length).toBe(0);
+      expect(result.total).toBe(artifactList.length);
+      expect(result.hasMore).toBe(false);
+    });
+
+    it('should call findAndCount with correct skip and take', async () => {
+      const spy = jest.spyOn(artifactRepository, 'findAndCount').mockResolvedValueOnce([[], 0]);
+      await service.findAll({ offset: 10, limit: 25 });
+      expect(spy).toHaveBeenCalledWith(
+        expect.objectContaining({ skip: 10, take: 25 }),
+      );
     });
 
     it('should throw an exception when no organization exists', async () => {
       // Clear the organization to test the case when no org exists
       await organizationRepository.clear();
-      
-      await expect(service.findAll()).rejects.toHaveProperty(
+
+      await expect(service.findAll({ offset: 0, limit: 50 })).rejects.toHaveProperty(
         'message',
         'No organization exists in the system',
       );
@@ -353,15 +381,32 @@ describe('ArtifactService', () => {
       });
     });
 
-    it('should still resolve even if publishArtifactSubmit fails (logs error)', async () => {
+    it('should still resolve even if publishArtifactSubmit fails (logs error via logger)', async () => {
       const artifactDto = generateRandomArtifact();
-      const spy = jest.spyOn(rabbitMQService, 'publishArtifactSubmit').mockRejectedValueOnce(new Error('broker down'));
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      const publishSpy = jest.spyOn(rabbitMQService, 'publishArtifactSubmit').mockRejectedValueOnce(new Error('broker down'));
+      const loggerSpy = jest.spyOn((service as any).logger, 'error').mockImplementation(() => {});
+
       const result = await service.create(artifactDto, testSubmitter);
       expect(result.id).toBeDefined();
-      expect(spy).toHaveBeenCalled();
-      expect(consoleSpy).toHaveBeenCalled();
-      consoleSpy.mockRestore();
+      expect(publishSpy).toHaveBeenCalled();
+
+      // Wait for the fire-and-forget rejection to propagate
+      await new Promise(resolve => setImmediate(resolve));
+
+      expect(loggerSpy).toHaveBeenCalledWith(expect.stringContaining('Failed to publish artifact.submit'));
+      expect(loggerSpy).toHaveBeenCalledWith(expect.stringContaining('broker down'));
+      loggerSpy.mockRestore();
+    });
+
+    it('should include correlationId in the published submit command when provided', async () => {
+      const artifactDto = generateRandomArtifact();
+      const publishSpy = jest.spyOn(rabbitMQService, 'publishArtifactSubmit');
+
+      await service.create(artifactDto, testSubmitter, 'corr-xyz');
+
+      expect(publishSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ correlationId: 'corr-xyz' }),
+      );
     });
   });
 
@@ -423,13 +468,15 @@ describe('ArtifactService', () => {
       expect(result.footprint).toEqual('0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef');
       expect(saveSpy).toHaveBeenCalled();
 
-      expect(publishSpy).toHaveBeenCalledWith({
-        artifactId: storedArtifact.id,
-        patch: {
-          keywords: ['ai', 'ml'],
-          footprint: '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
-        },
-      });
+      expect(publishSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          artifactId: storedArtifact.id,
+          patch: expect.objectContaining({
+            keywords: ['ai', 'ml'],
+            footprint: '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
+          }),
+        }),
+      );
     });
 
     it('should reject title or description in updateUser DTO', async () => {
@@ -441,6 +488,42 @@ describe('ArtifactService', () => {
       await expect(service.updateUser(storedArtifact.id, { description: 'y' } as any)).rejects.toHaveProperty(
         'message',
         'Cannot update title or description',
+      );
+    });
+
+    it('should log an error when publishArtifactUpdate rejects', async () => {
+      const storedArtifact = artifactList[0];
+      const dto: any = {
+        submission_comment: 'Updating artifact details for traceability and audit purposes.',
+      };
+      const publishError = new Error('broker unavailable');
+      jest.spyOn(rabbitMQService, 'publishArtifactUpdate').mockRejectedValueOnce(publishError);
+      const loggerSpy = jest.spyOn((service as any).logger, 'error').mockImplementation(() => {});
+
+      await service.updateUser(storedArtifact.id, dto);
+
+      // Wait for the fire-and-forget rejection to propagate
+      await new Promise(resolve => setImmediate(resolve));
+
+      expect(loggerSpy).toHaveBeenCalledWith(
+        expect.stringContaining(`Failed to publish artifact.update for ${storedArtifact.id}`),
+      );
+      expect(loggerSpy).toHaveBeenCalledWith(expect.stringContaining('broker unavailable'));
+      loggerSpy.mockRestore();
+    });
+
+    it('should include correlationId in the published update command when provided', async () => {
+      const storedArtifact = artifactList[0];
+      const dto: any = {
+        submission_comment: 'Updating artifact details for traceability and audit purposes.',
+        keywords: ['physics'],
+      };
+      const publishSpy = jest.spyOn(rabbitMQService, 'publishArtifactUpdate');
+
+      await service.updateUser(storedArtifact.id, dto, 'user@example.com', 'corr-abc');
+
+      expect(publishSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ correlationId: 'corr-abc' }),
       );
     });
   });
