@@ -56,7 +56,6 @@ import { HealthController } from './health/health.controller';
           password: configService.get<string>('DB_PASSWORD', 'postgres'),
           database: configService.get<string>('DB_NAME', 'organization'),
           entities: [UserEntity, OrganizationEntity, ArtifactEntity],
-          dropSchema: true,
           synchronize: true,
           keepConnectionAlive: true,
           ssl: sslOption,

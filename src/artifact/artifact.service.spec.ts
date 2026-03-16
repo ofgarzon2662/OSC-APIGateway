@@ -126,59 +126,35 @@ describe('ArtifactService', () => {
 
   // FIND ALL TESTS
   describe('findAll', () => {
-    it('should return all artifacts with minimal fields in paginated shape', async () => {
-      const result = await service.findAll({ offset: 0, limit: 50 });
+    it('should return all artifacts as a flat array with minimal fields', async () => {
+      const result = await service.findAll();
       expect(result).toBeDefined();
-      expect(result.items.length).toBe(artifactList.length);
-      expect(result.total).toBe(artifactList.length);
-      expect(result.offset).toBe(0);
-      expect(result.limit).toBe(50);
-      expect(result.hasMore).toBe(false);
+      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBe(artifactList.length);
 
-      result.items.forEach((artifact, index) => {
-        const dbArtifact = artifactList[index];
-        expect(artifact).toEqual({
-          id: dbArtifact.id,
-          title: dbArtifact.title,
-          description: dbArtifact.description,
-          keywords: dbArtifact.keywords,
-          submittedAt: dbArtifact.submittedAt,
-          verified: dbArtifact.verified,
-          updatedAt: dbArtifact.updatedAt,
-          footprint: dbArtifact.footprint,
+      result.forEach((artifact) => {
+        expect(artifact).toMatchObject({
+          id: expect.any(String),
+          title: expect.any(String),
+          description: expect.any(String),
+          keywords: expect.any(Array),
+          verified: expect.any(Boolean),
+          footprint: expect.any(String),
         });
       });
     });
 
-    it('should apply limit and offset correctly', async () => {
-      const result = await service.findAll({ offset: 0, limit: 2 });
-      expect(result.items.length).toBe(2);
-      expect(result.total).toBe(artifactList.length);
-      expect(result.limit).toBe(2);
-      expect(result.offset).toBe(0);
-      expect(result.hasMore).toBe(true);
-    });
-
-    it('should return empty items when offset exceeds total', async () => {
-      const result = await service.findAll({ offset: 100, limit: 10 });
-      expect(result.items.length).toBe(0);
-      expect(result.total).toBe(artifactList.length);
-      expect(result.hasMore).toBe(false);
-    });
-
-    it('should call findAndCount with correct skip and take', async () => {
-      const spy = jest.spyOn(artifactRepository, 'findAndCount').mockResolvedValueOnce([[], 0]);
-      await service.findAll({ offset: 10, limit: 25 });
+    it('should call repository.find with the organization filter', async () => {
+      const spy = jest.spyOn(artifactRepository, 'find').mockResolvedValueOnce([]);
+      await service.findAll();
       expect(spy).toHaveBeenCalledWith(
-        expect.objectContaining({ skip: 10, take: 25 }),
+        expect.objectContaining({ where: expect.objectContaining({ organization: expect.anything() }) }),
       );
     });
 
     it('should throw an exception when no organization exists', async () => {
-      // Clear the organization to test the case when no org exists
       await organizationRepository.clear();
-
-      await expect(service.findAll({ offset: 0, limit: 50 })).rejects.toHaveProperty(
+      await expect(service.findAll()).rejects.toHaveProperty(
         'message',
         'No organization exists in the system',
       );

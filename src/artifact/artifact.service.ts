@@ -318,15 +318,12 @@ export class ArtifactService {
 
   // Get All Artifacts - Return minimal fields
   async findAll(): Promise<ListArtifactDto[]> {
-    // Find the organization
     const organization = await this.findOrganizationOrThrow();
 
-    // Find artifacts for the organization
     const artifacts = await this.artifactRepository.find({
       where: { organization: { id: organization.id } }
     });
 
-    // Transform the result to include minimal fields
     return artifacts.map(artifact => ({
       id: artifact.id,
       title: artifact.title,
