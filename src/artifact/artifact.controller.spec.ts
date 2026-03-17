@@ -5,6 +5,7 @@ import { GhwService } from './ghw.service';
 import { ArtifactEntity } from './artifact.entity';
 import { SubmissionState } from './enums/submission-state.enum';
 import { UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 // Minimal factory for a ListArtifactDto-like object
 function makeListDto(overrides: Partial<any> = {}) {
@@ -76,6 +77,7 @@ describe('ArtifactController', () => {
       providers: [
         { provide: ArtifactService, useValue: mockArtifactService },
         { provide: GhwService, useValue: mockGhwService },
+        { provide: ConfigService, useValue: { get: jest.fn() } },
       ],
     }).compile();
 

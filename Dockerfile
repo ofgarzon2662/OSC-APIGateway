@@ -1,20 +1,12 @@
 # Multi-stage build for production efficiency
-FROM node:18-alpine AS base
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --only=production && npm cache clean --force
-
-FROM node:18-alpine AS dev-deps
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
-
 FROM node:18-alpine AS build
 WORKDIR /app
+# Build tools needed for native addons (e.g. bcrypt)
+RUN apk add --no-cache python3 make g++
 COPY package*.json ./
-COPY --from=dev-deps /app/node_modules ./node_modules
+RUN HUSKY=0 npm ci
 COPY . .
-RUN npm run build
+RUN npm run build && HUSKY=0 npm prune --production
 
 FROM node:18-alpine AS production
 WORKDIR /app
@@ -34,9 +26,9 @@ ENV NODE_EXTRA_CA_CERTS=/usr/local/share/ca-certificates/aws-rds-combined.crt
 RUN addgroup -g 1001 -S nodejs
 RUN adduser -S nestjs -u 1001
 
-# Copy built application
+# Copy built application and pruned production node_modules from build stage
 COPY --from=build --chown=nestjs:nodejs /app/dist ./dist
-COPY --from=base --chown=nestjs:nodejs /app/node_modules ./node_modules
+COPY --from=build --chown=nestjs:nodejs /app/node_modules ./node_modules
 COPY --chown=nestjs:nodejs package*.json ./
 
 # Health check
