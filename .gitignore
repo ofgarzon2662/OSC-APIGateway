@@ -193,3 +193,4 @@ collections/OSC-APIGW Local.postman_environment.json
 .cursor.json
 DEPLOY-TO-AWS.sh
 patch-collections.js
+collections/OSC-APIGW AWS - STAGING.postman_environment.json

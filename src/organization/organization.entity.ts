@@ -1,6 +1,7 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { UserEntity } from '../user/user.entity';
 import { ArtifactEntity } from '../artifact/artifact.entity';
+import { WorkflowEntity } from '../workflow/workflow.entity';
 
 @Entity()
 export class OrganizationEntity {
@@ -26,4 +27,11 @@ export class OrganizationEntity {
     onDelete: 'CASCADE',
   })
   artifacts: ArtifactEntity[];
+
+  /* ---------- relación con workflows ---------- */
+  @OneToMany(() => WorkflowEntity, (workflow) => workflow.organization, {
+    cascade: true,
+    onDelete: 'CASCADE',
+  })
+  workflows: WorkflowEntity[];
 }

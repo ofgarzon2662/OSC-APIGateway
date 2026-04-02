@@ -2,6 +2,7 @@ import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/commo
 import { ConfigService } from '@nestjs/config';
 import { connect, Connection, Channel } from 'amqplib';
 import { ManifestItem } from 'src/artifact/artifact.entity';
+import { GitHubRepositoryItem } from 'src/workflow/workflow.entity';
 
 
 
@@ -60,6 +61,35 @@ export interface ArtifactUpdateCommand {
   correlationId?: string;
 }
 
+export interface WorkflowSubmitCommand {
+  workflowId: string;
+  title: string;
+  description?: string;
+  submission_comment?: string;
+  keywords?: string[];
+  githubRepositories?: GitHubRepositoryItem[];
+  artifactIds?: string[];
+  contributor?: string;
+  correlationId?: string;
+}
+
+export interface WorkflowUpdateCommandPatch {
+  title?: string;
+  description?: string;
+  submission_comment?: string;
+  keywords?: string[];
+  githubRepositories?: GitHubRepositoryItem[];
+  artifactIds?: string[];
+  contributor?: string;
+}
+
+export interface WorkflowUpdateCommand {
+  workflowId: string;
+  patch: WorkflowUpdateCommandPatch;
+  contributor?: string;
+  correlationId?: string;
+}
+
 @Injectable()
 export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(RabbitMQService.name);
@@ -74,6 +104,8 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
   private readonly artifactUpdatedRoutingKey = 'artifact.updated';
   private readonly artifactSubmitRoutingKey = 'artifact.submit';
   private readonly artifactUpdateRoutingKey = 'artifact.update';
+  private readonly workflowSubmitRoutingKey = 'workflow.submit';
+  private readonly workflowUpdateRoutingKey = 'workflow.update';
 
   constructor(private readonly configService: ConfigService) {}
 
@@ -274,6 +306,22 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
       messageId: cmd.artifactId,
       logSuccess: `Published artifact.update command for artifact ${cmd.artifactId}`,
       logPrefix: 'artifact.update',
+    });
+  }
+
+  async publishWorkflowSubmit(cmd: WorkflowSubmitCommand): Promise<void> {
+    await this.publishJsonWithRetry(this.workflowSubmitRoutingKey, cmd, {
+      messageId: cmd.workflowId,
+      logSuccess: `Published workflow.submit command for workflow ${cmd.workflowId}`,
+      logPrefix: 'workflow.submit',
+    });
+  }
+
+  async publishWorkflowUpdate(cmd: WorkflowUpdateCommand): Promise<void> {
+    await this.publishJsonWithRetry(this.workflowUpdateRoutingKey, cmd, {
+      messageId: cmd.workflowId,
+      logSuccess: `Published workflow.update command for workflow ${cmd.workflowId}`,
+      logPrefix: 'workflow.update',
     });
   }
 

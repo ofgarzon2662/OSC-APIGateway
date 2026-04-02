@@ -7315,6 +7315,1337 @@
           ]
         },
         {
+          "name": "Workflow",
+          "item": [
+            {
+              "name": "Log in as Admin 1",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.environment.set(\"token_ADMIN1\", pm.response.json().token);\r",
+                      "\r",
+                      "pm.test(\"Status code is 201\", function() {\r",
+                      "    pm.response.to.have.status(201);\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Token is present\", function() {\r",
+                      "    pm.expect(pm.response.json().token).to.be.a('string').and.to.not.be.empty;\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n   \"username\": \"{{ADMIN1_USERNAME}}\",\r\n   \"password\": \"{{ADMIN1_PASSWORD}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/users/login",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    "login"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Delete All",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      ""
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_ADMIN1}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "DELETE",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/organizations",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "organizations"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Admin 1 Creates an org",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.environment.set(\"orgId\", pm.response.json().id);\r",
+                      "pm.environment.set(\"orgName\", pm.response.json().name);\r",
+                      "\r",
+                      "pm.test(\"Status code is 201\", function() {\r",
+                      "    pm.response.to.have.status(201);\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Org info present\", function() {\r",
+                      "    pm.expect(pm.response.json().name).to.be.a('string').and.to.not.be.empty;\r",
+                      "    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_ADMIN1}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"name\": \"{{$randomCompanyName}}\",\r\n    \"description\": \"This organization focuses on {{$randomLoremWords}} and its main mission in life is {{$randomLoremWords}}\"\r\n}\r\n",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/organizations",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "organizations"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Log in as Admin 2",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.environment.set(\"token_ADMIN2\", pm.response.json().token);\r",
+                      "\r",
+                      "pm.test(\"Status code is 201\", function() {\r",
+                      "    pm.response.to.have.status(201);\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n   \"username\": \"{{ADMIN2_USERNAME}}\",\r\n   \"password\": \"{{ADMIN2_PASSWORD}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/users/login",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    "login"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Admin 1 Creates a PI",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const requestData = pm.request.body.raw ? JSON.parse(pm.request.body.raw) : {};",
+                      "pm.environment.set(\"userId1\", pm.response.json().id);",
+                      "pm.environment.set(\"usernameUser1\", pm.response.json().username);",
+                      "pm.environment.set(\"pi_password\", requestData.password);",
+                      "",
+                      "pm.test(\"Status code is 201\", function() {",
+                      "    pm.response.to.have.status(201);",
+                      "});",
+                      "",
+                      "pm.test(\"User info valid\", function() {",
+                      "    const r = pm.response.json();",
+                      "    pm.expect(r.username).to.be.a('string').and.to.not.be.empty;",
+                      "    pm.expect(r.roles).to.include('pi');",
+                      "});",
+                      "",
+                      "pm.collectionVariables.set(\"pi_user_id\", pm.response.json().id);",
+                      "pm.collectionVariables.set(\"pi_username\", pm.response.json().username);"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "let fullName = pm.variables.replaceIn(\"{{$randomFullName}}\");",
+                      "if (fullName.length < 8) fullName += '_padding1';",
+                      "pm.environment.set(\"validFullName\", fullName);",
+                      "",
+                      "let userName = pm.variables.replaceIn(\"{{$randomUserName}}\");",
+                      "if (userName.length < 8) userName += '_padding1';",
+                      "pm.environment.set(\"validUserName\", userName);"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_ADMIN1}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"name\": \"{{validFullName}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"{{validUserName}}\",\r\n    \"password\": \"{{$randomPassword}}\",\r\n    \"role\": \"pi\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/users/register",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    "register"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Admin 2 Creates a Collaborator",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const requestData = pm.request.body.raw ? JSON.parse(pm.request.body.raw) : {};",
+                      "pm.environment.set(\"collaboratorId\", pm.response.json().id);",
+                      "pm.environment.set(\"collaborator1Username\", pm.response.json().username);",
+                      "pm.environment.set(\"collaborator1_password\", requestData.password);",
+                      "",
+                      "pm.test(\"Status code is 201\", function() {",
+                      "    pm.response.to.have.status(201);",
+                      "});",
+                      "",
+                      "pm.test(\"Collaborator info valid\", function() {",
+                      "    const r = pm.response.json();",
+                      "    pm.expect(r.username).to.be.a('string').and.to.not.be.empty;",
+                      "    pm.expect(r.roles).to.include('collaborator');",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "let fullName = pm.variables.replaceIn(\"{{$randomFullName}}\");",
+                      "if (fullName.length < 8) fullName += '_padding2';",
+                      "pm.environment.set(\"validFullName2\", fullName);",
+                      "",
+                      "let userName = pm.variables.replaceIn(\"{{$randomUserName}}\");",
+                      "if (userName.length < 8) userName += '_padding2';",
+                      "pm.environment.set(\"validUserName2\", userName);"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_ADMIN2}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"name\": \"{{validFullName2}}\",\r\n    \"email\": \"{{$randomEmail}}\",\r\n    \"username\": \"{{validUserName2}}\",\r\n    \"password\": \"{{$randomPassword}}\",\r\n    \"role\": \"collaborator\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/users/register",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    "register"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Collaborator logs in",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.environment.set(\"token_collaborator1\", pm.response.json().token);\r",
+                      "\r",
+                      "pm.test(\"Status code is 201\", function() {\r",
+                      "    pm.response.to.have.status(201);\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Token is present\", function() {\r",
+                      "    pm.expect(pm.response.json().token).to.be.a('string').and.to.not.be.empty;\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n   \"username\": \"{{collaborator1Username}}\",\r\n   \"password\": \"{{collaborator1_password}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/users/login",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    "login"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "PI user logs in",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.environment.set(\"token_PI\", pm.response.json().token);\r",
+                      "\r",
+                      "pm.test(\"Status code is 201\", function() {\r",
+                      "    pm.response.to.have.status(201);\r",
+                      "});\r",
+                      "\r",
+                      "pm.test(\"Token is present\", function() {\r",
+                      "    pm.expect(pm.response.json().token).to.be.a('string').and.to.not.be.empty;\r",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n   \"username\": \"{{pi_username}}\",\r\n   \"password\": \"{{pi_password}}\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/users/login",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "users",
+                    "login"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Collaborator Creates an Artifact (for workflow ref)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.environment.set(\"wf_artifactId1\", pm.response.json().id);",
+                      "pm.environment.set(\"wf_artifactTitle1\", pm.response.json().title);",
+                      "",
+                      "pm.test(\"Status code is 201\", function () {",
+                      "    pm.response.to.have.status(201);",
+                      "});",
+                      "",
+                      "pm.test(\"Artifact created for workflow reference\", function () {",
+                      "    const r = pm.response.json();",
+                      "    pm.expect(r).to.have.property('id');",
+                      "    pm.expect(r).to.have.property('title');",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                },
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "pm.environment.set(\"wf_artifacthash1\", 'a'.repeat(64));"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_collaborator1}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"title\": \"Artifact for Workflow Test\",\r\n    \"description\": \"This artifact is created specifically to be referenced by workflow integration tests. It contains enough description.\",\r\n    \"manifest\": [\r\n        {\r\n            \"hash\": \"{{wf_artifacthash1}}\",\r\n            \"filename\": \"workflow-data.csv\",\r\n            \"algorithm\": \"sha256\"\r\n        }\r\n    ],\r\n    \"keywords\": [\"workflow-test\"],\r\n    \"links\": [],\r\n    \"dois\": [],\r\n    \"fundingAgencies\": [],\r\n    \"acknowledgements\": \"For workflow testing\",\r\n    \"submission_comment\": \"This artifact is created for workflow integration testing purposes.\",\r\n    \"footprint\": \"f2c9a34e65b17f480c9ac902b0aaddb5cde6f8c48670e0f9648cef6d7212ba39\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/artifacts",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "artifacts"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "PI Creates Workflow 1",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.environment.set(\"workflowId1\", pm.response.json().id);",
+                      "pm.environment.set(\"workflowTitle1\", pm.response.json().title);",
+                      "",
+                      "pm.test(\"Status code is 201\", function () {",
+                      "    pm.response.to.have.status(201);",
+                      "});",
+                      "",
+                      "pm.test(\"Response has correct structure (list DTO)\", function () {",
+                      "    const r = pm.response.json();",
+                      "    pm.expect(r).to.have.property('id');",
+                      "    pm.expect(r).to.have.property('title');",
+                      "    pm.expect(r).to.have.property('description');",
+                      "    pm.expect(r).to.have.property('keywords');",
+                      "    pm.expect(r).to.have.property('submissionState');",
+                      "    pm.expect(r).to.have.property('submittedAt');",
+                      "    // List DTO should NOT expose sensitive fields",
+                      "    pm.expect(r).not.to.have.property('submitterEmail');",
+                      "    pm.expect(r).not.to.have.property('organization');",
+                      "    pm.expect(r).not.to.have.property('githubRepositories');",
+                      "});",
+                      "",
+                      "pm.test(\"Submission state is PENDING\", function () {",
+                      "    pm.expect(pm.response.json().submissionState).to.equal('PENDING');",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_PI}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"title\": \"Integration Test Workflow\",\r\n    \"description\": \"This is a workflow created during integration testing. It represents a scientific procedure that combines multiple artifacts into a reproducible pipeline for data analysis.\",\r\n    \"keywords\": [\"integration-test\", \"workflow\", \"pipeline\"],\r\n    \"githubRepositories\": [\r\n        {\r\n            \"url\": \"https://github.com/example/test-repo\",\r\n            \"description\": \"Test repository for workflow\",\r\n            \"gitHash\": \"abc123def456\",\r\n            \"contents\": [\r\n                { \"filename\": \"main.py\", \"hash\": \"sha256hash1\" },\r\n                { \"filename\": \"config.yml\", \"hash\": \"sha256hash2\" }\r\n            ]\r\n        }\r\n    ],\r\n    \"artifactIds\": [\"{{wf_artifactId1}}\"],\r\n    \"submission_comment\": \"Creating this workflow for integration test purposes, referencing a real artifact.\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/workflows",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "workflows"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Collaborator Creates Workflow 2",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.environment.set(\"workflowId2\", pm.response.json().id);",
+                      "",
+                      "pm.test(\"Status code is 201\", function () {",
+                      "    pm.response.to.have.status(201);",
+                      "});",
+                      "",
+                      "pm.test(\"Collaborator can create workflows\", function () {",
+                      "    const r = pm.response.json();",
+                      "    pm.expect(r).to.have.property('id');",
+                      "    pm.expect(r.submissionState).to.equal('PENDING');",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_collaborator1}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"title\": \"Collaborator Workflow Test\",\r\n    \"description\": \"A second workflow created by a collaborator to verify role-based access. This description is long enough to pass validation requirements for the workflow entity.\",\r\n    \"keywords\": [\"collaborator-test\"],\r\n    \"githubRepositories\": [],\r\n    \"artifactIds\": [],\r\n    \"submission_comment\": \"Collaborator creating a workflow to verify permissions work correctly.\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/workflows",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "workflows"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Admin creates workflow - Fail",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Code is 403\", function() {",
+                      "    pm.response.to.have.status(403);",
+                      "});",
+                      "",
+                      "pm.test(\"Message is correct\", function () {",
+                      "    pm.expect(pm.response.text()).to.include(\"Forbidden resource\");",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_ADMIN1}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"title\": \"Admin Should Not Create This\",\r\n    \"description\": \"Admins do not have the PI or Collaborator role, so this request should be rejected with a 403 Forbidden error from the roles guard.\",\r\n    \"keywords\": [\"should-fail\"],\r\n    \"githubRepositories\": [],\r\n    \"artifactIds\": [],\r\n    \"submission_comment\": \"This should be rejected because admins cannot create workflows.\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/workflows",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "workflows"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Unauthenticated creates workflow - Fail",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Code is 401\", function() {",
+                      "    pm.response.to.have.status(401);",
+                      "});",
+                      "",
+                      "pm.test(\"Message is correct\", function () {",
+                      "    pm.expect(pm.response.text()).to.include(\"Unauthorized\");",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"title\": \"Unauthenticated Workflow\",\r\n    \"description\": \"This request has no token and should be rejected with a 401 Unauthorized error. The description is long enough for validation.\",\r\n    \"keywords\": [\"should-fail\"],\r\n    \"githubRepositories\": [],\r\n    \"artifactIds\": [],\r\n    \"submission_comment\": \"This should be rejected due to missing authentication.\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/workflows",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "workflows"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "PI Create Workflow - short title",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Code is 400\", function() {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test(\"Validation error about title\", function () {",
+                      "    const text = pm.response.text();",
+                      "    pm.expect(text).to.include('title');",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_PI}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"title\": \"AB\",\r\n    \"description\": \"This description is long enough but the title is only two characters which is below the minimum of three required.\",\r\n    \"keywords\": [],\r\n    \"githubRepositories\": [],\r\n    \"artifactIds\": [],\r\n    \"submission_comment\": \"Testing validation: title too short should be rejected.\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/workflows",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "workflows"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "PI Create Workflow - short description",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Code is 400\", function() {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test(\"Validation error about description\", function () {",
+                      "    const text = pm.response.text();",
+                      "    pm.expect(text).to.include('description');",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_PI}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"title\": \"Valid Title Here\",\r\n    \"description\": \"Too short\",\r\n    \"keywords\": [],\r\n    \"githubRepositories\": [],\r\n    \"artifactIds\": [],\r\n    \"submission_comment\": \"Testing validation: description too short should be rejected.\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/workflows",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "workflows"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "PI Create Workflow - duplicate title",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Code is 409 or 412\", function() {",
+                      "    const code = pm.response.code;",
+                      "    pm.expect([409, 412]).to.include(code);",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_PI}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"title\": \"Integration Test Workflow\",\r\n    \"description\": \"Attempting to create a workflow with the same title as Workflow 1. This should fail because workflow titles must be unique within the system.\",\r\n    \"keywords\": [\"duplicate\"],\r\n    \"githubRepositories\": [],\r\n    \"artifactIds\": [],\r\n    \"submission_comment\": \"This should fail because the title is already taken by Workflow 1.\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/workflows",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "workflows"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Workflow 1",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function() {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Response contains correct workflow data\", function() {",
+                      "    const r = pm.response.json();",
+                      "    pm.expect(r.id).to.equal(pm.environment.get('workflowId1'));",
+                      "    pm.expect(r.title).to.equal('Integration Test Workflow');",
+                      "    pm.expect(r.keywords).to.be.an('array').with.lengthOf(3);",
+                      "    pm.expect(r.submissionState).to.equal('PENDING');",
+                      "    pm.expect(r.submitterEmail).to.be.a('string').and.to.not.be.empty;",
+                      "    pm.expect(r.submitterUsername).to.be.a('string').and.to.not.be.empty;",
+                      "});",
+                      "",
+                      "pm.test(\"Artifacts are populated\", function() {",
+                      "    const r = pm.response.json();",
+                      "    pm.expect(r.artifacts).to.be.an('array').with.lengthOf(1);",
+                      "    pm.expect(r.artifacts[0].id).to.equal(pm.environment.get('wf_artifactId1'));",
+                      "    pm.expect(r.artifacts[0]).to.have.property('title');",
+                      "    pm.expect(r.artifacts[0]).to.have.property('description');",
+                      "});",
+                      "",
+                      "pm.test(\"GitHub repositories are populated\", function() {",
+                      "    const r = pm.response.json();",
+                      "    pm.expect(r.githubRepositories).to.be.an('array').with.lengthOf(1);",
+                      "    pm.expect(r.githubRepositories[0].url).to.equal('https://github.com/example/test-repo');",
+                      "    pm.expect(r.githubRepositories[0].contents).to.be.an('array').with.lengthOf(2);",
+                      "});",
+                      "",
+                      "pm.test(\"Organization is present\", function() {",
+                      "    const r = pm.response.json();",
+                      "    pm.expect(r.organization).to.be.an('object');",
+                      "    pm.expect(r.organization.name).to.equal(pm.environment.get('orgName'));",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "method": "GET",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/workflows/{{workflowId1}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "workflows",
+                    "{{workflowId1}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get All Workflows",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test('Code is 200', () => pm.response.to.have.status(200));",
+                      "",
+                      "const workflows = pm.response.json();",
+                      "",
+                      "pm.test('Response is array with at least 2 workflows', () => {",
+                      "  pm.expect(workflows).to.be.an('array').with.length.of.at.least(2);",
+                      "});",
+                      "",
+                      "pm.test('Each workflow has required list fields', () => {",
+                      "  workflows.forEach(w => {",
+                      "    pm.expect(w).to.have.property('id').that.is.a('string').and.is.not.empty;",
+                      "    pm.expect(w).to.have.property('title').that.is.a('string').and.is.not.empty;",
+                      "    pm.expect(w).to.have.property('description').that.is.a('string');",
+                      "    pm.expect(w).to.have.property('submissionState');",
+                      "  });",
+                      "});",
+                      "",
+                      "pm.test('Response contains our created workflows', () => {",
+                      "  const ids = workflows.map(w => w.id);",
+                      "  pm.expect(ids).to.include(pm.environment.get('workflowId1'));",
+                      "  pm.expect(ids).to.include(pm.environment.get('workflowId2'));",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "method": "GET",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/workflows",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "workflows"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Workflow - wrong ID",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Code is 404\", function() {",
+                      "    pm.response.to.have.status(404);",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "method": "GET",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/workflows/00000000-0000-0000-0000-000000000000",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "workflows",
+                    "00000000-0000-0000-0000-000000000000"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "PI Updates Workflow 1 - keywords",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Keywords were updated\", function () {",
+                      "    const r = pm.response.json();",
+                      "    pm.expect(r.keywords).to.be.an('array');",
+                      "    pm.expect(r.keywords).to.include('updated-keyword');",
+                      "});",
+                      "",
+                      "pm.test(\"Title unchanged\", function () {",
+                      "    pm.expect(pm.response.json().title).to.equal('Integration Test Workflow');",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_PI}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"keywords\": [\"updated-keyword\", \"integration-test\"],\r\n    \"submission_comment\": \"Updating keywords on this workflow to verify the PUT endpoint works correctly.\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/workflows/{{workflowId1}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "workflows",
+                    "{{workflowId1}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "PI Updates Workflow 1 - change artifact refs",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Artifact references updated (cleared)\", function () {",
+                      "    const r = pm.response.json();",
+                      "    pm.expect(r.artifacts).to.be.an('array').with.lengthOf(0);",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_PI}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"artifactIds\": [],\r\n    \"submission_comment\": \"Removing all artifact references to test that artifact relations can be cleared via update.\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/workflows/{{workflowId1}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "workflows",
+                    "{{workflowId1}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Admin updates workflow - Fail",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Code is 403\", function() {",
+                      "    pm.response.to.have.status(403);",
+                      "});",
+                      "",
+                      "pm.test(\"Message is correct\", function () {",
+                      "    pm.expect(pm.response.text()).to.include(\"Forbidden resource\");",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_ADMIN1}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"keywords\": [\"admin-should-fail\"],\r\n    \"submission_comment\": \"Admins should not be able to update workflows, only PI and Collaborator roles.\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/workflows/{{workflowId1}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "workflows",
+                    "{{workflowId1}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Verify Workflow 1 after updates",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "pm.test(\"Status code is 200\", function() {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Title is still the original (immutable)\", function() {",
+                      "    pm.expect(pm.response.json().title).to.equal('Integration Test Workflow');",
+                      "});",
+                      "",
+                      "pm.test(\"Keywords reflect latest update\", function() {",
+                      "    const kw = pm.response.json().keywords;",
+                      "    pm.expect(kw).to.include('updated-keyword');",
+                      "});",
+                      "",
+                      "pm.test(\"Artifacts were cleared by previous update\", function() {",
+                      "    pm.expect(pm.response.json().artifacts).to.be.an('array').with.lengthOf(0);",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {}
+                  }
+                }
+              ],
+              "protocolProfileBehavior": {
+                "disableBodyPruning": true
+              },
+              "request": {
+                "method": "GET",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/workflows/{{workflowId1}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "workflows",
+                    "{{workflowId1}}"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
           "name": "Full Tear Down",
           "item": [
             {
