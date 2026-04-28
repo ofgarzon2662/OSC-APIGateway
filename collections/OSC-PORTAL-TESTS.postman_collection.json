@@ -1,0 +1,305 @@
+{
+  "info": {
+    "name": "OSC-PORTAL-TESTS",
+    "description": "End-to-end tests for OSC Portal workflows via the OSC-API (PHP) directly against the blockchain peers.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "osc_api_base_url",
+      "value": "https://nsg.api.osc-dev.sdsc.edu:3004",
+      "type": "string"
+    },
+    {
+      "key": "bearer_token",
+      "value": "FILL_IN_YOUR_TOKEN_HERE",
+      "type": "string"
+    },
+    {
+      "key": "api_user_id",
+      "value": "FILL_IN_API_USER_UUID",
+      "type": "string"
+    },
+    {
+      "key": "group_name",
+      "value": "nsg",
+      "type": "string"
+    },
+    {
+      "key": "workflow_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Workflows",
+      "item": [
+        {
+          "name": "1. Create Workflow (New)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// The OSC-API returns the peer invoke result as a string.",
+                  "// On success it contains the workflow ID (osc-is-workflow-<uuid>).",
+                  "var body = pm.response.text();",
+                  "",
+                  "pm.test('Response status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response contains workflow ID', function () {",
+                  "    pm.expect(body).to.include('osc-is-workflow-');",
+                  "});",
+                  "",
+                  "// Extract and store the workflow ID for subsequent requests",
+                  "var match = body.match(/osc-is-workflow-[0-9a-f-]+/);",
+                  "if (match) {",
+                  "    pm.collectionVariables.set('workflow_id', match[0]);",
+                  "    console.log('Stored workflow_id: ' + match[0]);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "apiuserid",
+                  "value": "{{api_user_id}}",
+                  "type": "text"
+                },
+                {
+                  "key": "groupname",
+                  "value": "{{group_name}}",
+                  "type": "text"
+                },
+                {
+                  "key": "workflowbody",
+                  "value": "{\"title\":\"Test Workflow from Postman\",\"description\":\"End-to-end test of the workflow chaincode via OSC-API\",\"submission_comment\":\"Initial creation test via Postman collection\",\"keywords\":[\"test\",\"workflow\",\"e2e\"],\"artifact_ids\":[],\"github_repositories\":[{\"url\":\"https://github.com/example/test-repo\",\"description\":\"Example repository for testing\",\"git_hash\":\"abc123def456\",\"contents\":[{\"filename\":\"README.md\",\"hash\":\"sha256-placeholder\"}]}]}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{osc_api_base_url}}/v1/workflows/new",
+              "host": [
+                "{{osc_api_base_url}}"
+              ],
+              "path": [
+                "v1",
+                "workflows",
+                "new"
+              ]
+            },
+            "description": "Creates a new workflow on the blockchain via the OSC-API. The workflow has an empty artifact list and one sample GitHub repository. On success, the response contains the workflow ID (osc-is-workflow-<uuid>)."
+          }
+        },
+        {
+          "name": "2. Get Workflow from Blockchain",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Response status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response is valid JSON', function () {",
+                  "    pm.response.to.be.json;",
+                  "});",
+                  "",
+                  "var json = pm.response.json();",
+                  "",
+                  "pm.test('Workflow has expected title', function () {",
+                  "    pm.expect(json.title).to.eql('Test Workflow from Postman');",
+                  "});",
+                  "",
+                  "pm.test('Workflow has expected description', function () {",
+                  "    pm.expect(json.description).to.eql('End-to-end test of the workflow chaincode via OSC-API');",
+                  "});",
+                  "",
+                  "pm.test('Workflow has keywords', function () {",
+                  "    pm.expect(json.keywords).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test('Workflow has empty artifact_ids', function () {",
+                  "    pm.expect(json.artifact_ids).to.be.an('array').that.is.empty;",
+                  "});",
+                  "",
+                  "pm.test('Workflow has github_repositories', function () {",
+                  "    pm.expect(json.github_repositories).to.be.an('array').with.lengthOf(1);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{osc_api_base_url}}/v1/workflows/get/{{workflow_id}}",
+              "host": [
+                "{{osc_api_base_url}}"
+              ],
+              "path": [
+                "v1",
+                "workflows",
+                "get",
+                "{{workflow_id}}"
+              ]
+            },
+            "description": "Retrieves the workflow from the blockchain using the workflow ID stored from the Create request."
+          }
+        },
+        {
+          "name": "3. Update Workflow",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var body = pm.response.text();",
+                  "",
+                  "pm.test('Response status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response contains workflow ID', function () {",
+                  "    pm.expect(body).to.include('osc-is-workflow-');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "apiuserid",
+                  "value": "{{api_user_id}}",
+                  "type": "text"
+                },
+                {
+                  "key": "groupname",
+                  "value": "{{group_name}}",
+                  "type": "text"
+                },
+                {
+                  "key": "workflowid",
+                  "value": "{{workflow_id}}",
+                  "type": "text"
+                },
+                {
+                  "key": "workflowbody",
+                  "value": "{\"title\":\"Test Workflow from Postman - UPDATED\",\"description\":\"Updated end-to-end test of the workflow chaincode\",\"submission_comment\":\"Update test via Postman collection\",\"keywords\":[\"test\",\"workflow\",\"e2e\",\"updated\"],\"artifact_ids\":[],\"github_repositories\":[{\"url\":\"https://github.com/example/test-repo\",\"description\":\"Example repository for testing\",\"git_hash\":\"def789ghi012\",\"contents\":[{\"filename\":\"README.md\",\"hash\":\"sha256-updated\"}]}]}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{osc_api_base_url}}/v1/workflows/update",
+              "host": [
+                "{{osc_api_base_url}}"
+              ],
+              "path": [
+                "v1",
+                "workflows",
+                "update"
+              ]
+            },
+            "description": "Updates an existing workflow on the blockchain. Uses the workflow_id from the Create step. Changes the title, adds a keyword, and updates the git hash."
+          }
+        },
+        {
+          "name": "4. Verify Updated Workflow",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Response status is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response is valid JSON', function () {",
+                  "    pm.response.to.be.json;",
+                  "});",
+                  "",
+                  "var json = pm.response.json();",
+                  "",
+                  "pm.test('Workflow title was updated', function () {",
+                  "    pm.expect(json.title).to.eql('Test Workflow from Postman - UPDATED');",
+                  "});",
+                  "",
+                  "pm.test('Workflow has 4 keywords after update', function () {",
+                  "    pm.expect(json.keywords).to.be.an('array').with.lengthOf(4);",
+                  "});",
+                  "",
+                  "pm.test('Submission comment was updated', function () {",
+                  "    pm.expect(json.submission_comment).to.eql('Update test via Postman collection');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{bearer_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{osc_api_base_url}}/v1/workflows/get/{{workflow_id}}",
+              "host": [
+                "{{osc_api_base_url}}"
+              ],
+              "path": [
+                "v1",
+                "workflows",
+                "get",
+                "{{workflow_id}}"
+              ]
+            },
+            "description": "Retrieves the workflow again after update to verify the changes were persisted on the blockchain."
+          }
+        }
+      ]
+    }
+  ]
+}

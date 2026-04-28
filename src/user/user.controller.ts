@@ -84,6 +84,13 @@ export class UserController {
     return this.userService.create(createUserDto, creator);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('validate-token')
+  @HttpCode(200)
+  async validateToken(@User() user: UserEntity) {
+    return { valid: true, userId: user.id };
+  }
+
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Get()
   @Roles(Role.ADMIN, Role.PI)
