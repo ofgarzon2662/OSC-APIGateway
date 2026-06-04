@@ -46,7 +46,7 @@
   "devDependencies": {
     "@angular/core": "^18.2.10",
     "@nestjs/cli": "^10.0.0",
-    "@nestjs/schematics": "^10.0.0",
+    "@nestjs/schematics": "^11.1.0",
     "@nestjs/testing": "^10.0.0",
     "@types/amqplib": "^0.10.7",
     "@types/bcrypt": "^5.0.2",
