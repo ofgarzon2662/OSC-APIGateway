@@ -1,112 +1,268 @@
 # OSC-APIGateway
-This repo holds the configuration needed to spin up an API Gateway instance for a Hyperledger Fabirc Network.
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+> The central REST API and orchestration layer of the **Open Science Chain – Information System (OSC-IS)**.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+OSC-APIGateway is a [NestJS](https://nestjs.com/) (TypeScript) service that sits between the OSC web application and the rest of the OSC-IS platform. It owns user/organization management, authentication and authorization, the off-chain relational store of research **artifacts** and **workflows**, and the publication of submission commands onto the message bus that ultimately writes records to a Hyperledger Fabric blockchain.
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Executive summary
 
-## Project setup
+The Open Science Chain (OSC) lets researchers register research **artifacts** (datasets, code, documents) and **workflows** (collections of artifacts + linked GitHub repositories) on a tamper-evident blockchain ledger so their provenance and integrity can be independently verified. The API Gateway is the "front door" to that system:
 
-```bash
-$ npm install
+- It is the **only component the web app talks to**. Everything the user sees — login, organizations, artifacts, workflows, history — is served here.
+- It keeps a **fast off-chain copy** of every artifact/workflow in PostgreSQL so the UI is responsive, while the **authoritative, immutable copy** lives on the blockchain.
+- It enforces **who can do what** (role-based access control) and **what valid data looks like** (schema validation, cryptographic hashes).
+- It hands slow, blockchain-bound work to **asynchronous background workers** over a message queue, so the user gets an instant response and the ledger write happens behind the scenes.
+
+If you only read one diagram, read [System context](#system-context) below.
+
+---
+
+## Table of contents
+
+- [System context](#system-context)
+- [What this service is responsible for](#what-this-service-is-responsible-for)
+- [Technology stack](#technology-stack)
+- [Domain model](#domain-model)
+- [Authentication & authorization](#authentication--authorization)
+- [Asynchronous submission pipeline](#asynchronous-submission-pipeline)
+- [Project structure](#project-structure)
+- [Running locally](#running-locally)
+- [Testing](#testing)
+- [Documentation](#documentation)
+
+---
+
+## System context
+
+```mermaid
+flowchart TB
+    user([Researcher / Admin])
+    webapp[OSC-WebApp<br/>Angular SPA]
+
+    subgraph gw[OSC-APIGateway · NestJS]
+        rest[REST API<br/>/api/v1]
+        db[(PostgreSQL<br/>off-chain store)]
+    end
+
+    mq[[RabbitMQ<br/>artifact.exchange]]
+    workers[Submission Worker /<br/>Listener / Get-History Worker]
+    oscapi[OSC-API<br/>token-auth Fabric access layer]
+    fabric[(Hyperledger Fabric<br/>ledger)]
+
+    user --> webapp --> rest
+    rest <--> db
+    rest -- "publish commands<br/>(artifact/workflow .submit/.update)" --> mq
+    mq --> workers
+    workers --> oscapi --> fabric
+    workers -- "status PATCH<br/>(API key)" --> rest
+    rest -- "history proxy" --> workers
 ```
 
-## Compile and run the project
+> **Note on the Fabric access path.** Earlier architecture diagrams showed an S3 bucket holding Hyperledger identities that workers would mount directly. That design was **not** shipped. In the delivered system, blockchain access is brokered by the **OSC-API** service, which authenticates callers with a token and performs the actual peer interactions. The API Gateway never talks to Fabric directly.
 
-```bash
-# development
-$ npm run start
+---
 
-# watch mode
-$ npm run start:dev
+## What this service is responsible for
 
-# production mode
-$ npm run start:prod
+| Responsibility | Detail |
+|---|---|
+| **Identity & access** | Login (JWT issuance), logout (token blacklist), users, organizations, role-based authorization. |
+| **Artifact lifecycle** | Create / read / update / delete artifacts; track on-chain submission state. |
+| **Workflow lifecycle** | Create / read / update workflows (artifacts + GitHub repositories grouped together). |
+| **Off-chain persistence** | PostgreSQL via TypeORM — the queryable mirror of on-chain data. |
+| **Command publication** | Publishes `*.submit` / `*.update` commands to RabbitMQ for asynchronous blockchain writes. |
+| **Status reconciliation** | Accepts authenticated PATCH callbacks from the submission listener to record on-chain results. |
+| **History proxy** | Proxies artifact-history reads to the Get-History Worker (which reads the ledger via OSC-API). |
+
+---
+
+## Technology stack
+
+| Concern | Choice |
+|---|---|
+| Language / runtime | TypeScript on Node.js |
+| Framework | NestJS 10 (modular, DI-based) |
+| HTTP | Express platform adapter, URI versioning (`/api/v1`), global `ValidationPipe` |
+| Persistence | PostgreSQL via TypeORM 0.3 (`synchronize: true`) |
+| AuthN/AuthZ | Passport (`local`, `jwt` strategies), `@nestjs/jwt`, custom guards |
+| Password hashing | bcrypt |
+| Messaging | RabbitMQ via `amqplib` (topic exchange) |
+| Validation | `class-validator` / `class-transformer` DTOs and entities |
+| Testing | Jest (unit + e2e), SQLite in-memory for repository tests |
+| Code quality | ESLint + Prettier, Husky + lint-staged pre-commit, SonarCloud |
+
+---
+
+## Domain model
+
+```mermaid
+erDiagram
+    ORGANIZATION ||--o{ USER : "has members"
+    ORGANIZATION ||--o{ ARTIFACT : "owns"
+    ORGANIZATION ||--o{ WORKFLOW : "owns"
+    WORKFLOW }o--o{ ARTIFACT : "groups (workflow_artifacts)"
+
+    ORGANIZATION {
+        uuid id PK
+        string name
+        string description
+    }
+    USER {
+        uuid id PK
+        string name
+        string username
+        string email
+        string password "bcrypt hash"
+        enum[] roles "admin|pi|collaborator|submitter_listener"
+    }
+    ARTIFACT {
+        uuid id PK
+        string title
+        string description
+        string[] keywords
+        string[] links
+        string[] dois
+        string[] fundingAgencies
+        json manifest "file hashes"
+        string footprint "sha-256"
+        enum submissionState "PENDING|SUCCESS|FAILED"
+        string blockchainTxId
+        string submitterEmail
+    }
+    WORKFLOW {
+        uuid id PK
+        string title
+        string description
+        json githubRepositories
+        enum submissionState "PENDING|SUCCESS|FAILED"
+        string blockchainTxId
+        string submitterEmail
+    }
 ```
 
-## Run tests
+**Key points**
 
-```bash
-# unit tests
-$ npm run test
+- Every **artifact** and **workflow** belongs to exactly one **organization** (`ManyToOne`, `CASCADE` on delete).
+- A **workflow** groups many artifacts through the `workflow_artifacts` join table (`ManyToMany`).
+- Integrity fields — per-file `manifest` hashes and a top-level `footprint` (SHA-256, validated by `^[a-f0-9]{64}$`) — are what make the on-chain record verifiable.
+- `submissionState` (`PENDING → SUCCESS | FAILED`) tracks the asynchronous blockchain write; `blockchainTxId` / `peerId` are filled in once the ledger confirms.
 
-# e2e tests
-$ npm run test:e2e
+See [docs/artifact-api.md](docs/artifact-api.md), [docs/organization-api.md](docs/organization-api.md), [docs/user-api.md](docs/user-api.md), and [docs/workflow-api.md](docs/workflow-api.md) for full request/response references.
 
-# test coverage
-$ npm run test:cov
+---
 
-# test coverage for a specific module
-$ npm run test:cov -- --testPathPattern=module-name
+## Authentication & authorization
+
+Two authentication schemes coexist, selected per-endpoint by guards:
+
+1. **JWT (human users)** — `POST /api/v1/users/login` validates credentials (bcrypt) and issues a signed JWT carrying `{ username, sub, roles, email }`. The `JwtAuthGuard` protects user-facing endpoints; logout blacklists the token in memory.
+2. **API key (service-to-service)** — the submission listener authenticates its status callbacks with `x-api-key` + `x-service-role` headers (`ApiKeyAuthGuard`), not a JWT.
+
+Authorization is **role-based** via the `@Roles(...)` decorator + `RolesGuard`:
+
+| Role | Meaning | Can create artifacts/workflows | Can administer users/orgs | Can PATCH on-chain status |
+|---|---|:--:|:--:|:--:|
+| `admin` | OSC-IS operators | – | ✅ | – |
+| `pi` | Principal Investigator | ✅ | – | – |
+| `collaborator` | Researcher | ✅ | – | – |
+| `submitter_listener` | Automated listener (service) | – | – | ✅ (API key) |
+
+> A frequent source of "must be authenticated" errors is a logged-in **admin** trying to create an artifact — only `pi` and `collaborator` may do so by design.
+
+---
+
+## Asynchronous submission pipeline
+
+The gateway never blocks the user on a blockchain write. Creating an artifact is a two-phase, event-driven flow:
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant GW as API Gateway
+    participant DB as PostgreSQL
+    participant MQ as RabbitMQ (artifact.exchange)
+    participant W as Submission Worker
+    participant API as OSC-API → Fabric
+    participant L as Submission Listener
+
+    User->>GW: POST /artifacts (JWT, PI/Collaborator)
+    GW->>DB: persist artifact (submissionState = PENDING)
+    GW-->>User: 201 Created (immediate)
+    GW->>MQ: publish routingKey artifact.submit
+    MQ->>W: deliver artifact.submit
+    W->>API: submit to ledger
+    API-->>W: txId / result
+    W->>MQ: publish artifact.submitted
+    MQ->>L: deliver artifact.submitted
+    L->>GW: PATCH /artifacts/:id (x-api-key)
+    GW->>DB: submissionState = SUCCESS, blockchainTxId
 ```
 
-For example, to run tests only for the artifact module:
+The gateway publishes through a single **topic exchange** `artifact.exchange` with routing keys `artifact.submit`, `artifact.update`, `workflow.submit`, `workflow.update`. If RabbitMQ is unreachable, artifact creation still **succeeds** (the failure is logged) — a deliberate graceful-degradation choice. See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full rationale and quality-attribute analysis.
 
-```bash
-$ npm run test:cov -- --testPathPattern=artifact
+---
+
+## Project structure
+
+```
+src/
+├── main.ts                 # Bootstrap: CORS allowlist, URI versioning, validation pipe
+├── app.module.ts           # Root module, TypeORM + Postgres config (TLS-aware)
+├── auth/                   # JWT + local + API-key strategies, guards, RBAC, token blacklist
+├── user/                   # User entity, CRUD, auth-facing lookups
+├── organization/           # Organization entity + CRUD
+├── artifact/               # Artifact entity, controller, service, history proxy (ghw.service)
+├── workflow/               # Workflow entity, controller, service
+├── messaging/              # RabbitMQ producer (rabbitmq.service)
+├── health/                 # Liveness endpoint
+└── shared/                 # Enums, decorators, errors, interceptors, validators
 ```
 
-This allows you to focus on testing specific modules during development, making the testing process more efficient.
+---
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+## Running locally
 
 ```bash
-$ npm install -g mau
-$ mau deploy
+npm install
+
+# Provide environment (see docs/environment-variables.md)
+# Minimum: DB_*, JWT_SECRET, RABBITMQ_*, admin seed users
+
+npm run start:dev          # watch mode on :3000
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+A `docker-compose.yml` is provided to bring up PostgreSQL alongside the service for integration testing. The companion message-bus + workers live in [OSC-Artifact-Submission](../OSC-Artifact-Submission).
 
-## Resources
+> **Data persistence:** `dropSchema` was removed from the TypeORM config, so the database is **no longer wiped on restart**. In staging, the database is seeded from a snapshot of curated blockchain artifacts on bring-up.
 
-Check out a few resources that may come in handy when working with NestJS:
+---
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+## Testing
 
-## Support
+```bash
+npm run test          # unit tests (Jest)
+npm run test:cov      # with coverage
+npm run test:e2e      # end-to-end
+npm run test:cov -- --testPathPattern=artifact   # single module
+```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+Repository-layer tests run against an in-memory SQLite database (`src/shared/testing-utils/typeorm-testing-config.ts`), so no PostgreSQL is required for unit tests.
 
-## Stay in touch
+---
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## Documentation
 
-## License
+| Document | Contents |
+|---|---|
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Architectural patterns, tactics, prioritized quality attributes, and the rationale behind them. |
+| [docs/artifact-api.md](docs/artifact-api.md) | Artifact endpoints. |
+| [docs/workflow-api.md](docs/workflow-api.md) | Workflow endpoints. |
+| [docs/organization-api.md](docs/organization-api.md) | Organization endpoints. |
+| [docs/user-api.md](docs/user-api.md) | User & auth endpoints. |
+| [docs/environment-variables.md](docs/environment-variables.md) | Configuration reference. |
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+---
+
+*Part of the OSC-IS platform. See the sibling repositories: [OSC-WebApp](../OSC-WebApp), [OSC-Artifact-Submission](../OSC-Artifact-Submission), [OSC-IS-Infra](../OSC-IS-Infra), [OSC-API](../OSC-API), [OSC-Chaincode](../OSC-Chaincode), [OSC-Docker](../OSC-Docker), [OSC-Network](../OSC-Network).*

@@ -2,6 +2,8 @@
 
 This document lists all the environment variables required for the OSC API Gateway.
 
+> ⚠️ **The values below are illustrative examples / local-development defaults only.** They are **not** real credentials. Production and staging secrets (database password, JWT secret, API keys) are supplied at runtime from AWS Secrets Manager / the environment and must never be committed. Always override every value below in any non-local environment.
+
 ## Database Configuration
 ```
 DB_HOST=localhost
