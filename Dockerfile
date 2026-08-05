@@ -1,5 +1,5 @@
 # Multi-stage build for production efficiency
-FROM node:18-alpine AS build
+FROM node:20-alpine AS build
 WORKDIR /app
 # Build tools needed for native addons (e.g. bcrypt)
 RUN apk add --no-cache python3 make g++
@@ -8,7 +8,7 @@ RUN HUSKY=0 npm ci
 COPY . .
 RUN npm run build && HUSKY=0 npm prune --production
 
-FROM node:18-alpine AS production
+FROM node:20-alpine AS production
 WORKDIR /app
 
 # Add root CAs so TLS works (RDS, etc.)
@@ -33,9 +33,9 @@ COPY --chown=nestjs:nodejs package*.json ./
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3000/health', (res) => process.exit(res.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"
+  CMD node -e "require('http').get('http://localhost:3000/api/v1/health', (res) => process.exit(res.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"
 
 USER nestjs
 EXPOSE 3000
 
-CMD ["node", "dist/main"] 
+CMD ["node", "dist/main"]

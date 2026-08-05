@@ -14,6 +14,9 @@ import { WorkflowModule } from './workflow/workflow.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { HealthController } from './health/health.controller';
+import { AddOrganizationLedgerRouting1720000000000 } from './migrations/1720000000000-add-organization-ledger-routing';
+import { OutboxEntity } from './messaging/outbox.entity';
+import { CreateMessageOutbox1720000001000 } from './migrations/1720000001000-create-message-outbox';
 
 @Module({
   imports: [
@@ -31,7 +34,9 @@ import { HealthController } from './health/health.controller';
         let sslOption: any = undefined;
 
         if (useSsl) {
-          const caPath = process.env.PGSSL_CA_PATH || '/usr/local/share/ca-certificates/aws-rds-combined.crt';
+          const caPath =
+            process.env.PGSSL_CA_PATH ||
+            '/usr/local/share/ca-certificates/aws-rds-combined.crt';
           let caContent: string | undefined = undefined;
           try {
             if (caPath && fs.existsSync(caPath)) {
@@ -39,8 +44,12 @@ import { HealthController } from './health/health.controller';
             }
           } catch {}
 
-          const rejectUnauthorizedEnv = configService.get<string>('DB_SSL_REJECT_UNAUTHORIZED');
-          const rejectUnauthorized = rejectUnauthorizedEnv ? rejectUnauthorizedEnv !== 'false' : true;
+          const rejectUnauthorizedEnv = configService.get<string>(
+            'DB_SSL_REJECT_UNAUTHORIZED',
+          );
+          const rejectUnauthorized = rejectUnauthorizedEnv
+            ? rejectUnauthorizedEnv !== 'false'
+            : true;
           const servername = configService.get<string>('DB_SSL_SERVERNAME');
 
           const opts: any = { rejectUnauthorized };
@@ -58,8 +67,27 @@ import { HealthController } from './health/health.controller';
           username: configService.get<string>('DB_USER', 'postgres'),
           password: configService.get<string>('DB_PASSWORD', 'postgres'),
           database: configService.get<string>('DB_NAME', 'organization'),
-          entities: [UserEntity, OrganizationEntity, ArtifactEntity, WorkflowEntity],
-          synchronize: true,
+          entities: [
+            UserEntity,
+            OrganizationEntity,
+            ArtifactEntity,
+            WorkflowEntity,
+            OutboxEntity,
+          ],
+          migrations: [
+            AddOrganizationLedgerRouting1720000000000,
+            CreateMessageOutbox1720000001000,
+          ],
+          migrationsRun:
+            configService.get<string>(
+              'DB_MIGRATIONS_RUN',
+              process.env.NODE_ENV === 'production' ? 'true' : 'false',
+            ) === 'true',
+          synchronize:
+            configService.get<string>(
+              'DB_SYNCHRONIZE',
+              process.env.NODE_ENV === 'production' ? 'false' : 'true',
+            ) === 'true',
           keepConnectionAlive: true,
           ssl: sslOption,
         };

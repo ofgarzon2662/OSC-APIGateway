@@ -5,7 +5,7 @@ import { TypeOrmTestingConfig } from '../shared/testing-utils/typeorm-testing-co
 import { ArtifactService } from './artifact.service';
 import { ArtifactEntity } from './artifact.entity';
 import { faker } from '@faker-js/faker';
-import { BusinessError, BusinessLogicException } from '../shared/errors/business-errors';
+import { BusinessError } from '../shared/errors/business-errors';
 import { SubmissionState } from './enums/submission-state.enum';
 import { UpdateArtifactWorkerDto as UpdateArtifactDto } from './dto/update-artifact-worker.dto';
 import { OrganizationEntity } from '../organization/organization.entity';
@@ -21,30 +21,40 @@ describe('ArtifactService', () => {
   let organization: OrganizationEntity;
   let rabbitMQService: RabbitMQService;
   let ghwService: GhwService;
-  
+
   // Test submitter info
   const testSubmitter = {
     username: 'test_user',
-    email: 'test@example.com'
+    email: 'test@example.com',
   };
 
   // Helper function to generate a random artifact
   function generateRandomArtifact(): CreateArtifactDto {
     return {
       title: faker.commerce.productName(),
-      description: faker.commerce.productDescription() + ' ' + faker.commerce.productDescription() + ' ' + faker.commerce.productDescription(),
-      submission_comment: faker.lorem.sentence(8) + ' ' + faker.lorem.sentence(8),
+      description:
+        faker.commerce.productDescription() +
+        ' ' +
+        faker.commerce.productDescription() +
+        ' ' +
+        faker.commerce.productDescription(),
+      submission_comment:
+        faker.lorem.sentence(8) + ' ' + faker.lorem.sentence(8),
       keywords: [faker.commerce.department(), faker.commerce.department()],
       links: [faker.internet.url()],
       dois: [],
       fundingAgencies: [],
       acknowledgements: faker.lorem.sentence(),
-      manifest: [{
-        hash: faker.string.alphanumeric(64),
-        filename: faker.system.fileName(),
-        algorithm: 'sha256'
-      }],
-      footprint: faker.string.hexadecimal({ length: 64, prefix: '' }).toLowerCase()
+      manifest: [
+        {
+          hash: faker.string.alphanumeric(64),
+          filename: faker.system.fileName(),
+          algorithm: 'sha256',
+        },
+      ],
+      footprint: faker.string
+        .hexadecimal({ length: 64, prefix: '' })
+        .toLowerCase(),
     };
   }
 
@@ -110,9 +120,9 @@ describe('ArtifactService', () => {
         organization,
         submitterEmail: testSubmitter.email,
         submitterUsername: testSubmitter.username,
-        submissionState: SubmissionState.PENDING
+        submissionState: SubmissionState.PENDING,
       });
-      
+
       const savedArtifact = await artifactRepository.save(artifact);
       artifactList.push(savedArtifact);
     }
@@ -144,20 +154,17 @@ describe('ArtifactService', () => {
       });
     });
 
-    it('should call repository.find with the organization filter', async () => {
-      const spy = jest.spyOn(artifactRepository, 'find').mockResolvedValueOnce([]);
+    it('should query all public artifacts across organizations', async () => {
+      const spy = jest
+        .spyOn(artifactRepository, 'find')
+        .mockResolvedValueOnce([]);
       await service.findAll();
-      expect(spy).toHaveBeenCalledWith(
-        expect.objectContaining({ where: expect.objectContaining({ organization: expect.anything() }) }),
-      );
+      expect(spy).toHaveBeenCalledWith();
     });
 
-    it('should throw an exception when no organization exists', async () => {
+    it('should return an empty public list when no organization exists', async () => {
       await organizationRepository.clear();
-      await expect(service.findAll()).rejects.toHaveProperty(
-        'message',
-        'No organization exists in the system',
-      );
+      await expect(service.findAll()).resolves.toEqual([]);
     });
   });
 
@@ -165,13 +172,13 @@ describe('ArtifactService', () => {
   describe('findOne', () => {
     it('should return one artifact by id with all fields', async () => {
       const storedArtifact = artifactList[0];
-      
+
       // Need to load the artifact with relations to get organization
       const fullArtifact = await artifactRepository.findOne({
         where: { id: storedArtifact.id },
-        relations: ['organization']
+        relations: ['organization'],
       });
-      
+
       const artifact = await service.findOne(storedArtifact.id);
       expect(artifact).toBeDefined();
       expect(artifact.id).toEqual(fullArtifact.id);
@@ -198,16 +205,16 @@ describe('ArtifactService', () => {
       );
     });
 
-    it('should throw an exception when no organization exists', async () => {
+    it('should report the artifact missing after its organization is deleted', async () => {
       // Save the ID first
       const artifactId = artifactList[0].id;
-      
+
       // Clear the organization to test the case when no org exists
       await organizationRepository.clear();
-      
+
       await expect(service.findOne(artifactId)).rejects.toHaveProperty(
         'message',
-        'No organization exists in the system',
+        'The artifact with the provided id does not exist',
       );
     });
   });
@@ -216,7 +223,7 @@ describe('ArtifactService', () => {
   describe('create', () => {
     it('should create a new artifact with valid data', async () => {
       const artifactDto = generateRandomArtifact();
-      
+
       const newArtifact = await service.create(artifactDto, testSubmitter);
       expect(newArtifact).toBeDefined();
       expect(newArtifact).toEqual({
@@ -227,13 +234,13 @@ describe('ArtifactService', () => {
         submittedAt: expect.any(Date),
         verified: false,
         updatedAt: null,
-        footprint: artifactDto.footprint
+        footprint: artifactDto.footprint,
       });
-      
+
       // Verify it's saved in the database
-      const savedArtifact = await artifactRepository.findOne({ 
+      const savedArtifact = await artifactRepository.findOne({
         where: { id: newArtifact.id },
-        relations: ['organization']
+        relations: ['organization'],
       });
       expect(savedArtifact).toBeDefined();
       expect(savedArtifact.submitterEmail).toBe(testSubmitter.email);
@@ -243,25 +250,26 @@ describe('ArtifactService', () => {
 
     it('should throw an exception for invalid email', async () => {
       const artifactDto = generateRandomArtifact();
-      const invalidSubmitter = { 
+      const invalidSubmitter = {
         username: 'testuser',
-        email: 'invalid-email' 
+        email: 'invalid-email',
       };
-      
-      await expect(service.create(artifactDto, invalidSubmitter)).rejects.toHaveProperty(
-        'message',
-        'Invalid submitter email provided.',
-      );
+
+      await expect(
+        service.create(artifactDto, invalidSubmitter),
+      ).rejects.toHaveProperty('message', 'Invalid submitter email provided.');
     });
 
     it('should throw an exception for empty username', async () => {
       const artifactDto = generateRandomArtifact();
       const invalidSubmitter = {
         username: '',
-        email: 'valid@example.com'
+        email: 'valid@example.com',
       };
-      
-      await expect(service.create(artifactDto, invalidSubmitter)).rejects.toHaveProperty(
+
+      await expect(
+        service.create(artifactDto, invalidSubmitter),
+      ).rejects.toHaveProperty(
         'message',
         'Invalid submitter username provided.',
       );
@@ -270,7 +278,9 @@ describe('ArtifactService', () => {
     it('should throw an exception for short title', async () => {
       const artifactDto = generateRandomArtifact();
       artifactDto.title = 'Ab'; // Too short
-      await expect(service.create(artifactDto, testSubmitter)).rejects.toHaveProperty(
+      await expect(
+        service.create(artifactDto, testSubmitter),
+      ).rejects.toHaveProperty(
         'message',
         'The title of the artifact is required and must be at least 3 characters long',
       );
@@ -279,7 +289,9 @@ describe('ArtifactService', () => {
     it('should throw an exception for short description', async () => {
       const artifactDto = generateRandomArtifact();
       artifactDto.description = 'Too short description';
-      await expect(service.create(artifactDto, testSubmitter)).rejects.toHaveProperty(
+      await expect(
+        service.create(artifactDto, testSubmitter),
+      ).rejects.toHaveProperty(
         'message',
         'The description must be at least 50 characters long',
       );
@@ -290,8 +302,10 @@ describe('ArtifactService', () => {
       const existingArtifact = artifactList[0];
       const artifactDto = generateRandomArtifact();
       artifactDto.title = existingArtifact.title;
-      
-      await expect(service.create(artifactDto, testSubmitter)).rejects.toHaveProperty(
+
+      await expect(
+        service.create(artifactDto, testSubmitter),
+      ).rejects.toHaveProperty(
         'message',
         'An artifact with this title already exists in the organization',
       );
@@ -300,9 +314,11 @@ describe('ArtifactService', () => {
     it('should throw an exception when no organization exists', async () => {
       // Clear the organization to test the case when no org exists
       await organizationRepository.clear();
-      
+
       const artifactDto = generateRandomArtifact();
-      await expect(service.create(artifactDto, testSubmitter)).rejects.toHaveProperty(
+      await expect(
+        service.create(artifactDto, testSubmitter),
+      ).rejects.toHaveProperty(
         'message',
         'No organization exists in the system',
       );
@@ -313,7 +329,9 @@ describe('ArtifactService', () => {
       it('should throw an exception for invalid footprint format', async () => {
         const artifactDto = generateRandomArtifact();
         artifactDto.footprint = 'abc';
-        await expect(service.create(artifactDto, testSubmitter)).rejects.toHaveProperty(
+        await expect(
+          service.create(artifactDto, testSubmitter),
+        ).rejects.toHaveProperty(
           'message',
           'A valid SHA-256 footprint hash is required (64 hex characters).',
         );
@@ -322,11 +340,13 @@ describe('ArtifactService', () => {
         const artifactDto = generateRandomArtifact();
         // Create keywords that total over 1000 characters
         artifactDto.keywords = [
-          'a'.repeat(500), 
-          'b'.repeat(501)  // Total: 1001 characters
+          'a'.repeat(500),
+          'b'.repeat(501), // Total: 1001 characters
         ];
-        
-        await expect(service.create(artifactDto, testSubmitter)).rejects.toHaveProperty(
+
+        await expect(
+          service.create(artifactDto, testSubmitter),
+        ).rejects.toHaveProperty(
           'message',
           'The keywords array can have at most 1000 characters in total',
         );
@@ -336,11 +356,13 @@ describe('ArtifactService', () => {
         const artifactDto = generateRandomArtifact();
         // Create links that total over 2000 characters
         artifactDto.links = [
-          'https://example.com/' + 'a'.repeat(1000),  
-          'https://test.com/' + 'b'.repeat(1000)  // Total: over 2000 characters
+          'https://example.com/' + 'a'.repeat(1000),
+          'https://test.com/' + 'b'.repeat(1000), // Total: over 2000 characters
         ];
-        
-        await expect(service.create(artifactDto, testSubmitter)).rejects.toHaveProperty(
+
+        await expect(
+          service.create(artifactDto, testSubmitter),
+        ).rejects.toHaveProperty(
           'message',
           'The links array can have at most 2000 characters in total',
         );
@@ -348,9 +370,15 @@ describe('ArtifactService', () => {
 
       it('should throw an exception for invalid URL in links array', async () => {
         const artifactDto = generateRandomArtifact();
-        artifactDto.links = ['https://valid.com', 'invalid-url', 'https://another-valid.com'];
-        
-        await expect(service.create(artifactDto, testSubmitter)).rejects.toHaveProperty(
+        artifactDto.links = [
+          'https://valid.com',
+          'invalid-url',
+          'https://another-valid.com',
+        ];
+
+        await expect(
+          service.create(artifactDto, testSubmitter),
+        ).rejects.toHaveProperty(
           'message',
           'Each link in the links array must be a valid URL',
         );
@@ -359,18 +387,26 @@ describe('ArtifactService', () => {
 
     it('should still resolve even if publishArtifactSubmit fails (logs error via logger)', async () => {
       const artifactDto = generateRandomArtifact();
-      const publishSpy = jest.spyOn(rabbitMQService, 'publishArtifactSubmit').mockRejectedValueOnce(new Error('broker down'));
-      const loggerSpy = jest.spyOn((service as any).logger, 'error').mockImplementation(() => {});
+      const publishSpy = jest
+        .spyOn(rabbitMQService, 'publishArtifactSubmit')
+        .mockRejectedValueOnce(new Error('broker down'));
+      const loggerSpy = jest
+        .spyOn((service as any).logger, 'error')
+        .mockImplementation(() => {});
 
       const result = await service.create(artifactDto, testSubmitter);
       expect(result.id).toBeDefined();
       expect(publishSpy).toHaveBeenCalled();
 
       // Wait for the fire-and-forget rejection to propagate
-      await new Promise(resolve => setImmediate(resolve));
+      await new Promise((resolve) => setImmediate(resolve));
 
-      expect(loggerSpy).toHaveBeenCalledWith(expect.stringContaining('Failed to publish artifact.submit'));
-      expect(loggerSpy).toHaveBeenCalledWith(expect.stringContaining('broker down'));
+      expect(loggerSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Failed to publish artifact.submit'),
+      );
+      expect(loggerSpy).toHaveBeenCalledWith(
+        expect.stringContaining('broker down'),
+      );
       loggerSpy.mockRestore();
     });
 
@@ -391,7 +427,9 @@ describe('ArtifactService', () => {
     it('should reject restricted fields in update', async () => {
       const storedArtifact = artifactList[0];
       const badDto: any = { title: 'New Title' };
-      await expect(service.update(storedArtifact.id, badDto)).rejects.toHaveProperty(
+      await expect(
+        service.update(storedArtifact.id, badDto),
+      ).rejects.toHaveProperty(
         'message',
         'Cannot update title, contributor, or submittedAt fields',
       );
@@ -399,18 +437,22 @@ describe('ArtifactService', () => {
 
     it('should throw an exception for an invalid artifact ID', async () => {
       const badDto: any = { title: 'X' };
-      await expect(service.update('invalid-uuid', badDto)).rejects.toHaveProperty(
+      await expect(
+        service.update('invalid-uuid', badDto),
+      ).rejects.toHaveProperty(
         'message',
         'The artifactId provided is not valid',
       );
     });
 
-    it('should throw an exception when no organization exists', async () => {
+    it('should report the artifact missing after its organization is deleted', async () => {
       const artifactId = artifactList[0].id;
       await organizationRepository.clear();
-      await expect(service.update(artifactId, {} as any)).rejects.toHaveProperty(
+      await expect(
+        service.update(artifactId, {} as any),
+      ).rejects.toHaveProperty(
         'message',
-        'No organization exists in the system',
+        'The artifact with the provided id does not exist',
       );
     });
 
@@ -428,9 +470,11 @@ describe('ArtifactService', () => {
     it('should persist user fields and publish artifact.update asynchronously', async () => {
       const storedArtifact = artifactList[0];
       const dto: any = {
-        submission_comment: 'Updating artifact details for traceability and audit purposes.',
+        submission_comment:
+          'Updating artifact details for traceability and audit purposes.',
         keywords: ['ai', 'ml'],
-        footprint: '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
+        footprint:
+          '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
       };
 
       const saveSpy = jest.spyOn(artifactRepository, 'save');
@@ -441,7 +485,9 @@ describe('ArtifactService', () => {
       expect(result.id).toBe(storedArtifact.id);
       expect(result.submission_comment).toContain('Updating artifact details');
       expect(result.keywords).toEqual(['ai', 'ml']);
-      expect(result.footprint).toEqual('0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef');
+      expect(result.footprint).toEqual(
+        '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
+      );
       expect(saveSpy).toHaveBeenCalled();
 
       expect(publishSpy).toHaveBeenCalledWith(
@@ -449,7 +495,8 @@ describe('ArtifactService', () => {
           artifactId: storedArtifact.id,
           patch: expect.objectContaining({
             keywords: ['ai', 'ml'],
-            footprint: '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
+            footprint:
+              '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
           }),
         }),
       );
@@ -457,46 +504,59 @@ describe('ArtifactService', () => {
 
     it('should reject title or description in updateUser DTO', async () => {
       const storedArtifact = artifactList[0];
-      await expect(service.updateUser(storedArtifact.id, { title: 'x' } as any)).rejects.toHaveProperty(
-        'message',
-        'Cannot update title or description',
-      );
-      await expect(service.updateUser(storedArtifact.id, { description: 'y' } as any)).rejects.toHaveProperty(
-        'message',
-        'Cannot update title or description',
-      );
+      await expect(
+        service.updateUser(storedArtifact.id, { title: 'x' } as any),
+      ).rejects.toHaveProperty('message', 'Cannot update title or description');
+      await expect(
+        service.updateUser(storedArtifact.id, { description: 'y' } as any),
+      ).rejects.toHaveProperty('message', 'Cannot update title or description');
     });
 
     it('should log an error when publishArtifactUpdate rejects', async () => {
       const storedArtifact = artifactList[0];
       const dto: any = {
-        submission_comment: 'Updating artifact details for traceability and audit purposes.',
+        submission_comment:
+          'Updating artifact details for traceability and audit purposes.',
       };
       const publishError = new Error('broker unavailable');
-      jest.spyOn(rabbitMQService, 'publishArtifactUpdate').mockRejectedValueOnce(publishError);
-      const loggerSpy = jest.spyOn((service as any).logger, 'error').mockImplementation(() => {});
+      jest
+        .spyOn(rabbitMQService, 'publishArtifactUpdate')
+        .mockRejectedValueOnce(publishError);
+      const loggerSpy = jest
+        .spyOn((service as any).logger, 'error')
+        .mockImplementation(() => {});
 
       await service.updateUser(storedArtifact.id, dto);
 
       // Wait for the fire-and-forget rejection to propagate
-      await new Promise(resolve => setImmediate(resolve));
+      await new Promise((resolve) => setImmediate(resolve));
 
       expect(loggerSpy).toHaveBeenCalledWith(
-        expect.stringContaining(`Failed to publish artifact.update for ${storedArtifact.id}`),
+        expect.stringContaining(
+          `Failed to publish artifact.update for ${storedArtifact.id}`,
+        ),
       );
-      expect(loggerSpy).toHaveBeenCalledWith(expect.stringContaining('broker unavailable'));
+      expect(loggerSpy).toHaveBeenCalledWith(
+        expect.stringContaining('broker unavailable'),
+      );
       loggerSpy.mockRestore();
     });
 
     it('should include correlationId in the published update command when provided', async () => {
       const storedArtifact = artifactList[0];
       const dto: any = {
-        submission_comment: 'Updating artifact details for traceability and audit purposes.',
+        submission_comment:
+          'Updating artifact details for traceability and audit purposes.',
         keywords: ['physics'],
       };
       const publishSpy = jest.spyOn(rabbitMQService, 'publishArtifactUpdate');
 
-      await service.updateUser(storedArtifact.id, dto, 'user@example.com', 'corr-abc');
+      await service.updateUser(
+        storedArtifact.id,
+        dto,
+        'user@example.com',
+        'corr-abc',
+      );
 
       expect(publishSpy).toHaveBeenCalledWith(
         expect.objectContaining({ correlationId: 'corr-abc' }),
@@ -509,9 +569,11 @@ describe('ArtifactService', () => {
     it('should delete an artifact', async () => {
       const storedArtifact = artifactList[0];
       await service.delete(storedArtifact.id);
-      
+
       // Verify it's gone from the database
-      const deletedArtifact = await artifactRepository.findOne({ where: { id: storedArtifact.id } });
+      const deletedArtifact = await artifactRepository.findOne({
+        where: { id: storedArtifact.id },
+      });
       expect(deletedArtifact).toBeNull();
     });
 
@@ -530,16 +592,16 @@ describe('ArtifactService', () => {
       );
     });
 
-    it('should throw an exception when no organization exists', async () => {
+    it('should report the artifact missing after its organization is deleted', async () => {
       // Save the ID first
       const artifactId = artifactList[0].id;
-      
+
       // Clear the organization to test the case when no org exists
       await organizationRepository.clear();
-      
+
       await expect(service.delete(artifactId)).rejects.toHaveProperty(
         'message',
-        'No organization exists in the system',
+        'The artifact with the provided id does not exist',
       );
     });
   });
@@ -548,16 +610,35 @@ describe('ArtifactService', () => {
   describe('updateWorker - additional coverage for conditional updates', () => {
     it('should include nextOffset and pass correlationId to GHW history', async () => {
       const storedArtifact = artifactList[0];
-      const spy = jest.spyOn(ghwService, 'fetchHistory').mockResolvedValue({ items: [], hasMore: true } as any);
-      const result = await service.getHistory(storedArtifact.id, { offset: '0', limit: '2', order: 'desc', includeValue: 'true' }, 'corr-123');
-      expect(spy).toHaveBeenCalledWith({ artifactId: storedArtifact.id.toLowerCase(), offset: 0, limit: 2, order: 'desc', includeValue: true }, 'corr-123');
+      const spy = jest
+        .spyOn(ghwService, 'fetchHistory')
+        .mockResolvedValue({ items: [], hasMore: true } as any);
+      const result = await service.getHistory(
+        storedArtifact.id,
+        { offset: '0', limit: '2', order: 'desc', includeValue: 'true' },
+        'corr-123',
+      );
+      expect(spy).toHaveBeenCalledWith(
+        {
+          artifactId: storedArtifact.id.toLowerCase(),
+          offset: 0,
+          limit: 2,
+          order: 'desc',
+          includeValue: true,
+        },
+        'corr-123',
+      );
       expect((result as any).nextOffset).toBe(2);
     });
 
     it('should propagate timeout errors from GHW as gateway timeout', async () => {
       const storedArtifact = artifactList[0];
-      jest.spyOn(ghwService, 'fetchHistory').mockRejectedValueOnce(new Error('CONNECT_TIMEOUT'));
-      await expect(service.getHistory(storedArtifact.id, {}, 'c')).rejects.toHaveProperty('type', BusinessError.GATEWAY_TIMEOUT);
+      jest
+        .spyOn(ghwService, 'fetchHistory')
+        .mockRejectedValueOnce(new Error('CONNECT_TIMEOUT'));
+      await expect(
+        service.getHistory(storedArtifact.id, {}, 'c'),
+      ).rejects.toHaveProperty('type', BusinessError.GATEWAY_TIMEOUT);
     });
 
     it('should map upstream status code to BAD_GATEWAY', async () => {
@@ -565,14 +646,19 @@ describe('ArtifactService', () => {
       const err: any = new Error('UPSTREAM_500');
       err.statusCode = 500;
       jest.spyOn(ghwService, 'fetchHistory').mockRejectedValueOnce(err);
-      await expect(service.getHistory(storedArtifact.id, {}, 'c')).rejects.toHaveProperty('type', BusinessError.BAD_GATEWAY);
+      await expect(
+        service.getHistory(storedArtifact.id, {}, 'c'),
+      ).rejects.toHaveProperty('type', BusinessError.BAD_GATEWAY);
     });
     it('should accept only updatedAt in status update', async () => {
       const storedArtifact = artifactList[0];
       const updateStatusDto: UpdateArtifactDto = {
         updatedAt: '2025-01-01T00:00:00.000Z',
       } as any;
-      const updatedArtifact = await service.updateWorker(storedArtifact.id, updateStatusDto);
+      const updatedArtifact = await service.updateWorker(
+        storedArtifact.id,
+        updateStatusDto,
+      );
       expect(updatedArtifact.updatedAt).toBeDefined();
     });
 
@@ -583,9 +669,12 @@ describe('ArtifactService', () => {
         submissionState: SubmissionState.SUCCESS,
         updatedAt,
       };
-      
-      const updatedArtifact = await service.updateWorker(storedArtifact.id, updateStatusDto);
-      
+
+      const updatedArtifact = await service.updateWorker(
+        storedArtifact.id,
+        updateStatusDto,
+      );
+
       expect(updatedArtifact.updatedAt).toBeDefined();
     });
 
@@ -596,12 +685,17 @@ describe('ArtifactService', () => {
         peerId: null as any, // Null should not update
         submissionState: SubmissionState.SUCCESS,
       };
-      
-      const updatedArtifact = await service.updateWorker(storedArtifact.id, updateStatusDto);
-      
+
+      const updatedArtifact = await service.updateWorker(
+        storedArtifact.id,
+        updateStatusDto,
+      );
+
       expect(updatedArtifact.submissionState).toBe(SubmissionState.SUCCESS);
       // blockchainTxId and peerId should remain unchanged since they were empty/null
-      expect(updatedArtifact.blockchainTxId).toEqual(storedArtifact.blockchainTxId);
+      expect(updatedArtifact.blockchainTxId).toEqual(
+        storedArtifact.blockchainTxId,
+      );
       expect(updatedArtifact.peerId).toEqual(storedArtifact.peerId);
     });
 
@@ -615,11 +709,16 @@ describe('ArtifactService', () => {
         submissionError: err,
       } as any;
 
-      const updatedArtifact = await service.updateWorker(storedArtifact.id, updateStatusDto);
+      const updatedArtifact = await service.updateWorker(
+        storedArtifact.id,
+        updateStatusDto,
+      );
 
       // On FAILED, we do not change updatedAt
       expect(updatedArtifact.updatedAt).toEqual(originalUpdatedAt);
-      expect(updatedArtifact.submissionError).toContain('Error updating the artifact. Details:');
+      expect(updatedArtifact.submissionError).toContain(
+        'Error updating the artifact. Details:',
+      );
       expect(updatedArtifact.submissionError).toContain(err);
     });
 
@@ -631,8 +730,13 @@ describe('ArtifactService', () => {
         updatedAt: '2025-01-01T00:00:00.000Z',
         submissionError: 'temporary outage',
       } as any;
-      const failedArtifact = await service.updateWorker(storedArtifact.id, failDto);
-      expect(failedArtifact.submissionError).toContain('Error updating the artifact');
+      const failedArtifact = await service.updateWorker(
+        storedArtifact.id,
+        failDto,
+      );
+      expect(failedArtifact.submissionError).toContain(
+        'Error updating the artifact',
+      );
 
       // Then mark as SUCCESS with new updatedAt
       const successAt = '2025-01-02T00:00:00.000Z';
@@ -640,7 +744,10 @@ describe('ArtifactService', () => {
         submissionState: SubmissionState.SUCCESS,
         updatedAt: successAt,
       } as any;
-      const successArtifact = await service.updateWorker(storedArtifact.id, successDto);
+      const successArtifact = await service.updateWorker(
+        storedArtifact.id,
+        successDto,
+      );
       expect(successArtifact.submissionError).toBeNull();
       expect(successArtifact.updatedAt).toEqual(new Date(successAt));
     });
@@ -653,16 +760,23 @@ describe('ArtifactService', () => {
         submissionError: err,
       } as any;
 
-      const updatedArtifact = await service.updateWorker(storedArtifact.id, updateStatusDto);
+      const updatedArtifact = await service.updateWorker(
+        storedArtifact.id,
+        updateStatusDto,
+      );
 
-      expect(updatedArtifact.submissionError).toContain('Error submitting the artifact. Details:');
+      expect(updatedArtifact.submissionError).toContain(
+        'Error submitting the artifact. Details:',
+      );
       expect(updatedArtifact.submissionError).toContain(err);
     });
 
     it('should reject unknown fields in status update', async () => {
       const storedArtifact = artifactList[0];
       const badDto: any = { title: 'nope' };
-      await expect(service.updateWorker(storedArtifact.id, badDto)).rejects.toHaveProperty('message');
+      await expect(
+        service.updateWorker(storedArtifact.id, badDto),
+      ).rejects.toHaveProperty('message');
     });
 
     it('should set blockchainTxId and peerId when provided', async () => {
@@ -681,7 +795,9 @@ describe('ArtifactService', () => {
   describe('refreshHistory', () => {
     it('should call GHW refresh and return result', async () => {
       const storedArtifact = artifactList[0];
-      const spy = jest.spyOn(ghwService, 'refresh').mockResolvedValueOnce({ ok: true } as any);
+      const spy = jest
+        .spyOn(ghwService, 'refresh')
+        .mockResolvedValueOnce({ ok: true } as any);
       const out = await service.refreshHistory(storedArtifact.id, 'c-1');
       expect(spy).toHaveBeenCalled();
       expect(out).toEqual({ ok: true });
@@ -689,8 +805,12 @@ describe('ArtifactService', () => {
 
     it('should map upstream timeout to GATEWAY_TIMEOUT', async () => {
       const storedArtifact = artifactList[0];
-      jest.spyOn(ghwService, 'refresh').mockRejectedValueOnce(new Error('CONNECT_TIMEOUT'));
-      await expect(service.refreshHistory(storedArtifact.id, 'c')).rejects.toHaveProperty('type', BusinessError.GATEWAY_TIMEOUT);
+      jest
+        .spyOn(ghwService, 'refresh')
+        .mockRejectedValueOnce(new Error('CONNECT_TIMEOUT'));
+      await expect(
+        service.refreshHistory(storedArtifact.id, 'c'),
+      ).rejects.toHaveProperty('type', BusinessError.GATEWAY_TIMEOUT);
     });
 
     it('should map upstream status code to BAD_GATEWAY for refresh', async () => {
@@ -698,7 +818,9 @@ describe('ArtifactService', () => {
       const err: any = new Error('UPSTREAM_504');
       err.statusCode = 504;
       jest.spyOn(ghwService, 'refresh').mockRejectedValueOnce(err);
-      await expect(service.refreshHistory(storedArtifact.id, 'c')).rejects.toHaveProperty('type', BusinessError.BAD_GATEWAY);
+      await expect(
+        service.refreshHistory(storedArtifact.id, 'c'),
+      ).rejects.toHaveProperty('type', BusinessError.BAD_GATEWAY);
     });
   });
 });

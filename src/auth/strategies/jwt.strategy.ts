@@ -10,12 +10,15 @@ import { Request } from 'express';
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     private readonly configService: ConfigService,
-    private readonly tokenBlacklistService: TokenBlacklistService
+    private readonly tokenBlacklistService: TokenBlacklistService,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: configService.get<string>('JWT_SECRET', jwtConstants.JWT_SECRET),
+      secretOrKey: configService.get<string>(
+        'JWT_SECRET',
+        jwtConstants.JWT_SECRET,
+      ),
       passReqToCallback: true, // Pass the request object to the validate method
     });
   }
@@ -23,17 +26,22 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   async validate(req: Request, payload: any) {
     // Extract the token from the request
     const token = ExtractJwt.fromAuthHeaderAsBearerToken()(req);
-    
+
     // Check if the token is blacklisted
     if (this.tokenBlacklistService.isBlacklisted(token)) {
       throw new UnauthorizedException('Token has been revoked');
     }
-    
-    return { 
-      id: payload.sub, 
-      username: payload.username, 
+
+    return {
+      id: payload.sub,
+      username: payload.username,
       roles: payload.roles,
-      email: payload.email 
+      email: payload.email,
+      organizationId: payload.organizationId ?? null,
+      organizationName: payload.organizationName ?? null,
+      organization: payload.organizationId
+        ? { id: payload.organizationId, name: payload.organizationName }
+        : null,
     };
   }
 }

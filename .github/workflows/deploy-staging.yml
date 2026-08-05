@@ -1,0 +1,65 @@
+name: Deploy staging
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: Immutable image tag (defaults to the selected commit SHA)
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: apigateway-staging
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build and deploy API Gateway
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: staging
+    steps:
+      - uses: actions/checkout@v6
+      - name: Configure AWS credentials with GitHub OIDC
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: arn:aws:iam::269624229733:role/osc-github-deploy-api
+          aws-region: us-west-2
+      - name: Log in to ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+      - name: Build and push immutable image
+        id: image
+        shell: bash
+        env:
+          REGISTRY: ${{ steps.ecr.outputs.registry }}
+          REPOSITORY: osc-api
+          REQUESTED_TAG: ${{ inputs.image_tag }}
+        run: |
+          set -euo pipefail
+          tag="${REQUESTED_TAG:-${GITHUB_SHA}}"
+          image="$REGISTRY/$REPOSITORY:$tag"
+          docker build --tag "$image" .
+          docker push "$image"
+          echo "uri=$image" >> "$GITHUB_OUTPUT"
+      - name: Read current task definition
+        run: aws ecs describe-task-definition --task-definition osc-api --query taskDefinition > task-definition.json
+      - name: Render immutable image into task definition
+        id: task
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: osc-api-gateway
+          image: ${{ steps.image.outputs.uri }}
+      - name: Deploy and wait for stability
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.task.outputs.task-definition }}
+          service: osc-api-blue
+          cluster: osc-staging
+          wait-for-service-stability: true
+

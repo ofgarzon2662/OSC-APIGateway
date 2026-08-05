@@ -6,7 +6,10 @@ import {
   BusinessError,
   BusinessLogicException,
 } from '../shared/errors/business-errors';
-import { OrganizationResponseDto, UserForOrganizationDto } from './organization.dto';
+import {
+  OrganizationResponseDto,
+  UserForOrganizationDto,
+} from './organization.dto';
 
 @Injectable()
 export class OrganizationService {
@@ -16,21 +19,37 @@ export class OrganizationService {
   ) {}
 
   // Transform Organization to DTO, excluding sensitive data
-  private transformToDto(organization: OrganizationEntity): OrganizationResponseDto {
-    const { id, name, description, users, artifacts } = organization;
-    
+  private transformToDto(
+    organization: OrganizationEntity,
+  ): OrganizationResponseDto {
+    const {
+      id,
+      name,
+      description,
+      ledgerGroupName,
+      ledgerApiUserId,
+      artifactSchemaName,
+      users,
+      artifacts,
+    } = organization;
+
     // Transform users to exclude passwords
-    const transformedUsers: UserForOrganizationDto[] = users ? users.map(user => {
-      const { id, name, username, email, roles } = user;
-      return { id, name, username, email, roles };
-    }) : [];
-    
+    const transformedUsers: UserForOrganizationDto[] = users
+      ? users.map((user) => {
+          const { id, name, username, email, roles } = user;
+          return { id, name, username, email, roles };
+        })
+      : [];
+
     return {
       id,
       name,
       description,
+      ledgerGroupName,
+      ledgerApiUserId,
+      artifactSchemaName,
       users: transformedUsers,
-      artifacts: artifacts || []
+      artifacts: artifacts || [],
     };
   }
 
@@ -44,13 +63,7 @@ export class OrganizationService {
         'There are no organizations in the database',
         BusinessError.NOT_FOUND,
       );
-    if (orgs.length > 1)
-      throw new BusinessLogicException(
-        'There is more than one organization in the database. This should not happen',
-        BusinessError.PRECONDITION_FAILED,
-      );
-
-    return orgs.map(org => this.transformToDto(org));
+    return orgs.map((org) => this.transformToDto(org));
   }
 
   // Get One Organization
@@ -70,15 +83,9 @@ export class OrganizationService {
   }
 
   // Create one organization
-  async create(organization: OrganizationEntity): Promise<OrganizationResponseDto> {
-    // Check if an organization already exists
-    const countOrganization = await this.organizationRepository.count();
-    if (countOrganization > 0) {
-      throw new BusinessLogicException(
-        'There is already an organization in the database. There can only be one.',
-        BusinessError.PRECONDITION_FAILED,
-      );
-    }
+  async create(
+    organization: OrganizationEntity,
+  ): Promise<OrganizationResponseDto> {
     // Validate name
     if (!organization.name || organization.name.trim().length < 4) {
       throw new BusinessLogicException(
@@ -117,7 +124,7 @@ export class OrganizationService {
     // Find the organization by id
     const organizationToUpdate = await this.organizationRepository.findOne({
       where: { id },
-      relations: ['users', 'artifacts']
+      relations: ['users', 'artifacts'],
     });
 
     if (!organizationToUpdate) {
@@ -150,10 +157,14 @@ export class OrganizationService {
     this.organizationRepository.merge(organizationToUpdate, {
       name: organization.name,
       description: organization.description,
+      ledgerGroupName: organization.ledgerGroupName,
+      ledgerApiUserId: organization.ledgerApiUserId,
+      artifactSchemaName: organization.artifactSchemaName,
     });
 
     // Save the updated entity
-    const updatedOrg = await this.organizationRepository.save(organizationToUpdate);
+    const updatedOrg =
+      await this.organizationRepository.save(organizationToUpdate);
     return this.transformToDto(updatedOrg);
   }
 
@@ -168,9 +179,10 @@ export class OrganizationService {
         BusinessError.NOT_FOUND,
       );
 
-    await this.organizationRepository.createQueryBuilder()
+    await this.organizationRepository
+      .createQueryBuilder()
       .delete()
-      .where("id = :id", { id: organization.id })
+      .where('id = :id', { id: organization.id })
       .execute();
   }
 
@@ -185,7 +197,8 @@ export class OrganizationService {
       );
     }
 
-    await this.organizationRepository.createQueryBuilder()
+    await this.organizationRepository
+      .createQueryBuilder()
       .delete()
       .from(OrganizationEntity)
       .execute();

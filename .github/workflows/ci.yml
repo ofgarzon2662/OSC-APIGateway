@@ -1,0 +1,109 @@
+name: CI
+
+on:
+  push:
+    branches: [master, develop, 'feature/**', 'release/**']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: apigateway-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Quality, tests, and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: npm
+          package-manager-cache: true
+      - run: npm ci
+      - name: Check changed TypeScript
+        if: github.event_name != 'workflow_dispatch'
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          if [ -z "$BASE_SHA" ] || ! git cat-file -e "$BASE_SHA^{commit}" 2>/dev/null; then
+            BASE_SHA="$(git merge-base HEAD origin/master 2>/dev/null || git rev-parse HEAD^)"
+          fi
+          mapfile -t files < <(git diff --name-only --diff-filter=ACMR "$BASE_SHA" "$GITHUB_SHA" -- 'src/**/*.ts' 'test/**/*.ts')
+          if [ "${#files[@]}" -gt 0 ]; then
+            npx prettier --check "${files[@]}"
+            npx eslint "${files[@]}"
+          fi
+      - name: Unit tests with coverage
+        run: npm run test:ci
+      - name: Build
+        run: npm run build
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=critical
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: apigateway-coverage
+          path: coverage/
+          if-no-files-found: warn
+          retention-days: 14
+
+  secret-scan:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2.3.9
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  codeql:
+    name: CodeQL
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      packages: read
+    steps:
+      - uses: actions/checkout@v6
+      - uses: github/codeql-action/init@v4
+        with:
+          languages: javascript-typescript
+      - uses: github/codeql-action/analyze@v4
+
+  container:
+    name: Container build and scan
+    needs: quality
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v6
+      - name: Build local image
+        run: docker build --tag osc-apigateway:${{ github.sha }} .
+      - name: Scan local image
+        uses: anchore/scan-action@v7.4.0
+        id: scan
+        with:
+          image: osc-apigateway:${{ github.sha }}
+          fail-build: true
+          severity-cutoff: critical
+          output-format: sarif
+      - uses: github/codeql-action/upload-sarif@v4
+        if: always() && steps.scan.outputs.sarif != ''
+        with:
+          sarif_file: ${{ steps.scan.outputs.sarif }}

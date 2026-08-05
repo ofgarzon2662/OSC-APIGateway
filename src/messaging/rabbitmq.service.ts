@@ -1,10 +1,21 @@
-import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  OnModuleInit,
+  OnModuleDestroy,
+  Logger,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { connect, Connection, Channel } from 'amqplib';
 import { ManifestItem } from 'src/artifact/artifact.entity';
 import { GitHubRepositoryItem } from 'src/workflow/workflow.entity';
 
-
+export interface OrganizationContext {
+  id: string;
+  name: string;
+  ledgerGroupName?: string;
+  ledgerApiUserId?: string;
+  artifactSchemaName?: string;
+}
 
 export interface ArtifactUpdatedEvent {
   artifactId: string;
@@ -23,7 +34,9 @@ export interface ArtifactUpdatedEvent {
 
 // Command sent when an artifact is ready to be submitted downstream
 export interface ArtifactSubmitCommand {
+  contractVersion?: 'v1' | 'v2';
   artifactId: string;
+  organization?: OrganizationContext;
   manifest: ManifestItem[];
   title: string;
   footprint: string;
@@ -55,14 +68,18 @@ export interface ArtifactUpdateCommandPatch {
 }
 
 export interface ArtifactUpdateCommand {
+  contractVersion?: 'v1' | 'v2';
   artifactId: string;
+  organization?: OrganizationContext;
   patch: ArtifactUpdateCommandPatch;
   contributor?: string;
   correlationId?: string;
 }
 
 export interface WorkflowSubmitCommand {
+  contractVersion?: 'v1' | 'v2';
   workflowId: string;
+  organization?: OrganizationContext;
   title: string;
   description?: string;
   submission_comment?: string;
@@ -84,7 +101,9 @@ export interface WorkflowUpdateCommandPatch {
 }
 
 export interface WorkflowUpdateCommand {
+  contractVersion?: 'v1' | 'v2';
   workflowId: string;
+  organization?: OrganizationContext;
   patch: WorkflowUpdateCommandPatch;
   contributor?: string;
   correlationId?: string;
@@ -99,7 +118,7 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
   private reconnectAttempts = 0;
   private readonly maxReconnectAttempts = 10;
   private readonly reconnectDelay = 5000; // 5 seconds
-  
+
   private readonly exchangeName = 'artifact.exchange';
   private readonly artifactUpdatedRoutingKey = 'artifact.updated';
   private readonly artifactSubmitRoutingKey = 'artifact.submit';
@@ -150,9 +169,13 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
         throw new Error('Failed to publish message');
       } catch (err) {
         retry++;
-        this.logger.error(`${options.logPrefix} publish error (${retry}/3)`, err);
+        this.logger.error(
+          `${options.logPrefix} publish error (${retry}/3)`,
+          err,
+        );
         if (retry >= maxRetries) throw err;
-        this.connection = null; this.channel = null;
+        this.connection = null;
+        this.channel = null;
         await this.sleep(2000);
       }
     }
@@ -170,32 +193,48 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
     this.isConnecting = true;
 
     try {
-      const rabbitmqHost = this.configService.get<string>('RABBITMQ_HOST', 'localhost');
-      const rabbitmqPort = this.configService.get<number>('RABBITMQ_PORT', 5672);
-      const rabbitmqUser = this.configService.get<string>('RABBITMQ_USER', 'guest');
-      const rabbitmqPass = this.configService.get<string>('RABBITMQ_PASS', 'guest');
+      const rabbitmqHost = this.configService.get<string>(
+        'RABBITMQ_HOST',
+        'localhost',
+      );
+      const rabbitmqPort = this.configService.get<number>(
+        'RABBITMQ_PORT',
+        5672,
+      );
+      const rabbitmqUser = this.configService.get<string>(
+        'RABBITMQ_USER',
+        'guest',
+      );
+      const rabbitmqPass = this.configService.get<string>(
+        'RABBITMQ_PASS',
+        'guest',
+      );
 
       // Use amqps:// for port 5671 (Amazon MQ), amqp:// for port 5672 (local/docker)
       const protocol = rabbitmqPort === 5671 ? 'amqps' : 'amqp';
       const connectionUrl = `${protocol}://${rabbitmqUser}:${rabbitmqPass}@${rabbitmqHost}:${rabbitmqPort}`;
-      
-      this.logger.log(`Attempting to connect to RabbitMQ at ${rabbitmqHost}:${rabbitmqPort}`);
-      
+
+      this.logger.log(
+        `Attempting to connect to RabbitMQ at ${rabbitmqHost}:${rabbitmqPort}`,
+      );
+
       this.connection = (await connect(connectionUrl)) as any;
       this.channel = await (this.connection as any).createChannel();
-      
+
       // Ensure the exchange exists (it should already exist from broker definitions)
-      await this.channel.assertExchange(this.exchangeName, 'topic', { durable: true });
-      
+      await this.channel.assertExchange(this.exchangeName, 'topic', {
+        durable: true,
+      });
+
       this.logger.log('Successfully connected to RabbitMQ');
       this.reconnectAttempts = 0; // Reset reconnect attempts on successful connection
-      
+
       // Handle connection errors and implement reconnection
       (this.connection as any).on('error', (err: any) => {
         this.logger.error('RabbitMQ connection error:', err);
         this.handleConnectionLoss();
       });
-      
+
       (this.connection as any).on('close', () => {
         this.logger.warn('RabbitMQ connection closed');
         this.handleConnectionLoss();
@@ -211,7 +250,6 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
         this.logger.warn('RabbitMQ channel closed');
         this.handleConnectionLoss();
       });
-      
     } catch (error) {
       this.logger.error('Failed to connect to RabbitMQ:', error);
       this.handleConnectionLoss();
@@ -227,8 +265,10 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
 
     if (this.reconnectAttempts < this.maxReconnectAttempts) {
       this.reconnectAttempts++;
-      this.logger.log(`Attempting to reconnect to RabbitMQ (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
-      
+      this.logger.log(
+        `Attempting to reconnect to RabbitMQ (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})`,
+      );
+
       const timer: any = setTimeout(() => {
         this.connect().catch((error) => {
           this.logger.error('Reconnection attempt failed:', error);
@@ -236,7 +276,9 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
       }, this.reconnectDelay);
       timer?.unref?.();
     } else {
-      this.logger.error('Max reconnection attempts reached. Manual intervention required.');
+      this.logger.error(
+        'Max reconnection attempts reached. Manual intervention required.',
+      );
     }
   }
 
@@ -272,12 +314,12 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
         await this.channel.close();
         this.channel = null;
       }
-      
+
       if (this.connection) {
         await (this.connection as any).close();
         this.connection = null;
       }
-      
+
       this.logger.log('Disconnected from RabbitMQ');
     } catch (error) {
       this.logger.error('Error disconnecting from RabbitMQ:', error);
@@ -325,17 +367,36 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
     });
   }
 
+  async publishOutboxMessage(
+    routingKey: string,
+    payload: Record<string, unknown>,
+    messageId: string,
+  ): Promise<void> {
+    await this.publishJsonWithRetry(routingKey, payload, {
+      messageId,
+      addTimestamp: true,
+      logSuccess: `Published outbox message ${messageId} to ${routingKey}`,
+      logPrefix: routingKey,
+    });
+  }
+
   // Health check method
   isConnected(): boolean {
-    return this.connection !== null && this.channel !== null && !this.isConnecting;
+    return (
+      this.connection !== null && this.channel !== null && !this.isConnecting
+    );
   }
 
   // Get connection status for debugging
-  getConnectionStatus(): { connected: boolean; reconnectAttempts: number; isConnecting: boolean } {
+  getConnectionStatus(): {
+    connected: boolean;
+    reconnectAttempts: number;
+    isConnecting: boolean;
+  } {
     return {
       connected: this.isConnected(),
       reconnectAttempts: this.reconnectAttempts,
       isConnecting: this.isConnecting,
     };
   }
-} 
+}

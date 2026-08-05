@@ -1,4 +1,9 @@
-import { Injectable, BadRequestException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from './user.entity';
@@ -16,8 +21,6 @@ import { User } from './user';
 import { Role } from '../shared/enums/role.enums';
 import { OrganizationEntity } from '../organization/organization.entity';
 import * as validator from 'validator';
-
-
 
 @Injectable()
 export class UserService {
@@ -54,7 +57,12 @@ export class UserService {
       this.users.push(new User(1, admin1Username, admin1Password, admin1Roles));
 
       // Save admin1 to database if it doesn't exist
-      await this.saveAdminUserToDb(admin1Username, admin1Password, admin1Roles, admin1Email);
+      await this.saveAdminUserToDb(
+        admin1Username,
+        admin1Password,
+        admin1Roles,
+        admin1Email,
+      );
     }
 
     // Load Admin User 2
@@ -74,7 +82,12 @@ export class UserService {
       this.users.push(new User(2, admin2Username, admin2Password, admin2Roles));
 
       // Save admin2 to database if it doesn't exist
-      await this.saveAdminUserToDb(admin2Username, admin2Password, admin2Roles, admin2Email);
+      await this.saveAdminUserToDb(
+        admin2Username,
+        admin2Password,
+        admin2Roles,
+        admin2Email,
+      );
     }
 
     // Check if any users were loaded
@@ -100,14 +113,19 @@ The application requires at least one admin user to function properly.
     }
   }
 
-  private async saveAdminUserToDb(username: string, password: string, roles: string[], email: string = `${username}@example.com`): Promise<void> {
+  private async saveAdminUserToDb(
+    username: string,
+    password: string,
+    roles: string[],
+    email: string = `${username}@example.com`,
+  ): Promise<void> {
     const hashedPassword = await this.passwordService.hashPassword(password);
     const user = this.userRepository.create({
       username,
       password: hashedPassword,
       name: username,
       email,
-      roles: roles as Role[]
+      roles: roles as Role[],
     });
     await this.userRepository.save(user);
   }
@@ -120,13 +138,10 @@ The application requires at least one admin user to function properly.
    */
   async findOneForAuth(username: string): Promise<any> {
     const foundUser = await this.userRepository.findOne({
-      where: [
-        { username: username },
-        { email: username }
-      ],
-      relations: ['organization']
+      where: [{ username: username }, { email: username }],
+      relations: ['organization'],
     });
-    
+
     if (!foundUser) {
       throw new BusinessLogicException(
         'User not found',
@@ -141,6 +156,7 @@ The application requires at least one admin user to function properly.
       email: foundUser.email,
       password: foundUser.password, // Include password for authentication
       roles: foundUser.roles || [], // Include roles for authorization
+      organization: foundUser.organization,
     };
   }
 
@@ -152,13 +168,10 @@ The application requires at least one admin user to function properly.
    */
   async findOne(username: string): Promise<any> {
     const foundUser = await this.userRepository.findOne({
-      where: [
-        { username: username },
-        { email: username }
-      ],
-      relations: ['organization']
+      where: [{ username: username }, { email: username }],
+      relations: ['organization'],
     });
-    
+
     if (!foundUser) {
       throw new BusinessLogicException(
         'User not found',
@@ -173,7 +186,7 @@ The application requires at least one admin user to function properly.
       username: foundUser.username,
       email: foundUser.email,
       roles: foundUser.roles || [],
-      organization: foundUser.organization
+      organization: foundUser.organization,
     };
   }
 
@@ -182,8 +195,14 @@ The application requires at least one admin user to function properly.
    */
   private validateUserInputData(createUserDto: UserCreateDto): void {
     // Validate username length
-    if (!createUserDto.username || createUserDto.username.length < 8 || createUserDto.username.length > 50) {
-      throw new BadRequestException('Username must be between 8 and 50 characters long');
+    if (
+      !createUserDto.username ||
+      createUserDto.username.length < 8 ||
+      createUserDto.username.length > 50
+    ) {
+      throw new BadRequestException(
+        'Username must be between 8 and 50 characters long',
+      );
     }
 
     // Validate email format
@@ -192,29 +211,48 @@ The application requires at least one admin user to function properly.
     }
 
     // Validate name length
-    if (!createUserDto.name || createUserDto.name.length < 3 || createUserDto.name.length > 50) {
-      throw new BadRequestException('Name must be between 3 and 50 characters long');
+    if (
+      !createUserDto.name ||
+      createUserDto.name.length < 3 ||
+      createUserDto.name.length > 50
+    ) {
+      throw new BadRequestException(
+        'Name must be between 3 and 50 characters long',
+      );
     }
 
     // Validate password length
     if (createUserDto.password.length < 8) {
-      throw new BadRequestException('Password must be at least 8 characters long');
+      throw new BadRequestException(
+        'Password must be at least 8 characters long',
+      );
     }
   }
 
   /**
    * Validate creator permissions for creating a user with the specified role
    */
-  private validateCreatorPermissions(creator: UserEntity, requestedRole: Role): void {
+  private validateCreatorPermissions(
+    creator: UserEntity,
+    requestedRole: Role,
+  ): void {
     // Check if creator is an admin or PI
-    if (!creator.roles.includes(Role.ADMIN) && !creator.roles.includes(Role.PI)) {
+    if (
+      !creator.roles.includes(Role.ADMIN) &&
+      !creator.roles.includes(Role.PI)
+    ) {
       throw new BadRequestException('Only admins and PIs can create users');
     }
 
     // If creator is a PI and not an admin, they can only create PI or COLLABORATOR users
-    if (creator.roles.includes(Role.PI) && !creator.roles.includes(Role.ADMIN)) {
+    if (
+      creator.roles.includes(Role.PI) &&
+      !creator.roles.includes(Role.ADMIN)
+    ) {
       if (requestedRole !== Role.PI && requestedRole !== Role.COLLABORATOR) {
-        throw new BadRequestException('PI can only create PI or COLLABORATOR users');
+        throw new BadRequestException(
+          'PI can only create PI or COLLABORATOR users',
+        );
       }
     }
   }
@@ -222,16 +260,18 @@ The application requires at least one admin user to function properly.
   /**
    * Check if user with the same username or email already exists
    */
-  private async checkUserExists(username: string, email: string): Promise<void> {
+  private async checkUserExists(
+    username: string,
+    email: string,
+  ): Promise<void> {
     const existingUser = await this.userRepository.findOne({
-      where: [
-        { username },
-        { email },
-      ],
+      where: [{ username }, { email }],
     });
 
     if (existingUser) {
-      throw new BadRequestException('User with this username or email already exists');
+      throw new BadRequestException(
+        'User with this username or email already exists',
+      );
     }
   }
 
@@ -239,30 +279,85 @@ The application requires at least one admin user to function properly.
    * Create a user entity and save it to the database
    */
   private async createAndSaveUser(
-    createUserDto: UserCreateDto, 
-    roles: Role[], 
-    organization: OrganizationEntity | null
+    createUserDto: UserCreateDto,
+    roles: Role[],
+    organization: OrganizationEntity | null,
   ): Promise<UserEntity> {
-    const hashedPassword = await this.passwordService.hashPassword(createUserDto.password);
-    
+    const hashedPassword = await this.passwordService.hashPassword(
+      createUserDto.password,
+    );
+
     const user = this.userRepository.create({
       ...createUserDto,
       password: hashedPassword,
       roles,
-      organization
+      organization,
     });
-    
+
     return await this.userRepository.save(user);
   }
 
+  private async resolveOrganizationForNewUser(
+    createUserDto: UserCreateDto,
+    creator: UserEntity,
+  ): Promise<OrganizationEntity | null> {
+    if (createUserDto.role === Role.ADMIN) {
+      return null;
+    }
+
+    const creatorOrganizationId = creator.organization?.id;
+    if (
+      creator.roles.includes(Role.PI) &&
+      createUserDto.organizationId &&
+      createUserDto.organizationId !== creatorOrganizationId
+    ) {
+      throw new BadRequestException(
+        'PIs can only create users in their own organization',
+      );
+    }
+
+    const requestedOrganizationId =
+      createUserDto.organizationId || creatorOrganizationId;
+    if (requestedOrganizationId) {
+      const organization = await this.organizationRepository.findOne({
+        where: { id: requestedOrganizationId },
+      });
+      if (!organization) {
+        throw new BadRequestException(
+          'The selected organization does not exist',
+        );
+      }
+      return organization;
+    }
+
+    // Backward-compatible only for an unambiguous single-organization database.
+    const organizations = await this.organizationRepository.find({ take: 2 });
+    if (organizations.length === 1) {
+      return organizations[0];
+    }
+
+    if (organizations.length === 0) {
+      throw new BadRequestException(
+        'Cannot create PI or Collaborator users: No organization exists in the system',
+      );
+    }
+
+    throw new BadRequestException(
+      'organizationId is required when more than one organization exists',
+    );
+  }
+
   // Create a new user
-  async create(createUserDto: UserCreateDto, creator: UserEntity): Promise<UserGetDto> {
+  async create(
+    createUserDto: UserCreateDto,
+    creator: UserEntity,
+  ): Promise<UserGetDto> {
     // Check if user already exists
     await this.checkUserExists(createUserDto.username, createUserDto.email);
-    
+
     // Validate input data
     this.validateUserInputData(createUserDto);
-    
+
     // Validate creator permissions
     this.validateCreatorPermissions(creator, createUserDto.role);
 
@@ -270,28 +365,29 @@ The application requires at least one admin user to function properly.
     const roles = [createUserDto.role];
 
     try {
-      let organization = null;
-      
-      // For non-admin users, associate with organization
-      if (createUserDto.role !== Role.ADMIN) {
-        organization = await this.organizationRepository.findOne({
-          where: {} // Get the first (and only) organization
-        });
-
-        if (!organization) {
-          throw new BadRequestException('Cannot create PI or Collaborator users: No organization exists in the system');
-        }
-      }
+      const organization = await this.resolveOrganizationForNewUser(
+        createUserDto,
+        creator,
+      );
 
       // Create and save the user
-      const savedUser = await this.createAndSaveUser(createUserDto, roles, organization);
-      
+      const savedUser = await this.createAndSaveUser(
+        createUserDto,
+        roles,
+        organization,
+      );
+
       // Transform to DTO for response
       return this.transformToDto(savedUser);
     } catch (error) {
       if (error instanceof BadRequestException) {
-        if (error.message === 'Cannot create PI or Collaborator users: No organization exists in the system') {
-          throw new BadRequestException(`Failed to associate user with organization: ${error.message}`);
+        if (
+          error.message ===
+          'Cannot create PI or Collaborator users: No organization exists in the system'
+        ) {
+          throw new BadRequestException(
+            `Failed to associate user with organization: ${error.message}`,
+          );
         }
         throw error;
       }
@@ -300,19 +396,22 @@ The application requires at least one admin user to function properly.
   }
 
   private transformToDto(user: UserEntity): UserGetDto {
-    const dto = plainToClass(UserGetDto, user, { excludeExtraneousValues: true });
+    const dto = plainToClass(UserGetDto, user, {
+      excludeExtraneousValues: true,
+    });
     // Add organization name if organization exists
     if (user.organization) {
       (dto as any).organizationName = user.organization.name;
+      (dto as any).organizationId = user.organization.id;
     }
     return dto;
   }
 
   async findAll(): Promise<UserGetDto[]> {
     const users = await this.userRepository.find({
-      relations: ['organization']
+      relations: ['organization'],
     });
-    return users.map(user => this.transformToDto(user));
+    return users.map((user) => this.transformToDto(user));
   }
 
   /**
@@ -320,13 +419,13 @@ The application requires at least one admin user to function properly.
    */
   private async findUserByIdOrThrow(id: string): Promise<UserEntity> {
     const user = await this.userRepository.findOne({
-      where: { id }
+      where: { id },
     });
 
     if (!user) {
       throw new NotFoundException(`User with id ${id} not found`);
     }
-    
+
     return user;
   }
 
@@ -334,9 +433,9 @@ The application requires at least one admin user to function properly.
    * Validates update permissions based on user roles and update context
    */
   private validateUpdatePermissions(
-    userToUpdate: UserEntity, 
-    currentUser: UserEntity, 
-    updateUserDto: UserUpdateDto
+    userToUpdate: UserEntity,
+    currentUser: UserEntity,
+    updateUserDto: UserUpdateDto,
   ): void {
     const isSelfUpdate = currentUser.id === userToUpdate.id;
 
@@ -344,7 +443,9 @@ The application requires at least one admin user to function properly.
     if (!isSelfUpdate) {
       // Admin can only update non-admin users
       if (userToUpdate.roles.includes(Role.ADMIN)) {
-        throw new UnauthorizedException('Only the user themselves can update an admin user');
+        throw new UnauthorizedException(
+          'Only the user themselves can update an admin user',
+        );
       }
     }
 
@@ -365,12 +466,20 @@ The application requires at least one admin user to function properly.
   /**
    * Validates admin self-update restrictions
    */
-  private validateAdminSelfUpdate(userToUpdate: UserEntity, updateUserDto: UserUpdateDto): void {
+  private validateAdminSelfUpdate(
+    userToUpdate: UserEntity,
+    updateUserDto: UserUpdateDto,
+  ): void {
     if (updateUserDto.email && updateUserDto.email !== userToUpdate.email) {
       throw new UnauthorizedException('Admins cannot change their own email');
     }
-    if (updateUserDto.username && updateUserDto.username !== userToUpdate.username) {
-      throw new UnauthorizedException('Admins cannot change their own username');
+    if (
+      updateUserDto.username &&
+      updateUserDto.username !== userToUpdate.username
+    ) {
+      throw new UnauthorizedException(
+        'Admins cannot change their own username',
+      );
     }
   }
 
@@ -378,12 +487,15 @@ The application requires at least one admin user to function properly.
    * Validates uniqueness of username and email
    */
   private async validateFieldUniqueness(
-    userToUpdate: UserEntity, 
-    updateUserDto: UserUpdateDto
+    userToUpdate: UserEntity,
+    updateUserDto: UserUpdateDto,
   ): Promise<void> {
-    if (updateUserDto.username && updateUserDto.username !== userToUpdate.username) {
+    if (
+      updateUserDto.username &&
+      updateUserDto.username !== userToUpdate.username
+    ) {
       const existingUser = await this.userRepository.findOne({
-        where: { username: updateUserDto.username }
+        where: { username: updateUserDto.username },
       });
       if (existingUser) {
         throw new BadRequestException('Username already exists');
@@ -392,7 +504,7 @@ The application requires at least one admin user to function properly.
 
     if (updateUserDto.email && updateUserDto.email !== userToUpdate.email) {
       const existingUser = await this.userRepository.findOne({
-        where: { email: updateUserDto.email }
+        where: { email: updateUserDto.email },
       });
       if (existingUser) {
         throw new BadRequestException('Email already exists');
@@ -405,7 +517,9 @@ The application requires at least one admin user to function properly.
    */
   private validatePassword(password: string): void {
     if (password && password.length < 8) {
-      throw new BadRequestException('Password must be at least 8 characters long');
+      throw new BadRequestException(
+        'Password must be at least 8 characters long',
+      );
     }
   }
 
@@ -414,45 +528,55 @@ The application requires at least one admin user to function properly.
    */
   private async prepareUpdateData(updateUserDto: UserUpdateDto): Promise<any> {
     const updateData: any = {};
-    
+
     if (updateUserDto.name !== undefined) updateData.name = updateUserDto.name;
-    if (updateUserDto.email !== undefined) updateData.email = updateUserDto.email;
-    if (updateUserDto.username !== undefined) updateData.username = updateUserDto.username;
+    if (updateUserDto.email !== undefined)
+      updateData.email = updateUserDto.email;
+    if (updateUserDto.username !== undefined)
+      updateData.username = updateUserDto.username;
     if (updateUserDto.password !== undefined) {
-      updateData.password = await this.passwordService.hashPassword(updateUserDto.password);
+      updateData.password = await this.passwordService.hashPassword(
+        updateUserDto.password,
+      );
     }
-    
+
     // Convert single role to array if needed
     if (updateUserDto.role !== undefined) {
       updateData.roles = [updateUserDto.role];
     }
-    
+
     return updateData;
   }
 
-  async update(id: string, updateUserDto: UserUpdateDto, currentUser: UserEntity): Promise<UserGetDto> {
+  async update(
+    id: string,
+    updateUserDto: UserUpdateDto,
+    currentUser: UserEntity,
+  ): Promise<UserGetDto> {
     // Find the user to update
     const userToUpdate = await this.findUserByIdOrThrow(id);
-    
+
     // Validate update permissions
     this.validateUpdatePermissions(userToUpdate, currentUser, updateUserDto);
-    
+
     // Check for username and email uniqueness
-    const isSelfUpdateByAdmin = (currentUser.id === userToUpdate.id) && currentUser.roles.includes(Role.ADMIN);
+    const isSelfUpdateByAdmin =
+      currentUser.id === userToUpdate.id &&
+      currentUser.roles.includes(Role.ADMIN);
     if (!isSelfUpdateByAdmin) {
       await this.validateFieldUniqueness(userToUpdate, updateUserDto);
     }
-    
+
     // Validate password
     this.validatePassword(updateUserDto.password);
-    
+
     // Prepare update data
     const updateData = await this.prepareUpdateData(updateUserDto);
-    
+
     // Update the user
     const updatedUser = await this.userRepository.save({
       ...userToUpdate,
-      ...updateData
+      ...updateData,
     });
 
     // Create response
@@ -467,23 +591,28 @@ The application requires at least one admin user to function properly.
   async remove(id: string, currentUser: UserEntity): Promise<void> {
     const user = await this.userRepository.findOne({
       where: { id },
-      relations: ['organization']
+      relations: ['organization'],
     });
-    
+
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
     // Verificar permisos según el rol del usuario actual
-    if (currentUser.roles.includes(Role.PI) && !currentUser.roles.includes(Role.ADMIN)) {
+    if (
+      currentUser.roles.includes(Role.PI) &&
+      !currentUser.roles.includes(Role.ADMIN)
+    ) {
       // Un PI no puede eliminar usuarios ADMIN
       if (user.roles.includes(Role.ADMIN)) {
         throw new BadRequestException('PI cannot delete admin users');
       }
-      
+
       // Un PI solo puede eliminar usuarios con rol COLLABORATOR (y ningún otro rol)
       if (user.roles.length !== 1 || user.roles[0] !== Role.COLLABORATOR) {
-        throw new BadRequestException('PI can only delete users with role COLLABORATOR');
+        throw new BadRequestException(
+          'PI can only delete users with role COLLABORATOR',
+        );
       }
     } else if (currentUser.roles.includes(Role.ADMIN)) {
       // Un ADMIN no puede eliminar a otro ADMIN
@@ -504,14 +633,14 @@ The application requires at least one admin user to function properly.
   async findOneById(id: string): Promise<UserGetDto> {
     const user = await this.userRepository.findOne({
       where: { id },
-      relations: ['organization']
+      relations: ['organization'],
     });
-    
+
     if (!user) {
       throw new NotFoundException(`User with id ${id} not found`);
     }
 
     // Return user data without sensitive information
     return this.transformToDto(user);
-   }
+  }
 }

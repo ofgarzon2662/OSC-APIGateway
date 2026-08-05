@@ -39,16 +39,28 @@ export class WorkflowController {
     @Body() createWorkflowDto: CreateWorkflowDto,
     @Headers('x-correlation-id') corrId?: string,
   ): Promise<ListWorkflowDto> {
-    if (!req.user || !req.user.username || !req.user.email) {
-      throw new UnauthorizedException('User information is missing from token');
+    if (
+      !req.user ||
+      !req.user.username ||
+      !req.user.email ||
+      !req.user.organizationId
+    ) {
+      throw new UnauthorizedException(
+        'User or organization information is missing from token',
+      );
     }
 
     const submitterInfo = {
       username: req.user.username,
       email: req.user.email,
+      organizationId: req.user.organizationId,
     };
 
-    return await this.workflowService.create(createWorkflowDto, submitterInfo, corrId);
+    return await this.workflowService.create(
+      createWorkflowDto,
+      submitterInfo,
+      corrId,
+    );
   }
 
   @Get()
@@ -76,6 +88,7 @@ export class WorkflowController {
       updateWorkflowDto,
       req?.user?.email,
       corrId,
+      req?.user?.organizationId,
     );
   }
 

@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WorkflowEntity } from './workflow.entity';
 import { In, Repository } from 'typeorm';
@@ -16,10 +16,13 @@ import { OrganizationEntity } from '../organization/organization.entity';
 import { ArtifactEntity } from '../artifact/artifact.entity';
 import { SubmissionState } from '../artifact/enums/submission-state.enum';
 import { RabbitMQService } from '../messaging/rabbitmq.service';
+import { OutboxService } from '../messaging/outbox.service';
+import { randomUUID } from 'crypto';
 
 interface SubmitterInfo {
   username: string;
   email: string;
+  organizationId?: string;
 }
 
 @Injectable()
@@ -34,6 +37,7 @@ export class WorkflowService {
     @InjectRepository(ArtifactEntity)
     private readonly artifactRepository: Repository<ArtifactEntity>,
     private readonly rabbitMQService: RabbitMQService,
+    @Optional() private readonly outboxService?: OutboxService,
   ) {}
 
   private validateId(id: string, fieldName: string): void {
@@ -45,13 +49,30 @@ export class WorkflowService {
     }
   }
 
-  private async findOrganizationOrThrow(): Promise<OrganizationEntity> {
-    const organization = await this.organizationRepository.findOne({
-      where: {},
-    });
+  private async findOrganizationOrThrow(
+    organizationId?: string,
+  ): Promise<OrganizationEntity> {
+    let organization: OrganizationEntity | null;
+    if (organizationId) {
+      this.validateId(organizationId, 'organizationId');
+      organization = await this.organizationRepository.findOne({
+        where: { id: organizationId },
+      });
+    } else {
+      const organizations = await this.organizationRepository.find({ take: 2 });
+      organization = organizations.length === 1 ? organizations[0] : null;
+      if (organizations.length > 1) {
+        throw new BusinessLogicException(
+          'organizationId is required when more than one organization exists',
+          BusinessError.PRECONDITION_FAILED,
+        );
+      }
+    }
     if (!organization) {
       throw new BusinessLogicException(
-        'No organization exists in the system',
+        organizationId
+          ? 'The selected organization does not exist'
+          : 'No organization exists in the system',
         BusinessError.NOT_FOUND,
       );
     }
@@ -79,7 +100,10 @@ export class WorkflowService {
     return workflow;
   }
 
-  private async resolveArtifacts(artifactIds?: string[]): Promise<ArtifactEntity[]> {
+  private async resolveArtifacts(
+    artifactIds: string[] | undefined,
+    organizationId: string,
+  ): Promise<ArtifactEntity[]> {
     if (!artifactIds || artifactIds.length === 0) return [];
 
     for (const aid of artifactIds) {
@@ -87,18 +111,46 @@ export class WorkflowService {
     }
 
     const artifacts = await this.artifactRepository.find({
-      where: { id: In(artifactIds) },
+      where: { id: In(artifactIds), organization: { id: organizationId } },
     });
 
     if (artifacts.length !== artifactIds.length) {
       const foundIds = new Set(artifacts.map((a) => a.id));
       const missing = artifactIds.filter((id) => !foundIds.has(id));
       throw new BusinessLogicException(
-        `The following artifact IDs do not exist: ${missing.join(', ')}`,
+        `The following artifact IDs do not exist in this organization: ${missing.join(', ')}`,
         BusinessError.PRECONDITION_FAILED,
       );
     }
     return artifacts;
+  }
+
+  private organizationContext(organization: OrganizationEntity) {
+    return {
+      id: organization.id,
+      name: organization.name,
+      ...(organization.ledgerGroupName && {
+        ledgerGroupName: organization.ledgerGroupName,
+      }),
+      ...(organization.ledgerApiUserId && {
+        ledgerApiUserId: organization.ledgerApiUserId,
+      }),
+      ...(organization.artifactSchemaName && {
+        artifactSchemaName: organization.artifactSchemaName,
+      }),
+    };
+  }
+
+  private assertOrganizationAccess(
+    workflow: WorkflowEntity,
+    organizationId?: string,
+  ): void {
+    if (organizationId && workflow.organization?.id !== organizationId) {
+      throw new BusinessLogicException(
+        'The workflow does not belong to the authenticated organization',
+        BusinessError.FORBIDDEN,
+      );
+    }
   }
 
   private validateCreateDto(dto: CreateWorkflowDto): void {
@@ -138,7 +190,10 @@ export class WorkflowService {
     }
   }
 
-  private async checkTitleUniqueness(title: string, organization: OrganizationEntity): Promise<void> {
+  private async checkTitleUniqueness(
+    title: string,
+    organization: OrganizationEntity,
+  ): Promise<void> {
     const existing = await this.workflowRepository.findOne({
       where: { title, organization: { id: organization.id } },
     });
@@ -170,10 +225,15 @@ export class WorkflowService {
 
     this.validateCreateDto(dto);
 
-    const organization = await this.findOrganizationOrThrow();
+    const organization = await this.findOrganizationOrThrow(
+      submitterInfo.organizationId,
+    );
     await this.checkTitleUniqueness(dto.title, organization);
 
-    const artifacts = await this.resolveArtifacts(dto.artifactIds);
+    const artifacts = await this.resolveArtifacts(
+      dto.artifactIds,
+      organization.id,
+    );
 
     const newWorkflow = this.workflowRepository.create({
       title: dto.title,
@@ -189,23 +249,46 @@ export class WorkflowService {
       submissionState: SubmissionState.PENDING,
     });
 
-    const saved = await this.workflowRepository.save(newWorkflow);
+    let submitCommand: import('../messaging/rabbitmq.service').WorkflowSubmitCommand;
+    let saved: WorkflowEntity;
 
-    this.rabbitMQService.publishWorkflowSubmit({
-      workflowId: saved.id,
-      title: saved.title,
-      description: saved.description,
-      submission_comment: saved.submission_comment,
-      keywords: saved.keywords,
-      githubRepositories: saved.githubRepositories,
-      artifactIds: artifacts.map((a) => a.id),
-      contributor: submitterInfo.email,
-      ...(correlationId !== undefined && { correlationId }),
-    }).catch((err) => {
-      this.logger.error(
-        `Failed to publish workflow.submit for ${saved.id} [corrId=${correlationId ?? 'none'}]: ${err?.message ?? err}`,
+    if (this.outboxService) {
+      saved = await this.workflowRepository.manager.transaction(
+        async (manager) => {
+          const persisted = await manager.save(WorkflowEntity, newWorkflow);
+          submitCommand = this.workflowSubmitCommand(
+            persisted,
+            organization,
+            artifacts,
+            submitterInfo.email,
+            correlationId,
+          );
+          await this.outboxService.enqueue(
+            manager,
+            'workflow.submit',
+            persisted.id,
+            { ...submitCommand },
+            correlationId || `workflow.submit:${persisted.id}`,
+          );
+          return persisted;
+        },
       );
-    });
+      void this.outboxService.dispatchPending();
+    } else {
+      saved = await this.workflowRepository.save(newWorkflow);
+      submitCommand = this.workflowSubmitCommand(
+        saved,
+        organization,
+        artifacts,
+        submitterInfo.email,
+        correlationId,
+      );
+      this.rabbitMQService.publishWorkflowSubmit(submitCommand).catch((err) => {
+        this.logger.error(
+          `Failed to publish workflow.submit for ${saved.id} [corrId=${correlationId ?? 'none'}]: ${err?.message ?? err}`,
+        );
+      });
+    }
 
     return {
       id: saved.id,
@@ -218,11 +301,30 @@ export class WorkflowService {
     };
   }
 
+  private workflowSubmitCommand(
+    workflow: WorkflowEntity,
+    organization: OrganizationEntity,
+    artifacts: ArtifactEntity[],
+    contributor: string,
+    correlationId?: string,
+  ): import('../messaging/rabbitmq.service').WorkflowSubmitCommand {
+    return {
+      contractVersion: 'v2',
+      workflowId: workflow.id,
+      organization: this.organizationContext(organization),
+      title: workflow.title,
+      description: workflow.description,
+      submission_comment: workflow.submission_comment,
+      keywords: workflow.keywords,
+      githubRepositories: workflow.githubRepositories,
+      artifactIds: artifacts.map((a) => a.id),
+      contributor,
+      ...(correlationId !== undefined && { correlationId }),
+    };
+  }
+
   async findAll(): Promise<ListWorkflowDto[]> {
-    const organization = await this.findOrganizationOrThrow();
-    const workflows = await this.workflowRepository.find({
-      where: { organization: { id: organization.id } },
-    });
+    const workflows = await this.workflowRepository.find();
     return workflows.map((w) => ({
       id: w.id,
       title: w.title,
@@ -235,7 +337,6 @@ export class WorkflowService {
   }
 
   async findOne(id: string): Promise<GetWorkflowDto> {
-    await this.findOrganizationOrThrow();
     const workflow = await this.findWorkflowOrThrow(id, true);
 
     return {
@@ -269,6 +370,7 @@ export class WorkflowService {
     dto: UpdateWorkflowDto,
     contributorEmail?: string,
     correlationId?: string,
+    organizationId?: string,
   ): Promise<WorkflowEntity> {
     this.validateId(id, 'workflowId');
 
@@ -291,6 +393,7 @@ export class WorkflowService {
     }
 
     const workflow = await this.findWorkflowOrThrow(id, true);
+    this.assertOrganizationAccess(workflow, organizationId);
 
     if (dto.keywords !== undefined) {
       const totalKeywordsLength = dto.keywords.join('').length;
@@ -308,41 +411,77 @@ export class WorkflowService {
     }
 
     if (dto.artifactIds !== undefined) {
-      workflow.artifacts = await this.resolveArtifacts(dto.artifactIds);
+      workflow.artifacts = await this.resolveArtifacts(
+        dto.artifactIds,
+        workflow.organization.id,
+      );
     }
 
     workflow.submission_comment = dto.submission_comment;
 
-    const saved = await this.workflowRepository.save(workflow);
-
-    this.rabbitMQService.publishWorkflowUpdate({
-      workflowId: id,
-      patch: {
-        title: workflow.title,
-        description: workflow.description,
-        submission_comment: dto.submission_comment,
-        keywords: workflow.keywords,
-        githubRepositories: workflow.githubRepositories,
-        artifactIds: (workflow.artifacts || []).map((a) => a.id),
+    const updateCommand: import('../messaging/rabbitmq.service').WorkflowUpdateCommand =
+      {
+        contractVersion: 'v2',
+        workflowId: id,
+        organization: this.organizationContext(workflow.organization),
+        patch: {
+          title: workflow.title,
+          description: workflow.description,
+          submission_comment: dto.submission_comment,
+          keywords: workflow.keywords,
+          githubRepositories: workflow.githubRepositories,
+          artifactIds: (workflow.artifacts || []).map((a) => a.id),
+          contributor: contributorEmail,
+        },
         contributor: contributorEmail,
-      },
-      contributor: contributorEmail,
-      ...(correlationId !== undefined && { correlationId }),
-    }).catch((err) => {
-      this.logger.error(
-        `Failed to publish workflow.update for ${id} [corrId=${correlationId ?? 'none'}]: ${err?.message ?? err}`,
+        ...(correlationId !== undefined && { correlationId }),
+      };
+
+    let saved: WorkflowEntity;
+    if (this.outboxService) {
+      saved = await this.workflowRepository.manager.transaction(
+        async (manager) => {
+          const persisted = await manager.save(WorkflowEntity, workflow);
+          await this.outboxService.enqueue(
+            manager,
+            'workflow.update',
+            id,
+            { ...updateCommand },
+            correlationId || `workflow.update:${id}:${randomUUID()}`,
+          );
+          return persisted;
+        },
       );
-    });
+      void this.outboxService.dispatchPending();
+    } else {
+      saved = await this.workflowRepository.save(workflow);
+      this.rabbitMQService.publishWorkflowUpdate(updateCommand).catch((err) => {
+        this.logger.error(
+          `Failed to publish workflow.update for ${id} [corrId=${correlationId ?? 'none'}]: ${err?.message ?? err}`,
+        );
+      });
+    }
 
     return saved;
   }
 
-  async updateWorker(id: string, dto: UpdateWorkflowWorkerDto): Promise<WorkflowEntity> {
+  async updateWorker(
+    id: string,
+    dto: UpdateWorkflowWorkerDto,
+  ): Promise<WorkflowEntity> {
     const workflow = await this.findWorkflowOrThrow(id);
 
-    const allowedFields = ['submissionState', 'blockchainTxId', 'peerId', 'submissionError', 'updatedAt'];
+    const allowedFields = [
+      'submissionState',
+      'blockchainTxId',
+      'peerId',
+      'submissionError',
+      'updatedAt',
+    ];
     const receivedFields = Object.keys(dto);
-    const forbiddenFields = receivedFields.filter((f) => !allowedFields.includes(f));
+    const forbiddenFields = receivedFields.filter(
+      (f) => !allowedFields.includes(f),
+    );
     if (forbiddenFields.length > 0) {
       throw new BusinessLogicException(
         `Cannot update the following fields in status update: ${forbiddenFields.join(', ')}. Only allowed: ${allowedFields.join(', ')}`,

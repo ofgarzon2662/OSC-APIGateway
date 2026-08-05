@@ -14,6 +14,15 @@ export class OrganizationEntity {
   @Column()
   description: string;
 
+  @Column({ nullable: true })
+  ledgerGroupName?: string;
+
+  @Column({ nullable: true })
+  ledgerApiUserId?: string;
+
+  @Column({ nullable: true })
+  artifactSchemaName?: string;
+
   /* ---------- relación con usuarios ---------- */
   @OneToMany(() => UserEntity, (user) => user.organization, {
     cascade: true,

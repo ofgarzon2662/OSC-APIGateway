@@ -58,18 +58,14 @@ describe('OrganizationService', () => {
     );
   });
 
-  // Throw an exception if there is more than one organization in the database
-
-  it('findAll should throw an exception if there is more than one organization in the database', async () => {
+  it('findAll should return multiple organizations', async () => {
     await repository.save({
       name: faker.company.name(),
       description: faker.lorem.sentence(),
     });
 
-    await expect(() => service.findAll()).rejects.toHaveProperty(
-      'message',
-      'There is more than one organization in the database. This should not happen',
-    );
+    const organizations = await service.findAll();
+    expect(organizations).toHaveLength(2);
   });
 
   // Find one organization
@@ -93,22 +89,18 @@ describe('OrganizationService', () => {
 
   // Create a new organization
 
-  it('create should not return a new Organization', async () => {
+  it('create should add another Organization', async () => {
     const organization: Partial<OrganizationEntity> = {
       name: faker.company.name(),
-      description: 'Test Organization',
+      description: 'A second organization used for multi-tenant testing.',
       users: [],
     };
 
-    await expect(
-      service.create(organization as OrganizationEntity),
-    ).rejects.toHaveProperty(
-      'message',
-      'There is already an organization in the database. There can only be one.',
-    );
+    const created = await service.create(organization as OrganizationEntity);
+    expect(created.name).toEqual(organization.name);
 
     const organizations: OrganizationResponseDto[] = await service.findAll();
-    expect(organizations).toHaveLength(1);
+    expect(organizations).toHaveLength(2);
   });
 
   // Create an organization with invalid data

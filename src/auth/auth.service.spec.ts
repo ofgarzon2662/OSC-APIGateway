@@ -31,7 +31,6 @@ class MockTokenBlacklistService {
 describe('AuthService', () => {
   let service: AuthService;
   let jwtService: JwtService;
-  let configService: ConfigService;
   let userRepository: Repository<UserEntity>;
   let passwordService: PasswordService;
   let userService: MockUserService;
@@ -47,8 +46,8 @@ describe('AuthService', () => {
   const mockConfigService = {
     get: jest.fn().mockImplementation((key: string, defaultValue?: any) => {
       const config = {
-        'JWT_SECRET': 'test-secret',
-        'JWT_EXPIRES_IN': '1h',
+        JWT_SECRET: 'test-secret',
+        JWT_EXPIRES_IN: '1h',
       };
       return config[key] || defaultValue;
     }),
@@ -81,11 +80,14 @@ describe('AuthService', () => {
 
     service = module.get<AuthService>(AuthService);
     jwtService = module.get<JwtService>(JwtService);
-    configService = module.get<ConfigService>(ConfigService);
-    userRepository = module.get<Repository<UserEntity>>(getRepositoryToken(UserEntity));
+    userRepository = module.get<Repository<UserEntity>>(
+      getRepositoryToken(UserEntity),
+    );
     passwordService = module.get<PasswordService>(PasswordService);
     userService = module.get<MockUserService>(UserService);
-    tokenBlacklistService = module.get<MockTokenBlacklistService>(TokenBlacklistService);
+    tokenBlacklistService = module.get<MockTokenBlacklistService>(
+      TokenBlacklistService,
+    );
 
     await seedDatabase();
   });
@@ -93,12 +95,12 @@ describe('AuthService', () => {
   const seedDatabase = async () => {
     await userRepository.clear();
     userList = [];
-    
+
     // Create 5 users for testing
     for (let i = 0; i < 5; i++) {
       const plainPassword = 'Password' + faker.number.int(10000);
       const hashedPassword = await passwordService.hashPassword(plainPassword);
-      
+
       const user = {
         name: faker.person.fullName(),
         username: faker.internet.username() + faker.number.int(10000), // Ensure username is unique and long enough
@@ -106,9 +108,9 @@ describe('AuthService', () => {
         password: hashedPassword,
         roles: [Role.COLLABORATOR], // Use Role enum instead of string
       };
-      
+
       const savedUser = await userRepository.save(user);
-      
+
       // Store the plain password for testing
       savedUser['plainPassword'] = plainPassword;
       userList.push(savedUser);
@@ -125,28 +127,27 @@ describe('AuthService', () => {
         id: 'user-id',
         username: 'testuser',
         password: 'hashedPassword',
-        roles: [Role.COLLABORATOR]
+        roles: [Role.COLLABORATOR],
       };
-      
+
       userService.findOneForAuth.mockResolvedValue(mockUser);
       passwordService.comparePasswords = jest.fn().mockResolvedValue(true);
-      
+
       const result = await service.validateUser('testuser', 'password');
-      
+
       expect(userService.findOneForAuth).toHaveBeenCalledWith('testuser');
       expect(result).toEqual({
         id: 'user-id',
         username: 'testuser',
-        roles: [Role.COLLABORATOR]
+        roles: [Role.COLLABORATOR],
       });
     });
 
     it('should throw an exception when user is not found', async () => {
       userService.findOneForAuth.mockRejectedValue(new Error('User not found'));
-      await expect(service.validateUser('nonexistent', 'password')).rejects.toHaveProperty(
-        'message',
-        'Invalid credentials'
-      );
+      await expect(
+        service.validateUser('nonexistent', 'password'),
+      ).rejects.toHaveProperty('message', 'Invalid credentials');
     });
 
     it('should throw an exception when password is incorrect', async () => {
@@ -154,13 +155,12 @@ describe('AuthService', () => {
         id: 'user-id',
         username: 'testuser',
         password: 'hashedPassword',
-        roles: [Role.COLLABORATOR]
+        roles: [Role.COLLABORATOR],
       });
       passwordService.comparePasswords = jest.fn().mockResolvedValue(false);
-      await expect(service.validateUser('testuser', 'wrongPassword')).rejects.toHaveProperty(
-        'message',
-        'Invalid credentials'
-      );
+      await expect(
+        service.validateUser('testuser', 'wrongPassword'),
+      ).rejects.toHaveProperty('message', 'Invalid credentials');
     });
   });
 
@@ -173,12 +173,14 @@ describe('AuthService', () => {
           username: userList[0].username,
           roles: [Role.COLLABORATOR],
           email: userList[0].email,
+          organizationId: null,
+          organizationName: null,
         },
       };
 
       // Execute
       const result = await service.login(req);
-      
+
       // Assert
       expect(result).toBeDefined();
       expect(result.token).toBe('mock.jwt.token');
@@ -188,10 +190,13 @@ describe('AuthService', () => {
           sub: userList[0].id,
           roles: [Role.COLLABORATOR],
           email: userList[0].email,
+          organizationId: null,
+          organizationName: null,
         },
         {
           secret: 'test-secret',
-        }
+          expiresIn: '1h',
+        },
       );
     });
   });
@@ -200,10 +205,10 @@ describe('AuthService', () => {
     it('should blacklist token and return success message', async () => {
       // Setup
       const token = 'Bearer mock.jwt.token';
-      
+
       // Execute
       const result = await service.logout(token);
-      
+
       // Assert
       expect(tokenBlacklistService.blacklistToken).toHaveBeenCalledWith(token);
       expect(result).toEqual({ message: 'Logout successful' });

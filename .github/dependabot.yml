@@ -1,14 +1,15 @@
 version: 2
 updates:
-  - package-ecosystem: "npm"
-    directory: "/"
+  - package-ecosystem: npm
+    directory: /
     schedule:
-      interval: "weekly"
-    labels:
-      - "dependencies"
-      - "javascript"
+      interval: weekly
     groups:
-      non-major:
-        update-types:
-          - "minor"
-          - "patch"
+      npm-development:
+        dependency-type: development
+      npm-production:
+        dependency-type: production
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

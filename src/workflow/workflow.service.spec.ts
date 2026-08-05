@@ -35,14 +35,20 @@ describe('WorkflowService', () => {
         faker.commerce.productDescription() +
         ' ' +
         faker.commerce.productDescription(),
-      submission_comment: faker.lorem.sentence(8) + ' ' + faker.lorem.sentence(8),
+      submission_comment:
+        faker.lorem.sentence(8) + ' ' + faker.lorem.sentence(8),
       keywords: [faker.commerce.department(), faker.commerce.department()],
       githubRepositories: [
         {
           url: faker.internet.url(),
           description: faker.lorem.sentence(),
           gitHash: faker.string.alphanumeric(40),
-          contents: [{ filename: faker.system.fileName(), hash: faker.string.alphanumeric(40) }],
+          contents: [
+            {
+              filename: faker.system.fileName(),
+              hash: faker.string.alphanumeric(40),
+            },
+          ],
         },
       ],
       artifactIds: [],
@@ -100,7 +106,8 @@ describe('WorkflowService', () => {
           faker.commerce.productDescription() +
           ' ' +
           faker.commerce.productDescription(),
-        submission_comment: faker.lorem.sentence(8) + ' ' + faker.lorem.sentence(8),
+        submission_comment:
+          faker.lorem.sentence(8) + ' ' + faker.lorem.sentence(8),
         keywords: [faker.commerce.department()],
         links: [faker.internet.url()],
         dois: [],
@@ -113,7 +120,9 @@ describe('WorkflowService', () => {
             algorithm: 'sha256',
           },
         ],
-        footprint: faker.string.hexadecimal({ length: 64, prefix: '' }).toLowerCase(),
+        footprint: faker.string
+          .hexadecimal({ length: 64, prefix: '' })
+          .toLowerCase(),
         organization,
         submitterEmail: testSubmitter.email,
         submitterUsername: testSubmitter.username,
@@ -132,7 +141,8 @@ describe('WorkflowService', () => {
           faker.commerce.productDescription() +
           ' ' +
           faker.commerce.productDescription(),
-        submission_comment: faker.lorem.sentence(8) + ' ' + faker.lorem.sentence(8),
+        submission_comment:
+          faker.lorem.sentence(8) + ' ' + faker.lorem.sentence(8),
         keywords: [faker.commerce.department()],
         githubRepositories: [],
         organization,
@@ -165,12 +175,9 @@ describe('WorkflowService', () => {
       });
     });
 
-    it('should throw when no organization exists', async () => {
+    it('should return an empty public list when no organization exists', async () => {
       await organizationRepository.clear();
-      await expect(service.findAll()).rejects.toHaveProperty(
-        'message',
-        'No organization exists in the system',
-      );
+      await expect(service.findAll()).resolves.toEqual([]);
     });
   });
 
@@ -263,12 +270,18 @@ describe('WorkflowService', () => {
 
     it('should still resolve if publishWorkflowSubmit fails', async () => {
       const dto = generateRandomWorkflow();
-      jest.spyOn(rabbitMQService, 'publishWorkflowSubmit').mockRejectedValueOnce(new Error('broker down'));
-      const loggerSpy = jest.spyOn((service as any).logger, 'error').mockImplementation(() => {});
+      jest
+        .spyOn(rabbitMQService, 'publishWorkflowSubmit')
+        .mockRejectedValueOnce(new Error('broker down'));
+      const loggerSpy = jest
+        .spyOn((service as any).logger, 'error')
+        .mockImplementation(() => {});
       const result = await service.create(dto, testSubmitter);
       expect(result.id).toBeDefined();
       await new Promise((resolve) => setImmediate(resolve));
-      expect(loggerSpy).toHaveBeenCalledWith(expect.stringContaining('Failed to publish workflow.submit'));
+      expect(loggerSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Failed to publish workflow.submit'),
+      );
       loggerSpy.mockRestore();
     });
   });
@@ -277,7 +290,8 @@ describe('WorkflowService', () => {
     it('should update keywords and publish workflow.update', async () => {
       const stored = workflowList[0];
       const dto: any = {
-        submission_comment: 'Updating workflow details for traceability and audit purposes.',
+        submission_comment:
+          'Updating workflow details for traceability and audit purposes.',
         keywords: ['newkw1', 'newkw2'],
       };
       const publishSpy = jest.spyOn(rabbitMQService, 'publishWorkflowUpdate');
@@ -296,7 +310,8 @@ describe('WorkflowService', () => {
     it('should update artifact references', async () => {
       const stored = workflowList[0];
       const dto: any = {
-        submission_comment: 'Updating workflow artifact references for completeness check.',
+        submission_comment:
+          'Updating workflow artifact references for completeness check.',
         artifactIds: [testArtifacts[1].id, testArtifacts[2].id],
       };
       const result = await service.updateUser(stored.id, dto);
