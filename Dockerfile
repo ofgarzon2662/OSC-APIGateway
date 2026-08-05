@@ -1,14 +1,20 @@
 # Multi-stage build for production efficiency
-FROM node:20-alpine AS build
+FROM node:20-alpine@sha256:fb4cd12c85ee03686f6af5362a0b0d56d50c58a04632e6c0fb8363f609372293 AS build
 WORKDIR /app
 # Build tools needed for native addons (e.g. bcrypt)
 RUN apk add --no-cache python3 make g++
-COPY package*.json ./
-RUN HUSKY=0 npm ci
+COPY package.json package-lock.json .npmrc ./
+COPY scripts/security/check_npm_supply_chain.py ./scripts/security/check_npm_supply_chain.py
+COPY security/npm-malware-blocklist.csv security/npm-lifecycle-allowlist.json ./security/
+RUN python3 scripts/security/check_npm_supply_chain.py --repo . --offline-reviewed --skip-installed \
+  && npm ci --ignore-scripts --no-audit --fund=false \
+  && npm audit signatures \
+  && npm rebuild bcrypt@6.0.0 --ignore-scripts=false \
+  && python3 scripts/security/check_npm_supply_chain.py --repo . --offline-reviewed
 COPY . .
-RUN npm run build && HUSKY=0 npm prune --production
+RUN npm run build && npm prune --omit=dev --ignore-scripts
 
-FROM node:20-alpine AS production
+FROM node:20-alpine@sha256:fb4cd12c85ee03686f6af5362a0b0d56d50c58a04632e6c0fb8363f609372293 AS production
 WORKDIR /app
 
 # Add root CAs so TLS works (RDS, etc.)

@@ -194,3 +194,6 @@ collections/OSC-APIGW Local.postman_environment.json
 DEPLOY-TO-AWS.sh
 patch-collections.js
 collections/OSC-APIGW AWS - STAGING.postman_environment.json
+# Python security tooling
+__pycache__/
+*.py[cod]
