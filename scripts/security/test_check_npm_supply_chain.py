@@ -108,6 +108,22 @@ class SupplyChainScannerTests(unittest.TestCase):
         with self.assertRaises(SCANNER.ScanError):
             SCANNER.parse_blocklist_text("name,version\nkeyv,6.0.0\n", "fixture")
 
+    def test_mixed_feed_ignores_valid_go_module_rows(self):
+        loaded = SCANNER.parse_blocklist_text(
+            "Package,Malicious Versions\n"
+            "keyv,6.0.0\n"
+            "github.com/example/module,v0.0.0-20260805040439-27421527967b\n",
+            "fixture",
+        )
+        self.assertEqual({"keyv": {"6.0.0"}}, loaded)
+
+    def test_unknown_package_syntax_fails_closed(self):
+        with self.assertRaises(SCANNER.ScanError):
+            SCANNER.parse_blocklist_text(
+                "Package,Malicious Versions\nnot/a/valid/npm/name,1.0.0\n",
+                "fixture",
+            )
+
     def test_unavailable_feed_fails_closed(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

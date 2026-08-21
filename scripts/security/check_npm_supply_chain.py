@@ -22,6 +22,10 @@ DEFAULT_FEED_URL = (
 DEFAULT_MINIMUM_FEED_ROWS = 400
 PACKAGE_RE = re.compile(r"^(?:@[a-z0-9._-]+/)?[a-z0-9._-]+$", re.IGNORECASE)
 VERSION_RE = re.compile(r"^[0-9A-Za-z][0-9A-Za-z.+_-]*$")
+GO_MODULE_RE = re.compile(r"^github\.com/[a-z0-9._-]+/[a-z0-9._-]+$", re.IGNORECASE)
+GO_VERSION_RE = re.compile(
+    r"^v\d+\.\d+\.\d+(?:-\d{14}-[0-9a-f]{12})?$", re.IGNORECASE
+)
 LIFECYCLE_NAMES = ("preinstall", "install", "postinstall")
 SKIP_REPOSITORY_DIRS = {
     ".git",
@@ -72,6 +76,7 @@ def parse_blocklist_text(text: str, source: str) -> dict[str, set[str]]:
         raise ScanError(f"{source}: unexpected CSV header {reader.fieldnames!r}")
 
     packages: dict[str, set[str]] = {}
+    ignored_go_modules = 0
     for line_number, row in enumerate(reader, start=2):
         name = (row.get("Package") or "").strip()
         versions = {
@@ -79,6 +84,11 @@ def parse_blocklist_text(text: str, source: str) -> dict[str, set[str]]:
             for value in (row.get("Malicious Versions") or "").split(",")
             if value.strip()
         }
+        if GO_MODULE_RE.fullmatch(name):
+            if not versions or any(not GO_VERSION_RE.fullmatch(version) for version in versions):
+                raise ScanError(f"{source}:{line_number}: invalid Go module version list")
+            ignored_go_modules += 1
+            continue
         if not PACKAGE_RE.fullmatch(name):
             raise ScanError(f"{source}:{line_number}: invalid package name {name!r}")
         if not versions or any(not VERSION_RE.fullmatch(version) for version in versions):
@@ -87,6 +97,12 @@ def parse_blocklist_text(text: str, source: str) -> dict[str, set[str]]:
 
     if not packages:
         raise ScanError(f"{source}: blocklist is empty")
+    if ignored_go_modules:
+        print(
+            f"WARNING: {source}: ignored {ignored_go_modules} validated Go module "
+            "row(s) in the mixed-ecosystem IOC feed",
+            file=sys.stderr,
+        )
     return packages
 
 
