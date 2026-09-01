@@ -431,7 +431,7 @@ export class ArtifactService {
     const requestCorrelationId = correlationId || randomUUID();
     const updateCommand: import('../messaging/rabbitmq.service').ArtifactUpdateCommand =
       {
-        contractVersion: 'v2',
+        contractVersion: 'v3',
         artifactId: id,
         organization: this.organizationContext(currentArtifact.organization),
         patch,
@@ -739,7 +739,7 @@ export class ArtifactService {
     correlationId: string,
   ): import('../messaging/rabbitmq.service').ArtifactSubmitCommand {
     return {
-      contractVersion: 'v2',
+      contractVersion: 'v3',
       artifactId: artifact.id,
       organization: this.organizationContext(organization),
       manifest: artifact.manifest,

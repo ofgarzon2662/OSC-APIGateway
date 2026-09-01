@@ -54,7 +54,7 @@ export interface ArtifactUpdatedEvent {
 
 // Command sent when an artifact is ready to be submitted downstream
 export interface ArtifactSubmitCommand {
-  contractVersion?: 'v1' | 'v2';
+  contractVersion?: 'v1' | 'v2' | 'v3';
   artifactId: string;
   organization?: OrganizationContext;
   manifest: ManifestItem[];
@@ -90,7 +90,7 @@ export interface ArtifactUpdateCommandPatch {
 }
 
 export interface ArtifactUpdateCommand {
-  contractVersion?: 'v1' | 'v2';
+  contractVersion?: 'v1' | 'v2' | 'v3';
   artifactId: string;
   organization?: OrganizationContext;
   patch: ArtifactUpdateCommandPatch;
@@ -100,7 +100,7 @@ export interface ArtifactUpdateCommand {
 }
 
 export interface WorkflowSubmitCommand {
-  contractVersion?: 'v1' | 'v2';
+  contractVersion?: 'v1' | 'v2' | 'v3';
   workflowId: string;
   organization?: OrganizationContext;
   title: string;
@@ -126,7 +126,7 @@ export interface WorkflowUpdateCommandPatch {
 }
 
 export interface WorkflowUpdateCommand {
-  contractVersion?: 'v1' | 'v2';
+  contractVersion?: 'v1' | 'v2' | 'v3';
   workflowId: string;
   organization?: OrganizationContext;
   patch: WorkflowUpdateCommandPatch;

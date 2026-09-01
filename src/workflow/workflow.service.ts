@@ -359,7 +359,7 @@ export class WorkflowService {
     correlationId: string,
   ): import('../messaging/rabbitmq.service').WorkflowSubmitCommand {
     return {
-      contractVersion: 'v2',
+      contractVersion: 'v3',
       workflowId: workflow.id,
       organization: this.organizationContext(organization),
       title: workflow.title,
@@ -490,7 +490,7 @@ export class WorkflowService {
     const requestCorrelationId = correlationId || randomUUID();
     const updateCommand: import('../messaging/rabbitmq.service').WorkflowUpdateCommand =
       {
-        contractVersion: 'v2',
+        contractVersion: 'v3',
         workflowId: id,
         organization: this.organizationContext(workflow.organization),
         patch: {
