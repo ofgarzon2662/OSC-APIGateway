@@ -5,16 +5,36 @@ import {
   Logger,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { connect, Connection, Channel } from 'amqplib';
+import { readFileSync } from 'fs';
+import {
+  connect,
+  ChannelModel,
+  ConfirmChannel,
+  Options,
+} from 'amqplib';
 import { ManifestItem } from 'src/artifact/artifact.entity';
 import { GitHubRepositoryItem } from 'src/workflow/workflow.entity';
 
 export interface OrganizationContext {
   id: string;
   name: string;
+  slug?: string;
+  mspId?: string;
   ledgerGroupName?: string;
   ledgerApiUserId?: string;
   artifactSchemaName?: string;
+}
+
+export interface TransactionRequestMetadata {
+  authenticatedUserId: string;
+  organizationId: string;
+  correlationId: string;
+  operation:
+    | 'artifact.create'
+    | 'artifact.update'
+    | 'workflow.create'
+    | 'workflow.update';
+  requestedAt: string;
 }
 
 export interface ArtifactUpdatedEvent {
@@ -39,6 +59,7 @@ export interface ArtifactSubmitCommand {
   organization?: OrganizationContext;
   manifest: ManifestItem[];
   title: string;
+  visibility?: string;
   footprint: string;
   description?: string;
   submission_comment?: string;
@@ -49,6 +70,7 @@ export interface ArtifactSubmitCommand {
   acknowledgements?: string;
   contributor?: string;
   correlationId?: string;
+  request: TransactionRequestMetadata;
 }
 
 // Command to request updating artifact details downstream
@@ -74,6 +96,7 @@ export interface ArtifactUpdateCommand {
   patch: ArtifactUpdateCommandPatch;
   contributor?: string;
   correlationId?: string;
+  request: TransactionRequestMetadata;
 }
 
 export interface WorkflowSubmitCommand {
@@ -81,6 +104,7 @@ export interface WorkflowSubmitCommand {
   workflowId: string;
   organization?: OrganizationContext;
   title: string;
+  visibility?: string;
   description?: string;
   submission_comment?: string;
   keywords?: string[];
@@ -88,6 +112,7 @@ export interface WorkflowSubmitCommand {
   artifactIds?: string[];
   contributor?: string;
   correlationId?: string;
+  request: TransactionRequestMetadata;
 }
 
 export interface WorkflowUpdateCommandPatch {
@@ -107,13 +132,14 @@ export interface WorkflowUpdateCommand {
   patch: WorkflowUpdateCommandPatch;
   contributor?: string;
   correlationId?: string;
+  request: TransactionRequestMetadata;
 }
 
 @Injectable()
 export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(RabbitMQService.name);
-  private connection: Connection | null = null;
-  private channel: Channel | null = null;
+  private connection: ChannelModel | null = null;
+  private channel: ConfirmChannel | null = null;
   private isConnecting = false;
   private reconnectAttempts = 0;
   private readonly maxReconnectAttempts = 10;
@@ -150,7 +176,7 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
         if (!this.channel) throw new Error('RabbitMQ channel is not available');
 
         const buffer = Buffer.from(JSON.stringify(payload));
-        const published = this.channel.publish(
+        const acceptedWithoutBackpressure = this.channel.publish(
           this.exchangeName,
           routingKey,
           buffer,
@@ -162,11 +188,15 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
           },
         );
 
-        if (published) {
-          this.logger.log(options.logSuccess);
-          return;
+        if (!acceptedWithoutBackpressure) {
+          await new Promise<void>((resolve) => {
+            this.channel?.once('drain', resolve);
+          });
         }
-        throw new Error('Failed to publish message');
+
+        await this.channel.waitForConfirms();
+        this.logger.log(options.logSuccess);
+        return;
       } catch (err) {
         retry++;
         this.logger.error(
@@ -197,9 +227,8 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
         'RABBITMQ_HOST',
         'localhost',
       );
-      const rabbitmqPort = this.configService.get<number>(
-        'RABBITMQ_PORT',
-        5672,
+      const rabbitmqPort = Number(
+        this.configService.get<number>('RABBITMQ_PORT', 5672),
       );
       const rabbitmqUser = this.configService.get<string>(
         'RABBITMQ_USER',
@@ -210,16 +239,68 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
         'guest',
       );
 
-      // Use amqps:// for port 5671 (Amazon MQ), amqp:// for port 5672 (local/docker)
-      const protocol = rabbitmqPort === 5671 ? 'amqps' : 'amqp';
-      const connectionUrl = `${protocol}://${rabbitmqUser}:${rabbitmqPass}@${rabbitmqHost}:${rabbitmqPort}`;
+      const nodeEnv = this.configService.get<string>(
+        'NODE_ENV',
+        process.env.NODE_ENV || 'development',
+      );
+      const protocol = this.configService
+        .get<string>(
+          'RABBITMQ_PROTOCOL',
+          nodeEnv === 'production' ? 'amqps' : 'amqp',
+        )
+        .toLowerCase();
+      const allowInsecureLocal =
+        this.configService.get<string>(
+          'RABBITMQ_ALLOW_INSECURE_LOCAL',
+          'false',
+        ) === 'true';
+      const localHostnames = new Set(['localhost', '127.0.0.1', '::1']);
+
+      if (protocol !== 'amqp' && protocol !== 'amqps') {
+        throw new Error('RABBITMQ_PROTOCOL must be amqp or amqps');
+      }
+      if (protocol === 'amqp' && nodeEnv === 'production') {
+        throw new Error('RabbitMQ TLS is required in production');
+      }
+      if (
+        protocol === 'amqp' &&
+        !allowInsecureLocal &&
+        !localHostnames.has(rabbitmqHost)
+      ) {
+        throw new Error(
+          'Plain AMQP is restricted to localhost unless RABBITMQ_ALLOW_INSECURE_LOCAL=true',
+        );
+      }
+
+      const connectionOptions: Options.Connect = {
+        protocol,
+        hostname: rabbitmqHost,
+        port: rabbitmqPort,
+        username: rabbitmqUser,
+        password: rabbitmqPass,
+        vhost: this.configService.get<string>('RABBITMQ_VHOST', '/'),
+        heartbeat: Number(
+          this.configService.get<number>('RABBITMQ_HEARTBEAT_SECONDS', 30),
+        ),
+      };
+
+      const socketOptions: Record<string, unknown> = {};
+      if (protocol === 'amqps') {
+        socketOptions.rejectUnauthorized = true;
+        socketOptions.servername = this.configService.get<string>(
+          'RABBITMQ_TLS_SERVERNAME',
+          rabbitmqHost,
+        );
+        const caPath = this.configService.get<string>('RABBITMQ_TLS_CA_PATH');
+        if (caPath) socketOptions.ca = [readFileSync(caPath)];
+      }
 
       this.logger.log(
         `Attempting to connect to RabbitMQ at ${rabbitmqHost}:${rabbitmqPort}`,
       );
 
-      this.connection = (await connect(connectionUrl)) as any;
-      this.channel = await (this.connection as any).createChannel();
+      this.connection = await connect(connectionOptions, socketOptions);
+      this.channel = await this.connection.createConfirmChannel();
 
       // Ensure the exchange exists (it should already exist from broker definitions)
       await this.channel.assertExchange(this.exchangeName, 'topic', {
@@ -230,12 +311,12 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
       this.reconnectAttempts = 0; // Reset reconnect attempts on successful connection
 
       // Handle connection errors and implement reconnection
-      (this.connection as any).on('error', (err: any) => {
+      this.connection.on('error', (err: any) => {
         this.logger.error('RabbitMQ connection error:', err);
         this.handleConnectionLoss();
       });
 
-      (this.connection as any).on('close', () => {
+      this.connection.on('close', () => {
         this.logger.warn('RabbitMQ connection closed');
         this.handleConnectionLoss();
       });
@@ -316,7 +397,7 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
       }
 
       if (this.connection) {
-        await (this.connection as any).close();
+        await this.connection.close();
         this.connection = null;
       }
 

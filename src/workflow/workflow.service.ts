@@ -21,6 +21,7 @@ import { randomUUID } from 'crypto';
 import { RecordVisibility } from '../shared/enums/record-visibility.enum';
 
 interface SubmitterInfo {
+  userId?: string;
   username: string;
   email: string;
   organizationId?: string;
@@ -130,6 +131,8 @@ export class WorkflowService {
     return {
       id: organization.id,
       name: organization.name,
+      ...(organization.slug && { slug: organization.slug }),
+      ...(organization.mspId && { mspId: organization.mspId }),
       ...(organization.ledgerGroupName && {
         ledgerGroupName: organization.ledgerGroupName,
       }),
@@ -139,6 +142,27 @@ export class WorkflowService {
       ...(organization.artifactSchemaName && {
         artifactSchemaName: organization.artifactSchemaName,
       }),
+    };
+  }
+
+  private requestMetadata(
+    authenticatedUserId: string | undefined,
+    organizationId: string,
+    correlationId: string,
+    operation: 'workflow.create' | 'workflow.update',
+  ): import('../messaging/rabbitmq.service').TransactionRequestMetadata {
+    if (!authenticatedUserId) {
+      throw new BusinessLogicException(
+        'Authenticated user identity is required for ledger operations',
+        BusinessError.UNAUTHORIZED,
+      );
+    }
+    return {
+      authenticatedUserId,
+      organizationId,
+      correlationId,
+      operation,
+      requestedAt: new Date().toISOString(),
     };
   }
 
@@ -236,6 +260,12 @@ export class WorkflowService {
         BusinessError.PRECONDITION_FAILED,
       );
     }
+    if (!submitterInfo.userId) {
+      throw new BusinessLogicException(
+        'Authenticated user identity is required for ledger operations',
+        BusinessError.UNAUTHORIZED,
+      );
+    }
 
     this.validateCreateDto(dto);
 
@@ -264,6 +294,7 @@ export class WorkflowService {
       submissionState: SubmissionState.PENDING,
     });
 
+    const requestCorrelationId = correlationId || randomUUID();
     let submitCommand: import('../messaging/rabbitmq.service').WorkflowSubmitCommand;
     let saved: WorkflowEntity;
 
@@ -276,14 +307,15 @@ export class WorkflowService {
             organization,
             artifacts,
             submitterInfo.email,
-            correlationId,
+            submitterInfo.userId,
+            requestCorrelationId,
           );
           await this.outboxService.enqueue(
             manager,
             'workflow.submit',
             persisted.id,
             { ...submitCommand },
-            correlationId || `workflow.submit:${persisted.id}`,
+            requestCorrelationId,
           );
           return persisted;
         },
@@ -296,7 +328,8 @@ export class WorkflowService {
         organization,
         artifacts,
         submitterInfo.email,
-        correlationId,
+        submitterInfo.userId,
+        requestCorrelationId,
       );
       this.rabbitMQService.publishWorkflowSubmit(submitCommand).catch((err) => {
         this.logger.error(
@@ -322,20 +355,28 @@ export class WorkflowService {
     organization: OrganizationEntity,
     artifacts: ArtifactEntity[],
     contributor: string,
-    correlationId?: string,
+    authenticatedUserId: string,
+    correlationId: string,
   ): import('../messaging/rabbitmq.service').WorkflowSubmitCommand {
     return {
       contractVersion: 'v2',
       workflowId: workflow.id,
       organization: this.organizationContext(organization),
       title: workflow.title,
+      visibility: workflow.visibility,
       description: workflow.description,
       submission_comment: workflow.submission_comment,
       keywords: workflow.keywords,
       githubRepositories: workflow.githubRepositories,
       artifactIds: artifacts.map((a) => a.id),
       contributor,
-      ...(correlationId !== undefined && { correlationId }),
+      correlationId,
+      request: this.requestMetadata(
+        authenticatedUserId,
+        organization.id,
+        correlationId,
+        'workflow.create',
+      ),
     };
   }
 
@@ -397,6 +438,7 @@ export class WorkflowService {
     contributorEmail?: string,
     correlationId?: string,
     organizationId?: string,
+    authenticatedUserId?: string,
   ): Promise<WorkflowEntity> {
     this.validateId(id, 'workflowId');
 
@@ -445,6 +487,7 @@ export class WorkflowService {
 
     workflow.submission_comment = dto.submission_comment;
 
+    const requestCorrelationId = correlationId || randomUUID();
     const updateCommand: import('../messaging/rabbitmq.service').WorkflowUpdateCommand =
       {
         contractVersion: 'v2',
@@ -460,7 +503,13 @@ export class WorkflowService {
           contributor: contributorEmail,
         },
         contributor: contributorEmail,
-        ...(correlationId !== undefined && { correlationId }),
+        correlationId: requestCorrelationId,
+        request: this.requestMetadata(
+          authenticatedUserId,
+          workflow.organization.id,
+          requestCorrelationId,
+          'workflow.update',
+        ),
       };
 
     let saved: WorkflowEntity;
@@ -473,7 +522,7 @@ export class WorkflowService {
             'workflow.update',
             id,
             { ...updateCommand },
-            correlationId || `workflow.update:${id}:${randomUUID()}`,
+            requestCorrelationId,
           );
           return persisted;
         },

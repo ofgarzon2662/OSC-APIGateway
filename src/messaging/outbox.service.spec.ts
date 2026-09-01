@@ -10,11 +10,18 @@ describe('OutboxService', () => {
   const rabbitMQService = {
     publishOutboxMessage: jest.fn(),
   };
+  const configService = {
+    get: jest.fn((_key: string, defaultValue: unknown) => defaultValue),
+  };
   let service: OutboxService;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    service = new OutboxService(repository as any, rabbitMQService as any);
+    service = new OutboxService(
+      repository as any,
+      rabbitMQService as any,
+      configService as any,
+    );
   });
 
   it('enqueues a pending message through the caller transaction', async () => {
@@ -84,6 +91,24 @@ describe('OutboxService', () => {
     expect(message.availableAt.getTime()).toBeGreaterThanOrEqual(
       beforeAttempt + 2000,
     );
+    expect(repository.save).toHaveBeenCalledWith(message);
+  });
+
+  it('marks a message failed after the configured retry limit', async () => {
+    const message = makeMessage();
+    message.attempts = 2;
+    configService.get.mockReturnValueOnce(3);
+    repository.find.mockResolvedValue([message]);
+    repository.save.mockResolvedValue(message);
+    rabbitMQService.publishOutboxMessage.mockRejectedValue(
+      new Error('broker unavailable'),
+    );
+    jest.spyOn(Logger.prototype, 'error').mockImplementation(() => undefined);
+
+    await service.dispatchPending();
+
+    expect(message.attempts).toBe(3);
+    expect(message.status).toBe(OutboxStatus.FAILED);
     expect(repository.save).toHaveBeenCalledWith(message);
   });
 });

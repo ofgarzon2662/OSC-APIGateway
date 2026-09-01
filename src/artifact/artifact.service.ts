@@ -23,6 +23,7 @@ import { RecordVisibility } from '../shared/enums/record-visibility.enum';
 
 // Definir una interfaz para la información del creador del artefacto
 interface SubmitterInfo {
+  userId?: string;
   username: string;
   email: string;
   organizationId?: string;
@@ -158,6 +159,8 @@ export class ArtifactService {
     return {
       id: organization.id,
       name: organization.name,
+      ...(organization.slug && { slug: organization.slug }),
+      ...(organization.mspId && { mspId: organization.mspId }),
       ...(organization.ledgerGroupName && {
         ledgerGroupName: organization.ledgerGroupName,
       }),
@@ -167,6 +170,27 @@ export class ArtifactService {
       ...(organization.artifactSchemaName && {
         artifactSchemaName: organization.artifactSchemaName,
       }),
+    };
+  }
+
+  private requestMetadata(
+    authenticatedUserId: string | undefined,
+    organizationId: string,
+    correlationId: string,
+    operation: 'artifact.create' | 'artifact.update',
+  ): import('../messaging/rabbitmq.service').TransactionRequestMetadata {
+    if (!authenticatedUserId) {
+      throw new BusinessLogicException(
+        'Authenticated user identity is required for ledger operations',
+        BusinessError.UNAUTHORIZED,
+      );
+    }
+    return {
+      authenticatedUserId,
+      organizationId,
+      correlationId,
+      operation,
+      requestedAt: new Date().toISOString(),
     };
   }
 
@@ -332,6 +356,7 @@ export class ArtifactService {
     contributorEmail?: string,
     correlationId?: string,
     organizationId?: string,
+    authenticatedUserId?: string,
   ): Promise<ArtifactEntity> {
     // Validate ID
     this.validateId(id, 'artifactId');
@@ -403,6 +428,7 @@ export class ArtifactService {
     if (patch.footprint !== undefined)
       currentArtifact.footprint = patch.footprint;
 
+    const requestCorrelationId = correlationId || randomUUID();
     const updateCommand: import('../messaging/rabbitmq.service').ArtifactUpdateCommand =
       {
         contractVersion: 'v2',
@@ -410,7 +436,13 @@ export class ArtifactService {
         organization: this.organizationContext(currentArtifact.organization),
         patch,
         contributor: contributorEmail,
-        ...(correlationId !== undefined && { correlationId }),
+        correlationId: requestCorrelationId,
+        request: this.requestMetadata(
+          authenticatedUserId,
+          currentArtifact.organization.id,
+          requestCorrelationId,
+          'artifact.update',
+        ),
       };
 
     let saved: ArtifactEntity;
@@ -423,7 +455,7 @@ export class ArtifactService {
             'artifact.update',
             id,
             { ...updateCommand },
-            correlationId || `artifact.update:${id}:${randomUUID()}`,
+            requestCorrelationId,
           );
           return persisted;
         },
@@ -615,6 +647,13 @@ export class ArtifactService {
       );
     }
 
+    if (!submitterInfo.userId) {
+      throw new BusinessLogicException(
+        'Authenticated user identity is required for ledger operations',
+        BusinessError.UNAUTHORIZED,
+      );
+    }
+
     // Validate the DTO
     this.validateCreateArtifactDto(createArtifactDto);
 
@@ -637,6 +676,7 @@ export class ArtifactService {
       submissionState: SubmissionState.PENDING,
     });
 
+    const requestCorrelationId = correlationId || randomUUID();
     let submitCommand: import('../messaging/rabbitmq.service').ArtifactSubmitCommand;
     let savedArtifact: ArtifactEntity;
 
@@ -648,14 +688,15 @@ export class ArtifactService {
             persisted,
             organization,
             submitterInfo.email,
-            correlationId,
+            submitterInfo.userId,
+            requestCorrelationId,
           );
           await this.outboxService.enqueue(
             manager,
             'artifact.submit',
             persisted.id,
             { ...submitCommand },
-            correlationId || `artifact.submit:${persisted.id}`,
+            requestCorrelationId,
           );
           return persisted;
         },
@@ -667,7 +708,8 @@ export class ArtifactService {
         savedArtifact,
         organization,
         submitterInfo.email,
-        correlationId,
+        submitterInfo.userId,
+        requestCorrelationId,
       );
       this.rabbitMQService.publishArtifactSubmit(submitCommand).catch((err) => {
         this.logger.error(
@@ -693,7 +735,8 @@ export class ArtifactService {
     artifact: ArtifactEntity,
     organization: OrganizationEntity,
     contributor: string,
-    correlationId?: string,
+    authenticatedUserId: string,
+    correlationId: string,
   ): import('../messaging/rabbitmq.service').ArtifactSubmitCommand {
     return {
       contractVersion: 'v2',
@@ -701,6 +744,7 @@ export class ArtifactService {
       organization: this.organizationContext(organization),
       manifest: artifact.manifest,
       title: artifact.title,
+      visibility: artifact.visibility,
       footprint: artifact.footprint,
       description: artifact.description,
       submission_comment: artifact.submission_comment,
@@ -710,7 +754,13 @@ export class ArtifactService {
       fundingAgencies: artifact.fundingAgencies,
       acknowledgements: artifact.acknowledgements,
       contributor,
-      ...(correlationId !== undefined && { correlationId }),
+      correlationId,
+      request: this.requestMetadata(
+        authenticatedUserId,
+        organization.id,
+        correlationId,
+        'artifact.create',
+      ),
     };
   }
 

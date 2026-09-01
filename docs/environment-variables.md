@@ -45,11 +45,23 @@ RABBITMQ_HOST=localhost
 RABBITMQ_PORT=5672
 RABBITMQ_USER=guest
 RABBITMQ_PASS=guest
+RABBITMQ_PROTOCOL=amqp
+RABBITMQ_VHOST=/
+RABBITMQ_HEARTBEAT_SECONDS=30
+RABBITMQ_ALLOW_INSECURE_LOCAL=false
+OUTBOX_MAX_ATTEMPTS=8
 ```
+
+For Amazon MQ, set `RABBITMQ_PROTOCOL=amqps` and port `5671`.
+Certificate verification is always enabled. `RABBITMQ_TLS_SERVERNAME` can
+override the expected certificate name and `RABBITMQ_TLS_CA_PATH` can identify
+an additional trusted CA bundle. Plain AMQP is rejected in production. In a
+non-production container network, it requires the explicit
+`RABBITMQ_ALLOW_INSECURE_LOCAL=true` opt-in unless the broker is on localhost.
 
 ## Notes
 
-- The RabbitMQ configuration is used to connect to the message broker for publishing `artifact.created` events
+- The RabbitMQ configuration is used to publish durable artifact and workflow commands
 - When running with Docker Compose, the `RABBITMQ_HOST` should be set to the RabbitMQ container name
-- The API Gateway will automatically connect to RabbitMQ on startup and publish events when artifacts are created
-- If RabbitMQ is not available, artifact creation will still succeed, but the event will not be published (error will be logged) 
+- The API Gateway uses publisher confirms and a transactional outbox. If the broker is unavailable, the database write succeeds and the command remains pending for bounded retry.
+- After `OUTBOX_MAX_ATTEMPTS`, an undelivered command is marked `failed` for explicit operator review rather than retried forever.

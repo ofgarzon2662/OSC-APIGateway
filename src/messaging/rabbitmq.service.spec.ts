@@ -20,16 +20,19 @@ class SilentLogger implements LoggerService {
 describe('RabbitMQService', () => {
   let service: RabbitMQService;
   let configService: ConfigService;
+  let config: Record<string, unknown>;
 
   const mockChannel = {
     assertExchange: jest.fn().mockResolvedValue(undefined),
     publish: jest.fn().mockReturnValue(true),
+    waitForConfirms: jest.fn().mockResolvedValue(undefined),
+    once: jest.fn((_event: string, callback: () => void) => callback()),
     on: jest.fn(),
     close: jest.fn().mockResolvedValue(undefined),
   };
 
   const mockConnection = {
-    createChannel: jest.fn().mockResolvedValue(mockChannel),
+    createConfirmChannel: jest.fn().mockResolvedValue(mockChannel),
     on: jest.fn(),
     close: jest.fn().mockResolvedValue(undefined),
   };
@@ -37,7 +40,19 @@ describe('RabbitMQService', () => {
   beforeEach(async () => {
     // Reset mocks before each test
     jest.clearAllMocks();
+    mockChannel.publish.mockReset().mockReturnValue(true);
+    mockChannel.waitForConfirms.mockReset().mockResolvedValue(undefined);
+    mockChannel.once.mockImplementation(
+      (_event: string, callback: () => void) => callback(),
+    );
     (mockedAmqplib.connect as jest.Mock).mockResolvedValue(mockConnection as any);
+    config = {
+      RABBITMQ_HOST: 'localhost',
+      RABBITMQ_PORT: 5672,
+      RABBITMQ_USER: 'guest',
+      RABBITMQ_PASS: 'guest',
+      RABBITMQ_PROTOCOL: 'amqp',
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -46,13 +61,7 @@ describe('RabbitMQService', () => {
           provide: ConfigService,
           useValue: {
             get: jest.fn((key: string, defaultValue?: any) => {
-              const config = {
-                RABBITMQ_HOST: 'localhost',
-                RABBITMQ_PORT: 5672,
-                RABBITMQ_USER: 'guest',
-                RABBITMQ_PASS: 'guest',
-              };
-              return config[key] || defaultValue;
+              return config[key] ?? defaultValue;
             }),
           },
         },
@@ -98,8 +107,17 @@ describe('RabbitMQService', () => {
   describe('connect', () => {
     it('should connect to RabbitMQ successfully', async () => {
       await (service as any).connect();
-      expect(mockedAmqplib.connect).toHaveBeenCalledWith('amqp://guest:guest@localhost:5672');
-      expect(mockConnection.createChannel).toHaveBeenCalled();
+      expect(mockedAmqplib.connect).toHaveBeenCalledWith(
+        expect.objectContaining({
+          protocol: 'amqp',
+          hostname: 'localhost',
+          port: 5672,
+          username: 'guest',
+          password: 'guest',
+        }),
+        {},
+      );
+      expect(mockConnection.createConfirmChannel).toHaveBeenCalled();
       expect(mockChannel.assertExchange).toHaveBeenCalledWith('artifact.exchange', 'topic', { durable: true });
       expect(service.isConnected()).toBe(true);
     });
@@ -120,6 +138,35 @@ describe('RabbitMQService', () => {
         expect(handleConnectionLossSpy).toHaveBeenCalled();
         expect(service.isConnected()).toBe(false);
         handleConnectionLossSpy.mockRestore();
+    });
+
+    it('should configure certificate validation for AMQPS', async () => {
+      config.RABBITMQ_PROTOCOL = 'amqps';
+      config.RABBITMQ_PORT = 5671;
+      config.RABBITMQ_TLS_SERVERNAME = 'broker.example.test';
+
+      await (service as any).connect();
+
+      expect(mockedAmqplib.connect).toHaveBeenCalledWith(
+        expect.objectContaining({ protocol: 'amqps', port: 5671 }),
+        expect.objectContaining({
+          rejectUnauthorized: true,
+          servername: 'broker.example.test',
+        }),
+      );
+    });
+
+    it('should reject plain AMQP in production', async () => {
+      config.NODE_ENV = 'production';
+      config.RABBITMQ_PROTOCOL = 'amqp';
+      const handleConnectionLossSpy = jest
+        .spyOn(service as any, 'handleConnectionLoss')
+        .mockImplementation(() => undefined);
+
+      await (service as any).connect();
+
+      expect(mockedAmqplib.connect).not.toHaveBeenCalled();
+      expect(handleConnectionLossSpy).toHaveBeenCalled();
     });
   });
   
@@ -210,6 +257,20 @@ describe('RabbitMQService', () => {
         expect.any(Buffer),
         expect.objectContaining({ messageId: updatedEvent.artifactId }),
       );
+      expect(mockChannel.waitForConfirms).toHaveBeenCalled();
+    });
+
+    it('should wait for channel drain when the write buffer applies backpressure', async () => {
+      mockChannel.publish.mockReturnValue(false);
+      await (service as any).connect();
+
+      await service.publishArtifactUpdated(updatedEvent);
+
+      expect(mockChannel.once).toHaveBeenCalledWith(
+        'drain',
+        expect.any(Function),
+      );
+      expect(mockChannel.waitForConfirms).toHaveBeenCalled();
     });
 
     it('should throw error after retries on updated event', async () => {
@@ -225,6 +286,13 @@ describe('RabbitMQService', () => {
       patch: {
         keywords: ['a'],
         footprint: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+      },
+      request: {
+        authenticatedUserId: 'user-1',
+        organizationId: 'org-1',
+        correlationId: 'corr-1',
+        operation: 'artifact.update',
+        requestedAt: '2026-09-01T00:00:00.000Z',
       },
     };
 
@@ -340,4 +408,4 @@ describe('RabbitMQService', () => {
       handleSpy.mockRestore();
     });
   });
-}); 
+});

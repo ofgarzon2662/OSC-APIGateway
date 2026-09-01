@@ -107,6 +107,7 @@ describe('ArtifactController', () => {
     it('should call service.create with submitterInfo extracted from req.user', async () => {
       const req: any = {
         user: {
+          id: 'user-1',
           username: 'alice',
           email: 'alice@example.com',
           organizationId: 'org-1',
@@ -120,6 +121,7 @@ describe('ArtifactController', () => {
       expect(artifactService.create).toHaveBeenCalledWith(
         createDto,
         {
+          userId: 'user-1',
           username: 'alice',
           email: 'alice@example.com',
           organizationId: 'org-1',
@@ -132,6 +134,7 @@ describe('ArtifactController', () => {
     it('should pass correlationId header to service.create', async () => {
       const req: any = {
         user: {
+          id: 'user-2',
           username: 'bob',
           email: 'bob@example.com',
           organizationId: 'org-2',
@@ -164,7 +167,11 @@ describe('ArtifactController', () => {
 
     it('should throw UnauthorizedException when req.user.username is missing', async () => {
       const req: any = {
-        user: { email: 'alice@example.com', organizationId: 'org-1' },
+        user: {
+          id: 'user-1',
+          email: 'alice@example.com',
+          organizationId: 'org-1',
+        },
       };
       await expect(
         controller.create(req, createDto, undefined),
@@ -258,7 +265,11 @@ describe('ArtifactController', () => {
   describe('updateUser', () => {
     it('should call service.updateUser with user email from req and return entity', async () => {
       const req: any = {
-        user: { email: 'alice@example.com', organizationId: 'org-1' },
+        user: {
+          id: 'user-1',
+          email: 'alice@example.com',
+          organizationId: 'org-1',
+        },
       };
       const updateDto: any = {
         submission_comment:
@@ -284,6 +295,7 @@ describe('ArtifactController', () => {
         'alice@example.com',
         'corr-abc',
         'org-1',
+        'user-1',
       );
     });
 
@@ -300,6 +312,7 @@ describe('ArtifactController', () => {
       expect(artifactService.updateUser).toHaveBeenCalledWith(
         'some-uuid',
         updateDto,
+        undefined,
         undefined,
         undefined,
         undefined,

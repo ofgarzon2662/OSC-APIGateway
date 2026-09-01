@@ -5,6 +5,7 @@ import {
   OnModuleInit,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { ConfigService } from '@nestjs/config';
 import { EntityManager, LessThanOrEqual, Repository } from 'typeorm';
 import { RabbitMQService } from './rabbitmq.service';
 import { OutboxEntity, OutboxStatus } from './outbox.entity';
@@ -19,7 +20,15 @@ export class OutboxService implements OnModuleInit, OnModuleDestroy {
     @InjectRepository(OutboxEntity)
     private readonly repository: Repository<OutboxEntity>,
     private readonly rabbitMQService: RabbitMQService,
+    private readonly configService: ConfigService,
   ) {}
+
+  private get maxAttempts(): number {
+    const configured = Number(
+      this.configService.get<number>('OUTBOX_MAX_ATTEMPTS', 8),
+    );
+    return Number.isInteger(configured) && configured > 0 ? configured : 8;
+  }
 
   onModuleInit(): void {
     this.timer = setInterval(() => void this.dispatchPending(), 5000);
@@ -80,12 +89,19 @@ export class OutboxService implements OnModuleInit, OnModuleDestroy {
           message.attempts += 1;
           message.lastError =
             error instanceof Error ? error.message : String(error);
-          message.availableAt = new Date(
-            Date.now() + Math.min(60000, 1000 * 2 ** message.attempts),
-          );
-          this.logger.warn(
-            `Outbox delivery ${message.id} failed; attempt ${message.attempts}`,
-          );
+          if (message.attempts >= this.maxAttempts) {
+            message.status = OutboxStatus.FAILED;
+            this.logger.error(
+              `Outbox delivery ${message.id} exhausted ${message.attempts} attempts`,
+            );
+          } else {
+            message.availableAt = new Date(
+              Date.now() + Math.min(60000, 1000 * 2 ** message.attempts),
+            );
+            this.logger.warn(
+              `Outbox delivery ${message.id} failed; attempt ${message.attempts}`,
+            );
+          }
         }
         await this.repository.save(message);
       }

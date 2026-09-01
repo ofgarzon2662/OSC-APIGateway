@@ -84,6 +84,7 @@ describe('WorkflowController', () => {
     it('should call service.create with submitterInfo from req.user', async () => {
       const req: any = {
         user: {
+          id: 'user-1',
           username: 'alice',
           email: 'alice@example.com',
           organizationId: 'org-1',
@@ -96,6 +97,7 @@ describe('WorkflowController', () => {
       expect(workflowService.create).toHaveBeenCalledWith(
         createDto,
         {
+          userId: 'user-1',
           username: 'alice',
           email: 'alice@example.com',
           organizationId: 'org-1',
@@ -134,7 +136,11 @@ describe('WorkflowController', () => {
   describe('updateUser', () => {
     it('should call service.updateUser with user email', async () => {
       const req: any = {
-        user: { email: 'alice@example.com', organizationId: 'org-1' },
+        user: {
+          id: 'user-1',
+          email: 'alice@example.com',
+          organizationId: 'org-1',
+        },
       };
       const updateDto: any = {
         submission_comment:
@@ -160,6 +166,7 @@ describe('WorkflowController', () => {
         'alice@example.com',
         'corr-abc',
         'org-1',
+        'user-1',
       );
     });
   });

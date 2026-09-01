@@ -23,6 +23,7 @@ describe('WorkflowService', () => {
   let rabbitMQService: RabbitMQService;
 
   const testSubmitter = {
+    userId: '00000000-0000-4000-8000-000000000099',
     username: 'test_user',
     email: 'test@example.com',
   };
@@ -296,7 +297,15 @@ describe('WorkflowService', () => {
       const dto = generateRandomWorkflow();
       const publishSpy = jest.spyOn(rabbitMQService, 'publishWorkflowSubmit');
       await service.create(dto, testSubmitter);
-      expect(publishSpy).toHaveBeenCalled();
+      expect(publishSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          request: expect.objectContaining({
+            authenticatedUserId: testSubmitter.userId,
+            organizationId: organization.id,
+            operation: 'workflow.create',
+          }),
+        }),
+      );
     });
 
     it('should still resolve if publishWorkflowSubmit fails', async () => {
@@ -326,7 +335,14 @@ describe('WorkflowService', () => {
         keywords: ['newkw1', 'newkw2'],
       };
       const publishSpy = jest.spyOn(rabbitMQService, 'publishWorkflowUpdate');
-      const result = await service.updateUser(stored.id, dto);
+      const result = await service.updateUser(
+        stored.id,
+        dto,
+        undefined,
+        undefined,
+        undefined,
+        testSubmitter.userId,
+      );
       expect(result.keywords).toEqual(['newkw1', 'newkw2']);
       expect(publishSpy).toHaveBeenCalled();
     });
@@ -345,7 +361,14 @@ describe('WorkflowService', () => {
           'Updating workflow artifact references for completeness check.',
         artifactIds: [testArtifacts[1].id, testArtifacts[2].id],
       };
-      const result = await service.updateUser(stored.id, dto);
+      const result = await service.updateUser(
+        stored.id,
+        dto,
+        undefined,
+        undefined,
+        undefined,
+        testSubmitter.userId,
+      );
       expect(result).toBeDefined();
     });
   });

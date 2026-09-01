@@ -25,6 +25,7 @@ describe('ArtifactService', () => {
 
   // Test submitter info
   const testSubmitter = {
+    userId: '00000000-0000-4000-8000-000000000099',
     username: 'test_user',
     email: 'test@example.com',
   };
@@ -453,7 +454,14 @@ describe('ArtifactService', () => {
       await service.create(artifactDto, testSubmitter, 'corr-xyz');
 
       expect(publishSpy).toHaveBeenCalledWith(
-        expect.objectContaining({ correlationId: 'corr-xyz' }),
+        expect.objectContaining({
+          correlationId: 'corr-xyz',
+          request: expect.objectContaining({
+            authenticatedUserId: testSubmitter.userId,
+            organizationId: organization.id,
+            operation: 'artifact.create',
+          }),
+        }),
       );
     });
   });
@@ -516,7 +524,14 @@ describe('ArtifactService', () => {
       const saveSpy = jest.spyOn(artifactRepository, 'save');
       const publishSpy = jest.spyOn(rabbitMQService, 'publishArtifactUpdate');
 
-      const result = await service.updateUser(storedArtifact.id, dto);
+      const result = await service.updateUser(
+        storedArtifact.id,
+        dto,
+        undefined,
+        undefined,
+        undefined,
+        testSubmitter.userId,
+      );
 
       expect(result.id).toBe(storedArtifact.id);
       expect(result.submission_comment).toContain('Updating artifact details');
@@ -562,7 +577,14 @@ describe('ArtifactService', () => {
         .spyOn((service as any).logger, 'error')
         .mockImplementation(() => {});
 
-      await service.updateUser(storedArtifact.id, dto);
+      await service.updateUser(
+        storedArtifact.id,
+        dto,
+        undefined,
+        undefined,
+        undefined,
+        testSubmitter.userId,
+      );
 
       // Wait for the fire-and-forget rejection to propagate
       await new Promise((resolve) => setImmediate(resolve));
@@ -592,10 +614,18 @@ describe('ArtifactService', () => {
         dto,
         'user@example.com',
         'corr-abc',
+        undefined,
+        testSubmitter.userId,
       );
 
       expect(publishSpy).toHaveBeenCalledWith(
-        expect.objectContaining({ correlationId: 'corr-abc' }),
+        expect.objectContaining({
+          correlationId: 'corr-abc',
+          request: expect.objectContaining({
+            authenticatedUserId: testSubmitter.userId,
+            operation: 'artifact.update',
+          }),
+        }),
       );
     });
   });

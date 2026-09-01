@@ -42,6 +42,7 @@ export class WorkflowController {
   ): Promise<ListWorkflowDto> {
     if (
       !req.user ||
+      !req.user.id ||
       !req.user.username ||
       !req.user.email ||
       !req.user.organizationId
@@ -52,6 +53,7 @@ export class WorkflowController {
     }
 
     const submitterInfo = {
+      userId: req.user.id,
       username: req.user.username,
       email: req.user.email,
       organizationId: req.user.organizationId,
@@ -95,6 +97,7 @@ export class WorkflowController {
       req?.user?.email,
       corrId,
       req?.user?.organizationId,
+      req?.user?.id,
     );
   }
 
