@@ -122,21 +122,18 @@ describe('OrganizationService', () => {
 
   // Delete the organization
 
-  it('should delete an organization and ensure the list is empty, and then recreates it', async () => {
+  it('should archive an organization without deleting its provenance boundary', async () => {
     await service.delete(organizationsList[0].id);
 
-    // Check that the organization was deleted
+    // The row is retained and marked archived.
     const organizationsInDb = await repository.find();
-    expect(organizationsInDb.length).toBe(0);
+    expect(organizationsInDb).toHaveLength(1);
+    expect(organizationsInDb[0].status).toBe('archived');
+    expect(organizationsInDb[0].archivedAt).toBeInstanceOf(Date);
 
     // Attempt to delete the organization again
 
-    await expect(
-      service.delete(organizationsList[0].id),
-    ).rejects.toHaveProperty(
-      'message',
-      'The organization with the provided id does not exist',
-    );
+    await expect(service.delete(organizationsList[0].id)).resolves.toBeUndefined();
 
     // Create a new organization
     const organization: Partial<OrganizationEntity> = {
@@ -241,14 +238,15 @@ describe('OrganizationService', () => {
   });
 
   // Delete all organizations
-  it('deleteAll should delete all organizations if they exist', async () => {
+  it('deleteAll should archive all organizations if they exist', async () => {
     const organizations = await service.findAll();
     expect(organizations.length).toBe(1);
 
     await service.deleteAll();
 
     const remainingOrganizations = await repository.find();
-    expect(remainingOrganizations).toHaveLength(0);
+    expect(remainingOrganizations).toHaveLength(1);
+    expect(remainingOrganizations[0].status).toBe('archived');
   });
 
   it('deleteAll should throw an exception if no organizations exist', async () => {

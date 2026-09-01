@@ -11,6 +11,7 @@ import { faker } from '@faker-js/faker';
 import { UserService } from '../user/user.service';
 import { TokenBlacklistService } from './token-blacklist.service';
 import { Role } from '../shared/enums/role.enums';
+import { MembershipStatus } from '../organization/membership-status.enum';
 
 // Mock para UserService
 class MockUserService {
@@ -126,8 +127,21 @@ describe('AuthService', () => {
       const mockUser = {
         id: 'user-id',
         username: 'testuser',
+        email: 'testuser@example.org',
         password: 'hashedPassword',
         roles: [Role.COLLABORATOR],
+        memberships: [
+          {
+            id: 'membership-id',
+            status: MembershipStatus.ACTIVE,
+            roles: [Role.COLLABORATOR],
+            organization: {
+              id: 'organization-id',
+              name: 'nEUROSCIENCE GATEWAY',
+              mspId: 'NSGMSP',
+            },
+          },
+        ],
       };
 
       userService.findOneForAuth.mockResolvedValue(mockUser);
@@ -139,8 +153,61 @@ describe('AuthService', () => {
       expect(result).toEqual({
         id: 'user-id',
         username: 'testuser',
+        email: 'testuser@example.org',
         roles: [Role.COLLABORATOR],
+        membershipId: 'membership-id',
+        organizationId: 'organization-id',
+        organizationName: 'nEUROSCIENCE GATEWAY',
+        organizationMspId: 'NSGMSP',
+        organization: {
+          id: 'organization-id',
+          name: 'nEUROSCIENCE GATEWAY',
+          mspId: 'NSGMSP',
+        },
+        authVersion: 0,
+        platformAdmin: false,
       });
+    });
+
+    it('requires explicit organization selection for multiple memberships', async () => {
+      userService.findOneForAuth.mockResolvedValue({
+        id: 'user-id',
+        username: 'testuser',
+        email: 'testuser@example.org',
+        password: 'hashedPassword',
+        memberships: [
+          {
+            id: 'nsg-membership',
+            status: MembershipStatus.ACTIVE,
+            roles: [Role.PI],
+            organization: { id: 'nsg', name: 'NSG' },
+          },
+          {
+            id: 'citizen-membership',
+            status: MembershipStatus.ACTIVE,
+            roles: [Role.COLLABORATOR],
+            organization: {
+              id: 'citizen-science',
+              name: 'Citizen Science',
+            },
+          },
+        ],
+      });
+      passwordService.comparePasswords = jest.fn().mockResolvedValue(true);
+
+      await expect(
+        service.validateUser('testuser', 'password'),
+      ).rejects.toHaveProperty(
+        'message',
+        'An active organization must be selected',
+      );
+      const selected = await service.validateUser(
+        'testuser',
+        'password',
+        'citizen-science',
+      );
+      expect(selected.roles).toEqual([Role.COLLABORATOR]);
+      expect(selected.organizationId).toBe('citizen-science');
     });
 
     it('should throw an exception when user is not found', async () => {
@@ -175,6 +242,10 @@ describe('AuthService', () => {
           email: userList[0].email,
           organizationId: null,
           organizationName: null,
+          membershipId: null,
+          organizationMspId: null,
+          authVersion: 0,
+          platformAdmin: false,
         },
       };
 
@@ -192,6 +263,10 @@ describe('AuthService', () => {
           email: userList[0].email,
           organizationId: null,
           organizationName: null,
+          membershipId: null,
+          organizationMspId: null,
+          authVersion: 0,
+          platformAdmin: false,
         },
         {
           secret: 'test-secret',

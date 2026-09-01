@@ -17,6 +17,10 @@ import { HealthController } from './health/health.controller';
 import { AddOrganizationLedgerRouting1720000000000 } from './migrations/1720000000000-add-organization-ledger-routing';
 import { OutboxEntity } from './messaging/outbox.entity';
 import { CreateMessageOutbox1720000001000 } from './migrations/1720000001000-create-message-outbox';
+import { OrganizationMembershipEntity } from './organization/organization-membership.entity';
+import { CreateOrganizationMemberships1720000002000 } from './migrations/1720000002000-create-organization-memberships';
+import { AddRecordVisibility1720000003000 } from './migrations/1720000003000-add-record-visibility';
+import { AddArtifactArchival1720000004000 } from './migrations/1720000004000-add-artifact-archival';
 
 @Module({
   imports: [
@@ -73,10 +77,14 @@ import { CreateMessageOutbox1720000001000 } from './migrations/1720000001000-cre
             ArtifactEntity,
             WorkflowEntity,
             OutboxEntity,
+            OrganizationMembershipEntity,
           ],
           migrations: [
             AddOrganizationLedgerRouting1720000000000,
             CreateMessageOutbox1720000001000,
+            CreateOrganizationMemberships1720000002000,
+            AddRecordVisibility1720000003000,
+            AddArtifactArchival1720000004000,
           ],
           migrationsRun:
             configService.get<string>(

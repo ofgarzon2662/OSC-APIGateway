@@ -18,6 +18,7 @@ import { SubmissionState } from '../artifact/enums/submission-state.enum';
 import { RabbitMQService } from '../messaging/rabbitmq.service';
 import { OutboxService } from '../messaging/outbox.service';
 import { randomUUID } from 'crypto';
+import { RecordVisibility } from '../shared/enums/record-visibility.enum';
 
 interface SubmitterInfo {
   username: string;
@@ -153,6 +154,19 @@ export class WorkflowService {
     }
   }
 
+  private assertReadAccess(
+    workflow: WorkflowEntity,
+    organizationId?: string,
+  ): void {
+    if (workflow.visibility === RecordVisibility.PUBLIC) return;
+    if (!organizationId || workflow.organization?.id !== organizationId) {
+      throw new BusinessLogicException(
+        'The workflow is private to another organization',
+        BusinessError.FORBIDDEN,
+      );
+    }
+  }
+
   private validateCreateDto(dto: CreateWorkflowDto): void {
     if (!dto.title || dto.title.length < 3) {
       throw new BusinessLogicException(
@@ -238,6 +252,7 @@ export class WorkflowService {
     const newWorkflow = this.workflowRepository.create({
       title: dto.title,
       description: dto.description,
+      visibility: dto.visibility ?? RecordVisibility.PRIVATE,
       keywords: dto.keywords || [],
       githubRepositories: dto.githubRepositories || [],
       submission_comment: dto.submission_comment,
@@ -294,6 +309,7 @@ export class WorkflowService {
       id: saved.id,
       title: saved.title,
       description: saved.description,
+      visibility: saved.visibility,
       keywords: saved.keywords,
       submissionState: saved.submissionState,
       submittedAt: saved.submittedAt,
@@ -323,12 +339,20 @@ export class WorkflowService {
     };
   }
 
-  async findAll(): Promise<ListWorkflowDto[]> {
-    const workflows = await this.workflowRepository.find();
+  async findAll(organizationId?: string): Promise<ListWorkflowDto[]> {
+    const workflows = await this.workflowRepository.find({
+      where: organizationId
+        ? [
+            { visibility: RecordVisibility.PUBLIC },
+            { organization: { id: organizationId } },
+          ]
+        : { visibility: RecordVisibility.PUBLIC },
+    });
     return workflows.map((w) => ({
       id: w.id,
       title: w.title,
       description: w.description,
+      visibility: w.visibility,
       keywords: w.keywords,
       submissionState: w.submissionState,
       submittedAt: w.submittedAt,
@@ -336,13 +360,15 @@ export class WorkflowService {
     }));
   }
 
-  async findOne(id: string): Promise<GetWorkflowDto> {
+  async findOne(id: string, organizationId?: string): Promise<GetWorkflowDto> {
     const workflow = await this.findWorkflowOrThrow(id, true);
+    this.assertReadAccess(workflow, organizationId);
 
     return {
       id: workflow.id,
       title: workflow.title,
       description: workflow.description,
+      visibility: workflow.visibility,
       submission_comment: workflow.submission_comment,
       keywords: workflow.keywords,
       githubRepositories: workflow.githubRepositories,

@@ -25,6 +25,7 @@ import { ApiKeyAuthGuard } from '../auth/guards/api-key-auth/api-key-auth.guard'
 import { RolesGuard } from '../auth/roles/roles.guards';
 import { Roles } from '../shared/decorators/roles.decorators';
 import { Role } from '../shared/enums/role.enums';
+import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
 
 @Controller('workflows')
 @UseInterceptors(BusinessErrorsInterceptor)
@@ -64,13 +65,18 @@ export class WorkflowController {
   }
 
   @Get()
-  async findAll(): Promise<ListWorkflowDto[]> {
-    return await this.workflowService.findAll();
+  @UseGuards(OptionalJwtAuthGuard)
+  async findAll(@Req() req: any = {}): Promise<ListWorkflowDto[]> {
+    return await this.workflowService.findAll(req.user?.organizationId);
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<GetWorkflowDto> {
-    return await this.workflowService.findOne(id);
+  @UseGuards(OptionalJwtAuthGuard)
+  async findOne(
+    @Param('id') id: string,
+    @Req() req: any = {},
+  ): Promise<GetWorkflowDto> {
+    return await this.workflowService.findOne(id, req.user?.organizationId);
   }
 
   @Put(':id')

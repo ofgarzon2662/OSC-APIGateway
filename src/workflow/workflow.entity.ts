@@ -20,6 +20,7 @@ import {
 import { SubmissionState } from '../artifact/enums/submission-state.enum';
 import { Type } from 'class-transformer';
 import { ArtifactEntity } from '../artifact/artifact.entity';
+import { RecordVisibility } from '../shared/enums/record-visibility.enum';
 
 export class RepositoryContent {
   @IsString()
@@ -69,6 +70,10 @@ export class WorkflowEntity {
   @IsNotEmpty()
   @Length(50, 3000)
   description: string;
+
+  @Column({ type: 'text', default: RecordVisibility.PRIVATE })
+  @IsEnum(RecordVisibility)
+  visibility: RecordVisibility;
 
   @Column({ type: 'simple-array', nullable: true })
   @IsArray()

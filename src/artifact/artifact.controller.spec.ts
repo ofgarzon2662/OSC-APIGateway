@@ -198,7 +198,10 @@ describe('ArtifactController', () => {
 
       const result = await controller.findOne('some-uuid');
       expect(result).toBe(dto);
-      expect(artifactService.findOne).toHaveBeenCalledWith('some-uuid');
+      expect(artifactService.findOne).toHaveBeenCalledWith(
+        'some-uuid',
+        undefined,
+      );
     });
 
     it('should propagate exceptions from service.findOne', async () => {
@@ -212,7 +215,10 @@ describe('ArtifactController', () => {
     it('should call service.delete with the given ID', async () => {
       artifactService.delete.mockResolvedValue(undefined);
       await controller.delete('some-uuid');
-      expect(artifactService.delete).toHaveBeenCalledWith('some-uuid');
+      expect(artifactService.delete).toHaveBeenCalledWith(
+        'some-uuid',
+        undefined,
+      );
     });
 
     it('should propagate exceptions from service.delete', async () => {
@@ -322,6 +328,7 @@ describe('ArtifactController', () => {
         artifactId,
         { offset: '0', limit: '10', order: 'desc', includeValue: 'true' },
         'corr-1',
+        undefined,
       );
     });
 
@@ -343,6 +350,7 @@ describe('ArtifactController', () => {
           order: undefined,
           includeValue: undefined,
         },
+        undefined,
         undefined,
       );
     });
@@ -377,6 +385,7 @@ describe('ArtifactController', () => {
       expect(artifactService.refreshHistory).toHaveBeenCalledWith(
         artifactId,
         'corr-2',
+        undefined,
       );
     });
 

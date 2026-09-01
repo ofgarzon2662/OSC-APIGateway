@@ -29,6 +29,7 @@ import { Role } from '../shared/enums/role.enums';
 import { UpdateArtifactUserDto } from './dto/update-artifact-user.dto';
 import { GhwService } from './ghw.service';
 import { ListArtifactDto } from './dto/list-artifact.dto';
+import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
 
 @Controller('artifacts')
 @UseInterceptors(BusinessErrorsInterceptor)
@@ -72,20 +73,28 @@ export class ArtifactController {
   }
 
   @Get()
-  async findAll(): Promise<ListArtifactDto[]> {
-    return await this.artifactService.findAll();
+  @UseGuards(OptionalJwtAuthGuard)
+  async findAll(@Req() req: any = {}): Promise<ListArtifactDto[]> {
+    return await this.artifactService.findAll(req.user?.organizationId);
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<GetArtifactDto> {
-    return await this.artifactService.findOne(id);
+  @UseGuards(OptionalJwtAuthGuard)
+  async findOne(
+    @Param('id') id: string,
+    @Req() req: any = {},
+  ): Promise<GetArtifactDto> {
+    return await this.artifactService.findOne(id, req.user?.organizationId);
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
-  async delete(@Param('id') id: string): Promise<void> {
-    return await this.artifactService.delete(id);
+  async delete(
+    @Param('id') id: string,
+    @Req() req: any = {},
+  ): Promise<void> {
+    return await this.artifactService.delete(id, req.user?.organizationId);
   }
 
   @Patch(':id')
@@ -125,6 +134,7 @@ export class ArtifactController {
     @Query('order') orderQ?: 'asc' | 'desc',
     @Query('includeValue') includeValueQ?: string,
     @Headers('x-correlation-id') corrId?: string,
+    @Req() req: any = {},
   ): Promise<any> {
     return this.artifactService.getHistory(
       id,
@@ -135,6 +145,7 @@ export class ArtifactController {
         includeValue: includeValueQ,
       },
       corrId,
+      req.user?.organizationId,
     );
   }
 
@@ -143,7 +154,12 @@ export class ArtifactController {
   async refreshHistory(
     @Param('id') id: string,
     @Headers('x-correlation-id') corrId?: string,
+    @Req() req: any = {},
   ): Promise<any> {
-    return this.artifactService.refreshHistory(id, corrId);
+    return this.artifactService.refreshHistory(
+      id,
+      corrId,
+      req.user?.organizationId,
+    );
   }
 }

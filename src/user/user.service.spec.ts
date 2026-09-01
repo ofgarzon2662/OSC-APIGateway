@@ -14,6 +14,8 @@ import { Role } from '../shared/enums/role.enums';
 import { BadRequestException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { UserUpdateDto } from './dto/user-update.dto';
 import { OrganizationEntity } from '../organization/organization.entity';
+import { OrganizationMembershipEntity } from '../organization/organization-membership.entity';
+import { MembershipStatus } from '../organization/membership-status.enum';
 
 describe('UserService', () => {
   let service: UserService;
@@ -22,6 +24,7 @@ describe('UserService', () => {
   let configService: ConfigService;
   let passwordService: PasswordService;
   let organizationRepository: Repository<OrganizationEntity>;
+  let membershipRepository: Repository<OrganizationMembershipEntity>;
 
   // Mock config service
   const mockConfigService = {
@@ -54,6 +57,9 @@ describe('UserService', () => {
     service = module.get<UserService>(UserService);
     repository = module.get<Repository<UserEntity>>(getRepositoryToken(UserEntity));
     organizationRepository = module.get<Repository<OrganizationEntity>>(getRepositoryToken(OrganizationEntity));
+    membershipRepository = module.get<Repository<OrganizationMembershipEntity>>(
+      getRepositoryToken(OrganizationMembershipEntity),
+    );
     configService = module.get<ConfigService>(ConfigService);
     passwordService = module.get<PasswordService>(PasswordService);
     
@@ -61,6 +67,7 @@ describe('UserService', () => {
   });
 
   const seedDatabase = async () => {
+    await membershipRepository.clear();
     await repository.clear();
     userList = [];
     
@@ -83,6 +90,13 @@ describe('UserService', () => {
       };
       
       const savedUser = await repository.save(user);
+      await membershipRepository.save({
+        user: savedUser,
+        organization,
+        roles: [Role.COLLABORATOR],
+        status: MembershipStatus.ACTIVE,
+        deactivatedAt: null,
+      });
       userList.push(savedUser);
     }
   };
@@ -287,7 +301,7 @@ describe('UserService', () => {
     );
   });
 
-    it('should create an admin user without organization', async () => {
+    it('should create an organization-scoped admin membership', async () => {
       const createUserDto = new UserCreateDto();
       createUserDto.name = faker.person.fullName();
       createUserDto.username = 'adminusername123'; // Usar un username fijo que cumpla con la validación de longitud
@@ -302,7 +316,7 @@ describe('UserService', () => {
       const result = await service.create(createUserDto, creator);
       expect(result).toBeDefined();
       expect(result.roles).toContain(Role.ADMIN);
-      expect(result.organizationName).toBeUndefined();
+      expect(result.organizationName).toBe('Test Organization');
     });
 
     it('should throw BadRequestException if creator is not an admin or PI', async () => {
@@ -660,7 +674,7 @@ describe('UserService', () => {
   });
 
   describe('remove', () => {
-    it('should remove a user', async () => {
+    it('should deactivate an organization membership without deleting the user', async () => {
       const userToRemove = userList[0];
       
       // Create an admin user as the current user
@@ -671,11 +685,19 @@ describe('UserService', () => {
       currentUser.username = 'adminuser';
       currentUser.email = 'admin@example.com';
       currentUser.password = 'hashedpassword';
+      currentUser.organization = userToRemove.organization;
       
       await service.remove(userToRemove.id, currentUser);
       
-      const removedUser = await repository.findOne({ where: { id: userToRemove.id } });
-      expect(removedUser).toBeNull();
+      const retainedUser = await repository.findOne({ where: { id: userToRemove.id } });
+      expect(retainedUser).not.toBeNull();
+      const membership = await membershipRepository.findOne({
+        where: {
+          user: { id: userToRemove.id },
+          organization: { id: userToRemove.organization.id },
+        },
+      });
+      expect(membership.status).toBe(MembershipStatus.INACTIVE);
     });
     
     it('should throw NotFoundException when user not found', async () => {
@@ -745,7 +767,15 @@ describe('UserService', () => {
         username: 'piuser',
         email: 'pi@example.com',
         password: 'hashedpassword',
-        roles: [Role.PI]
+        roles: [Role.PI],
+        organization: userList[0].organization,
+      });
+      await membershipRepository.save({
+        user: piUser,
+        organization: userList[0].organization,
+        roles: [Role.PI],
+        status: MembershipStatus.ACTIVE,
+        deactivatedAt: null,
       });
       
       // Create a PI user to delete (PI can't delete other PIs)
@@ -755,7 +785,15 @@ describe('UserService', () => {
         username: 'anotherpi',
         email: 'anotherpi@example.com',
         password: 'hashedpassword',
-        roles: [Role.PI]
+        roles: [Role.PI],
+        organization: userList[0].organization,
+      });
+      await membershipRepository.save({
+        user: userToDelete,
+        organization: userList[0].organization,
+        roles: [Role.PI],
+        status: MembershipStatus.ACTIVE,
+        deactivatedAt: null,
       });
       
       await expect(service.remove(userToDelete.id, piUser)).rejects.toHaveProperty(

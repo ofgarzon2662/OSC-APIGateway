@@ -6,10 +6,15 @@ import { UserService } from './user.service';
 import { AuthModule } from '../auth/auth.module';
 import { OrganizationModule } from '../organization/organization.module';
 import { OrganizationEntity } from '../organization/organization.entity';
+import { OrganizationMembershipEntity } from '../organization/organization-membership.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UserEntity, OrganizationEntity]),
+    TypeOrmModule.forFeature([
+      UserEntity,
+      OrganizationEntity,
+      OrganizationMembershipEntity,
+    ]),
     AuthModule,
     OrganizationModule
   ],

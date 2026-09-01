@@ -5,12 +5,24 @@ import { jwtConstants } from '../../shared/security/constants';
 import { ConfigService } from '@nestjs/config';
 import { TokenBlacklistService } from '../token-blacklist.service';
 import { Request } from 'express';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { OrganizationMembershipEntity } from '../../organization/organization-membership.entity';
+import { UserEntity } from '../../user/user.entity';
+import {
+  MembershipStatus,
+  OrganizationStatus,
+} from '../../organization/membership-status.enum';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     private readonly configService: ConfigService,
     private readonly tokenBlacklistService: TokenBlacklistService,
+    @InjectRepository(UserEntity)
+    private readonly userRepository: Repository<UserEntity>,
+    @InjectRepository(OrganizationMembershipEntity)
+    private readonly membershipRepository: Repository<OrganizationMembershipEntity>,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -32,16 +44,54 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('Token has been revoked');
     }
 
+    const user = await this.userRepository.findOne({
+      where: { id: payload.sub },
+    });
+    if (!user || user.authVersion !== (payload.authVersion ?? 0)) {
+      throw new UnauthorizedException('Token authorization is no longer valid');
+    }
+
+    if (!payload.membershipId) {
+      if (!user.platformAdmin || payload.platformAdmin !== true) {
+        throw new UnauthorizedException('Active organization membership required');
+      }
+      return {
+        id: user.id,
+        username: user.username,
+        roles: [],
+        email: user.email,
+        membershipId: null,
+        organizationId: null,
+        organizationName: null,
+        organizationMspId: null,
+        organization: null,
+        platformAdmin: true,
+      };
+    }
+
+    const membership = await this.membershipRepository.findOne({
+      where: { id: payload.membershipId, user: { id: user.id } },
+      relations: ['organization'],
+    });
+    if (
+      !membership ||
+      membership.status !== MembershipStatus.ACTIVE ||
+      membership.organization.status === OrganizationStatus.ARCHIVED
+    ) {
+      throw new UnauthorizedException('Organization membership is not active');
+    }
+
     return {
-      id: payload.sub,
-      username: payload.username,
-      roles: payload.roles,
-      email: payload.email,
-      organizationId: payload.organizationId ?? null,
-      organizationName: payload.organizationName ?? null,
-      organization: payload.organizationId
-        ? { id: payload.organizationId, name: payload.organizationName }
-        : null,
+      id: user.id,
+      username: user.username,
+      roles: membership.roles,
+      email: user.email,
+      membershipId: membership.id,
+      organizationId: membership.organization.id,
+      organizationName: membership.organization.name,
+      organizationMspId: membership.organization.mspId ?? null,
+      organization: membership.organization,
+      platformAdmin: user.platformAdmin,
     };
   }
 }

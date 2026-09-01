@@ -21,6 +21,11 @@ import { User } from './user';
 import { Role } from '../shared/enums/role.enums';
 import { OrganizationEntity } from '../organization/organization.entity';
 import * as validator from 'validator';
+import { OrganizationMembershipEntity } from '../organization/organization-membership.entity';
+import {
+  MembershipStatus,
+  OrganizationStatus,
+} from '../organization/membership-status.enum';
 
 @Injectable()
 export class UserService {
@@ -33,6 +38,8 @@ export class UserService {
     private readonly userRepository: Repository<UserEntity>,
     @InjectRepository(OrganizationEntity)
     private readonly organizationRepository: Repository<OrganizationEntity>,
+    @InjectRepository(OrganizationMembershipEntity)
+    private readonly membershipRepository: Repository<OrganizationMembershipEntity>,
   ) {}
 
   async onModuleInit() {
@@ -126,6 +133,7 @@ The application requires at least one admin user to function properly.
       name: username,
       email,
       roles: roles as Role[],
+      platformAdmin: true,
     });
     await this.userRepository.save(user);
   }
@@ -139,7 +147,7 @@ The application requires at least one admin user to function properly.
   async findOneForAuth(username: string): Promise<any> {
     const foundUser = await this.userRepository.findOne({
       where: [{ username: username }, { email: username }],
-      relations: ['organization'],
+      relations: ['organization', 'memberships', 'memberships.organization'],
     });
 
     if (!foundUser) {
@@ -157,7 +165,24 @@ The application requires at least one admin user to function properly.
       password: foundUser.password, // Include password for authentication
       roles: foundUser.roles || [], // Include roles for authorization
       organization: foundUser.organization,
+      memberships: foundUser.memberships || [],
+      authVersion: foundUser.authVersion || 0,
+      platformAdmin: foundUser.platformAdmin === true,
     };
+  }
+
+  async findOneForAuthById(id: string): Promise<any> {
+    const foundUser = await this.userRepository.findOne({
+      where: { id },
+      relations: ['organization', 'memberships', 'memberships.organization'],
+    });
+    if (!foundUser) {
+      throw new BusinessLogicException(
+        'User not found',
+        BusinessError.NOT_FOUND,
+      );
+    }
+    return foundUser;
   }
 
   /**
@@ -169,7 +194,7 @@ The application requires at least one admin user to function properly.
   async findOne(username: string): Promise<any> {
     const foundUser = await this.userRepository.findOne({
       where: [{ username: username }, { email: username }],
-      relations: ['organization'],
+      relations: ['organization', 'memberships', 'memberships.organization'],
     });
 
     if (!foundUser) {
@@ -187,6 +212,7 @@ The application requires at least one admin user to function properly.
       email: foundUser.email,
       roles: foundUser.roles || [],
       organization: foundUser.organization,
+      memberships: foundUser.memberships || [],
     };
   }
 
@@ -236,6 +262,8 @@ The application requires at least one admin user to function properly.
     creator: UserEntity,
     requestedRole: Role,
   ): void {
+    if (creator.platformAdmin === true) return;
+
     // Check if creator is an admin or PI
     if (
       !creator.roles.includes(Role.ADMIN) &&
@@ -287,24 +315,33 @@ The application requires at least one admin user to function properly.
       createUserDto.password,
     );
 
-    const user = this.userRepository.create({
-      ...createUserDto,
-      password: hashedPassword,
-      roles,
-      organization,
+    return this.userRepository.manager.transaction(async (manager) => {
+      const user = manager.create(UserEntity, {
+        ...createUserDto,
+        password: hashedPassword,
+        roles,
+        organization,
+      });
+      const savedUser = await manager.save(UserEntity, user);
+      if (organization) {
+        const membership = manager.create(OrganizationMembershipEntity, {
+          user: savedUser,
+          organization,
+          roles,
+          status: MembershipStatus.ACTIVE,
+          deactivatedAt: null,
+        });
+        await manager.save(OrganizationMembershipEntity, membership);
+        savedUser.memberships = [membership];
+      }
+      return savedUser;
     });
-
-    return await this.userRepository.save(user);
   }
 
   private async resolveOrganizationForNewUser(
     createUserDto: UserCreateDto,
     creator: UserEntity,
   ): Promise<OrganizationEntity | null> {
-    if (createUserDto.role === Role.ADMIN) {
-      return null;
-    }
-
     const creatorOrganizationId = creator.organization?.id;
     if (
       creator.roles.includes(Role.PI) &&
@@ -322,16 +359,19 @@ The application requires at least one admin user to function properly.
       const organization = await this.organizationRepository.findOne({
         where: { id: requestedOrganizationId },
       });
-      if (!organization) {
+      if (!organization || organization.status === OrganizationStatus.ARCHIVED) {
         throw new BadRequestException(
-          'The selected organization does not exist',
+          'The selected organization does not exist or is archived',
         );
       }
       return organization;
     }
 
     // Backward-compatible only for an unambiguous single-organization database.
-    const organizations = await this.organizationRepository.find({ take: 2 });
+    const organizations = await this.organizationRepository.find({
+      where: { status: OrganizationStatus.ACTIVE },
+      take: 2,
+    });
     if (organizations.length === 1) {
       return organizations[0];
     }
@@ -409,7 +449,7 @@ The application requires at least one admin user to function properly.
 
   async findAll(): Promise<UserGetDto[]> {
     const users = await this.userRepository.find({
-      relations: ['organization'],
+      relations: ['organization', 'memberships', 'memberships.organization'],
     });
     return users.map((user) => this.transformToDto(user));
   }
@@ -420,6 +460,7 @@ The application requires at least one admin user to function properly.
   private async findUserByIdOrThrow(id: string): Promise<UserEntity> {
     const user = await this.userRepository.findOne({
       where: { id },
+      relations: ['memberships', 'memberships.organization'],
     });
 
     if (!user) {
@@ -454,12 +495,10 @@ The application requires at least one admin user to function properly.
       this.validateAdminSelfUpdate(userToUpdate, updateUserDto);
     }
 
-    // Validate role updates
-    const hasRoleUpdate = updateUserDto.role !== undefined;
-    if (hasRoleUpdate) {
-      if (isSelfUpdate) {
-        throw new UnauthorizedException('Users cannot update their own roles');
-      }
+    if (updateUserDto.role !== undefined) {
+      throw new UnauthorizedException(
+        'Roles must be changed through the organization membership endpoint',
+      );
     }
   }
 
@@ -540,11 +579,6 @@ The application requires at least one admin user to function properly.
       );
     }
 
-    // Convert single role to array if needed
-    if (updateUserDto.role !== undefined) {
-      updateData.roles = [updateUserDto.role];
-    }
-
     return updateData;
   }
 
@@ -577,6 +611,9 @@ The application requires at least one admin user to function properly.
     const updatedUser = await this.userRepository.save({
       ...userToUpdate,
       ...updateData,
+      authVersion: updateUserDto.password
+        ? (userToUpdate.authVersion || 0) + 1
+        : userToUpdate.authVersion,
     });
 
     // Create response
@@ -591,37 +628,56 @@ The application requires at least one admin user to function properly.
   async remove(id: string, currentUser: UserEntity): Promise<void> {
     const user = await this.userRepository.findOne({
       where: { id },
-      relations: ['organization'],
+      relations: ['memberships', 'memberships.organization'],
     });
 
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    // Verificar permisos según el rol del usuario actual
+    const activeOrganizationId = currentUser.organization?.id;
+    if (!activeOrganizationId) {
+      throw new BadRequestException(
+        'An active organization is required to deactivate a membership',
+      );
+    }
+    const membership = user.memberships?.find(
+      (candidate) =>
+        candidate.organization.id === activeOrganizationId &&
+        candidate.status === MembershipStatus.ACTIVE,
+    );
+    if (!membership) {
+      throw new NotFoundException('Active organization membership not found');
+    }
+
     if (
       currentUser.roles.includes(Role.PI) &&
       !currentUser.roles.includes(Role.ADMIN)
     ) {
-      // Un PI no puede eliminar usuarios ADMIN
-      if (user.roles.includes(Role.ADMIN)) {
+      if (membership.roles.includes(Role.ADMIN)) {
         throw new BadRequestException('PI cannot delete admin users');
       }
 
-      // Un PI solo puede eliminar usuarios con rol COLLABORATOR (y ningún otro rol)
-      if (user.roles.length !== 1 || user.roles[0] !== Role.COLLABORATOR) {
+      if (
+        membership.roles.length !== 1 ||
+        membership.roles[0] !== Role.COLLABORATOR
+      ) {
         throw new BadRequestException(
           'PI can only delete users with role COLLABORATOR',
         );
       }
     } else if (currentUser.roles.includes(Role.ADMIN)) {
-      // Un ADMIN no puede eliminar a otro ADMIN
-      if (user.roles.includes(Role.ADMIN)) {
+      if (membership.roles.includes(Role.ADMIN)) {
         throw new BadRequestException('Admin cannot delete another admin user');
       }
     }
 
-    await this.userRepository.remove(user);
+    await this.userRepository.manager.transaction(async (manager) => {
+      membership.status = MembershipStatus.INACTIVE;
+      membership.deactivatedAt = new Date();
+      await manager.save(OrganizationMembershipEntity, membership);
+      await manager.increment(UserEntity, { id: user.id }, 'authVersion', 1);
+    });
   }
 
   /**

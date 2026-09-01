@@ -10,6 +10,7 @@ import {
   OrganizationResponseDto,
   UserForOrganizationDto,
 } from './organization.dto';
+import { OrganizationStatus } from './membership-status.enum';
 
 @Injectable()
 export class OrganizationService {
@@ -26,18 +27,30 @@ export class OrganizationService {
       id,
       name,
       description,
+      slug,
+      mspId,
+      status,
+      archivedAt,
       ledgerGroupName,
       ledgerApiUserId,
       artifactSchemaName,
-      users,
+      memberships,
       artifacts,
     } = organization;
 
     // Transform users to exclude passwords
-    const transformedUsers: UserForOrganizationDto[] = users
-      ? users.map((user) => {
-          const { id, name, username, email, roles } = user;
-          return { id, name, username, email, roles };
+    const transformedUsers: UserForOrganizationDto[] = memberships
+      ? memberships.map((membership) => {
+          const { id, name, username, email } = membership.user;
+          return {
+            id,
+            name,
+            username,
+            email,
+            roles: membership.roles,
+            membershipId: membership.id,
+            membershipStatus: membership.status,
+          };
         })
       : [];
 
@@ -45,6 +58,10 @@ export class OrganizationService {
       id,
       name,
       description,
+      slug,
+      mspId,
+      status,
+      archivedAt,
       ledgerGroupName,
       ledgerApiUserId,
       artifactSchemaName,
@@ -56,7 +73,7 @@ export class OrganizationService {
   // Get All Organizations
   async findAll(): Promise<OrganizationResponseDto[]> {
     const orgs = await this.organizationRepository.find({
-      relations: ['users', 'artifacts'],
+      relations: ['memberships', 'memberships.user', 'artifacts'],
     });
     if (!orgs || orgs.length === 0)
       throw new BusinessLogicException(
@@ -71,7 +88,7 @@ export class OrganizationService {
     const organization: OrganizationEntity =
       await this.organizationRepository.findOne({
         where: { id },
-        relations: ['users', 'artifacts'],
+        relations: ['memberships', 'memberships.user', 'artifacts'],
       });
     if (!organization)
       throw new BusinessLogicException(
@@ -112,6 +129,8 @@ export class OrganizationService {
       );
     }
 
+    organization.status = OrganizationStatus.ACTIVE;
+    organization.archivedAt = null;
     const savedOrg = await this.organizationRepository.save(organization);
     return this.transformToDto(savedOrg);
   }
@@ -124,7 +143,7 @@ export class OrganizationService {
     // Find the organization by id
     const organizationToUpdate = await this.organizationRepository.findOne({
       where: { id },
-      relations: ['users', 'artifacts'],
+      relations: ['memberships', 'memberships.user', 'artifacts'],
     });
 
     if (!organizationToUpdate) {
@@ -157,6 +176,8 @@ export class OrganizationService {
     this.organizationRepository.merge(organizationToUpdate, {
       name: organization.name,
       description: organization.description,
+      slug: organization.slug,
+      mspId: organization.mspId,
       ledgerGroupName: organization.ledgerGroupName,
       ledgerApiUserId: organization.ledgerApiUserId,
       artifactSchemaName: organization.artifactSchemaName,
@@ -179,11 +200,9 @@ export class OrganizationService {
         BusinessError.NOT_FOUND,
       );
 
-    await this.organizationRepository
-      .createQueryBuilder()
-      .delete()
-      .where('id = :id', { id: organization.id })
-      .execute();
+    organization.status = OrganizationStatus.ARCHIVED;
+    organization.archivedAt = new Date();
+    await this.organizationRepository.save(organization);
   }
 
   // Delete all organizations
@@ -197,10 +216,9 @@ export class OrganizationService {
       );
     }
 
-    await this.organizationRepository
-      .createQueryBuilder()
-      .delete()
-      .from(OrganizationEntity)
-      .execute();
+    await this.organizationRepository.update(
+      { status: OrganizationStatus.ACTIVE },
+      { status: OrganizationStatus.ARCHIVED, archivedAt: new Date() },
+    );
   }
 }

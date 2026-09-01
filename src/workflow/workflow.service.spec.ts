@@ -10,6 +10,7 @@ import { faker } from '@faker-js/faker';
 import { SubmissionState } from '../artifact/enums/submission-state.enum';
 import { CreateWorkflowDto } from './dto/create-workflow.dto';
 import { RabbitMQService } from '../messaging/rabbitmq.service';
+import { RecordVisibility } from '../shared/enums/record-visibility.enum';
 
 describe('WorkflowService', () => {
   let service: WorkflowService;
@@ -127,6 +128,7 @@ describe('WorkflowService', () => {
         submitterEmail: testSubmitter.email,
         submitterUsername: testSubmitter.username,
         submissionState: SubmissionState.SUCCESS,
+        visibility: RecordVisibility.PUBLIC,
       });
       testArtifacts.push(await artifactRepository.save(artifact));
     }
@@ -151,6 +153,7 @@ describe('WorkflowService', () => {
         submitterUsername: testSubmitter.username,
         submissionState: SubmissionState.PENDING,
         submittedAt: new Date(),
+        visibility: RecordVisibility.PUBLIC,
       });
       workflowList.push(await workflowRepository.save(workflow));
     }
@@ -179,6 +182,18 @@ describe('WorkflowService', () => {
       await organizationRepository.clear();
       await expect(service.findAll()).resolves.toEqual([]);
     });
+
+    it('shows private workflows only to their owning organization', async () => {
+      await workflowRepository.update(workflowList[0].id, {
+        visibility: RecordVisibility.PRIVATE,
+      });
+      const anonymous = await service.findAll();
+      const owner = await service.findAll(organization.id);
+      expect(anonymous.map((workflow) => workflow.id)).not.toContain(
+        workflowList[0].id,
+      );
+      expect(owner.map((workflow) => workflow.id)).toContain(workflowList[0].id);
+    });
   });
 
   describe('findOne', () => {
@@ -190,6 +205,21 @@ describe('WorkflowService', () => {
       expect(result.title).toEqual(stored.title);
       expect(result.artifacts).toBeDefined();
       expect(Array.isArray(result.artifacts)).toBe(true);
+    });
+
+    it('rejects a private workflow read from another organization', async () => {
+      await workflowRepository.update(workflowList[0].id, {
+        visibility: RecordVisibility.PRIVATE,
+      });
+      await expect(
+        service.findOne(workflowList[0].id, faker.string.uuid()),
+      ).rejects.toHaveProperty(
+        'message',
+        'The workflow is private to another organization',
+      );
+      await expect(
+        service.findOne(workflowList[0].id, organization.id),
+      ).resolves.toHaveProperty('id', workflowList[0].id);
     });
 
     it('should throw for an invalid ID', async () => {
@@ -216,6 +246,7 @@ describe('WorkflowService', () => {
       expect(result).toBeDefined();
       expect(result.id).toBeDefined();
       expect(result.title).toEqual(dto.title);
+      expect(result.visibility).toBe(RecordVisibility.PRIVATE);
     });
 
     it('should throw for invalid email', async () => {

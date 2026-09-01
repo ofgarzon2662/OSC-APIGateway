@@ -20,6 +20,7 @@ import {
 } from 'class-validator';
 import { SubmissionState } from './enums/submission-state.enum';
 import { Type } from 'class-transformer';
+import { RecordVisibility } from '../shared/enums/record-visibility.enum';
 
 export class ManifestItem {
   @IsString()
@@ -54,6 +55,18 @@ export class ArtifactEntity {
   @IsNotEmpty()
   @Length(50, 3000)
   description: string;
+
+  @Column({ type: 'text', default: RecordVisibility.PRIVATE })
+  @IsEnum(RecordVisibility)
+  visibility: RecordVisibility;
+
+  @Column({
+    type: process.env.NODE_ENV === 'test' ? 'datetime' : 'timestamp',
+    nullable: true,
+  })
+  @IsDate()
+  @IsOptional()
+  archivedAt: Date | null;
 
   @Column({ type: 'simple-array' })
   @IsArray()

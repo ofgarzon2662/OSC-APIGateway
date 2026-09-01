@@ -24,6 +24,12 @@ import { RolesGuard } from 'src/auth/roles/roles.guards';
 import { Request } from 'express';
 import { User } from '../auth/decorators/user.decorator';
 import { UserEntity } from './user.entity';
+import { IsUUID } from 'class-validator';
+
+class SwitchOrganizationDto {
+  @IsUUID('4')
+  organizationId: string;
+}
 
 @Controller('users')
 @UseInterceptors(BusinessErrorsInterceptor)
@@ -64,6 +70,15 @@ export class UserController {
   @Post('login')
   async login(@Req() req) {
     return this.authService.login(req);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('session/organization')
+  async switchOrganization(
+    @User() user: UserEntity,
+    @Body() body: SwitchOrganizationDto,
+  ) {
+    return this.authService.switchOrganization(user.id, body.organizationId);
   }
 
   @UseGuards(JwtAuthGuard)

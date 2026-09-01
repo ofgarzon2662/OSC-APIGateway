@@ -1,7 +1,7 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ArtifactEntity } from './artifact.entity';
-import { Repository } from 'typeorm';
+import { IsNull, Repository } from 'typeorm';
 import {
   BusinessError,
   BusinessLogicException,
@@ -19,6 +19,7 @@ import { RabbitMQService } from '../messaging/rabbitmq.service';
 import { GhwService } from './ghw.service';
 import { randomUUID } from 'crypto';
 import { OutboxService } from '../messaging/outbox.service';
+import { RecordVisibility } from '../shared/enums/record-visibility.enum';
 
 // Definir una interfaz para la información del creador del artefacto
 interface SubmitterInfo {
@@ -135,6 +136,19 @@ export class ArtifactService {
     if (organizationId && artifact.organization?.id !== organizationId) {
       throw new BusinessLogicException(
         'The artifact does not belong to the authenticated organization',
+        BusinessError.FORBIDDEN,
+      );
+    }
+  }
+
+  private assertReadAccess(
+    artifact: ArtifactEntity,
+    organizationId?: string,
+  ): void {
+    if (artifact.visibility === RecordVisibility.PUBLIC) return;
+    if (!organizationId || artifact.organization?.id !== organizationId) {
+      throw new BusinessLogicException(
+        'The artifact is private to another organization',
         BusinessError.FORBIDDEN,
       );
     }
@@ -428,13 +442,21 @@ export class ArtifactService {
   }
 
   // Get All Artifacts - Return minimal fields
-  async findAll(): Promise<ListArtifactDto[]> {
-    const artifacts = await this.artifactRepository.find();
+  async findAll(organizationId?: string): Promise<ListArtifactDto[]> {
+    const artifacts = await this.artifactRepository.find({
+      where: organizationId
+        ? [
+            { visibility: RecordVisibility.PUBLIC, archivedAt: IsNull() },
+            { organization: { id: organizationId }, archivedAt: IsNull() },
+          ]
+        : { visibility: RecordVisibility.PUBLIC, archivedAt: IsNull() },
+    });
 
     return artifacts.map((artifact) => ({
       id: artifact.id,
       title: artifact.title,
       description: artifact.description,
+      visibility: artifact.visibility,
       keywords: artifact.keywords,
       footprint: artifact.footprint,
       submittedAt: artifact.submittedAt,
@@ -444,15 +466,17 @@ export class ArtifactService {
   }
 
   // Get One Artifact - Return all fields
-  async findOne(id: string): Promise<GetArtifactDto> {
+  async findOne(id: string, organizationId?: string): Promise<GetArtifactDto> {
     // Find the artifact with the organization relation
     const artifact = await this.findArtifactOrThrow(id, true);
+    this.assertReadAccess(artifact, organizationId);
 
     // Transform the result to include all fields
     return {
       id: artifact.id,
       title: artifact.title,
       description: artifact.description,
+      visibility: artifact.visibility,
       submission_comment: artifact.submission_comment,
       keywords: artifact.keywords,
       footprint: artifact.footprint,
@@ -489,8 +513,10 @@ export class ArtifactService {
       includeValue?: string;
     },
     correlationId?: string,
+    organizationId?: string,
   ): Promise<any> {
-    this.validateId(id, 'artifactId');
+    const artifact = await this.findArtifactOrThrow(id, true);
+    this.assertReadAccess(artifact, organizationId);
     const artifactId = id.toLowerCase();
 
     const offset = Math.max(0, Number(params.offset ?? 0) || 0);
@@ -536,8 +562,13 @@ export class ArtifactService {
     }
   }
 
-  async refreshHistory(id: string, correlationId?: string): Promise<any> {
-    this.validateId(id, 'artifactId');
+  async refreshHistory(
+    id: string,
+    correlationId?: string,
+    organizationId?: string,
+  ): Promise<any> {
+    const artifact = await this.findArtifactOrThrow(id, true);
+    this.assertReadAccess(artifact, organizationId);
     const artifactId = id.toLowerCase();
     const corr = correlationId || randomUUID();
     try {
@@ -598,6 +629,7 @@ export class ArtifactService {
     // Create new artifact
     const newArtifact = this.artifactRepository.create({
       ...createArtifactDto,
+      visibility: createArtifactDto.visibility ?? RecordVisibility.PRIVATE,
       organization: organization,
       submitterEmail: submitterInfo.email,
       submitterUsername: submitterInfo.username,
@@ -648,6 +680,7 @@ export class ArtifactService {
       id: savedArtifact.id,
       title: savedArtifact.title,
       description: savedArtifact.description,
+      visibility: savedArtifact.visibility,
       keywords: savedArtifact.keywords,
       footprint: savedArtifact.footprint,
       submittedAt: savedArtifact.submittedAt,
@@ -697,17 +730,13 @@ export class ArtifactService {
     return await this.artifactRepository.save(artifact);
   }
 
-  // Delete an Artifact
-  async delete(id: string): Promise<void> {
-    // Find the artifact
-    const artifact = await this.findArtifactOrThrow(id);
-
-    // Use createQueryBuilder().delete() instead of remove to respect cascades
-    await this.artifactRepository
-      .createQueryBuilder()
-      .delete()
-      .where('id = :id', { id: artifact.id })
-      .execute();
+  // Archive an Artifact while retaining its provenance links.
+  async delete(id: string, organizationId?: string): Promise<void> {
+    const artifact = await this.findArtifactOrThrow(id, true);
+    this.assertOrganizationAccess(artifact, organizationId);
+    artifact.visibility = RecordVisibility.PRIVATE;
+    artifact.archivedAt = new Date();
+    await this.artifactRepository.save(artifact);
   }
 
   async updateWorker(

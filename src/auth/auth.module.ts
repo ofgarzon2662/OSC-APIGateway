@@ -13,12 +13,18 @@ import { UserEntity } from '../user/user.entity';
 import { TokenBlacklistService } from './token-blacklist.service';
 import { SubmitterListenerAuthService } from './submitter-listener-auth.service';
 import { ApiKeyAuthGuard } from './guards/api-key-auth/api-key-auth.guard';
+import { OrganizationMembershipEntity } from '../organization/organization-membership.entity';
+import { OrganizationEntity } from '../organization/organization.entity';
 
 @Module({
   imports: [
     forwardRef(() => UserModule),
     PassportModule,
-    TypeOrmModule.forFeature([UserEntity]),
+    TypeOrmModule.forFeature([
+      UserEntity,
+      OrganizationEntity,
+      OrganizationMembershipEntity,
+    ]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({

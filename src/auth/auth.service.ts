@@ -12,6 +12,24 @@ import { PasswordService } from './password.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserService } from '../user/user.service';
 import { TokenBlacklistService } from './token-blacklist.service';
+import {
+  MembershipStatus,
+  OrganizationStatus,
+} from '../organization/membership-status.enum';
+
+interface AuthenticatedContext {
+  id: string;
+  username: string;
+  email: string;
+  roles: string[];
+  membershipId: string | null;
+  organizationId: string | null;
+  organizationName: string | null;
+  organizationMspId: string | null;
+  organization: any;
+  authVersion: number;
+  platformAdmin: boolean;
+}
 
 @Injectable()
 export class AuthService {
@@ -25,7 +43,11 @@ export class AuthService {
     private readonly tokenBlacklistService: TokenBlacklistService,
   ) {}
 
-  async validateUser(username: string, password: string): Promise<any> {
+  async validateUser(
+    username: string,
+    password: string,
+    requestedOrganizationId?: string,
+  ): Promise<any> {
     try {
       // Use the authentication-specific method that includes the password
       const user = await this.userService.findOneForAuth(username);
@@ -37,7 +59,10 @@ export class AuthService {
       );
 
       if (isMatch) {
-        const result = { ...user };
+        const result = this.resolveAuthenticationContext(
+          user,
+          requestedOrganizationId,
+        );
         delete (result as Partial<UserEntity>).password;
         return result;
       } else {
@@ -57,6 +82,67 @@ export class AuthService {
     }
   }
 
+  private resolveAuthenticationContext(
+    user: any,
+    requestedOrganizationId?: string,
+  ): AuthenticatedContext {
+    const activeMemberships = (user.memberships || []).filter(
+      (membership) =>
+        membership.status === MembershipStatus.ACTIVE &&
+        membership.organization?.status !== OrganizationStatus.ARCHIVED,
+    );
+
+    let membership = requestedOrganizationId
+      ? activeMemberships.find(
+          (candidate) =>
+            candidate.organization?.id === requestedOrganizationId,
+        )
+      : activeMemberships.length === 1
+        ? activeMemberships[0]
+        : undefined;
+
+    if (requestedOrganizationId && !membership) {
+      throw new BusinessLogicException(
+        'The selected organization membership is not active',
+        BusinessError.UNAUTHORIZED,
+      );
+    }
+    if (!requestedOrganizationId && activeMemberships.length > 1) {
+      throw new BusinessLogicException(
+        'An active organization must be selected',
+        BusinessError.UNAUTHORIZED,
+      );
+    }
+    if (!membership && user.organization) {
+      membership = {
+        id: null,
+        roles: user.roles || [],
+        organization: user.organization,
+      };
+    }
+    if (!membership && !user.platformAdmin) {
+      throw new BusinessLogicException(
+        'The user has no active organization membership',
+        BusinessError.UNAUTHORIZED,
+      );
+    }
+
+    const organization = membership?.organization || null;
+    return {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      roles: membership?.roles || [],
+      membershipId: membership?.id || null,
+      organizationId: organization?.id || null,
+      organizationName: organization?.name || null,
+      organizationMspId: organization?.mspId || null,
+      organization,
+      authVersion: user.authVersion || 0,
+      platformAdmin: user.platformAdmin === true,
+    };
+  }
+
   async login(req: any) {
     const expiresIn = this.configService.get<string>(
       'JWT_EXPIRES_IN',
@@ -67,8 +153,12 @@ export class AuthService {
       sub: req.user.id,
       roles: req.user.roles,
       email: req.user.email,
-      organizationId: req.user.organization?.id ?? null,
-      organizationName: req.user.organization?.name ?? null,
+      membershipId: req.user.membershipId ?? null,
+      organizationId: req.user.organizationId ?? null,
+      organizationName: req.user.organizationName ?? null,
+      organizationMspId: req.user.organizationMspId ?? null,
+      authVersion: req.user.authVersion ?? 0,
+      platformAdmin: req.user.platformAdmin === true,
     };
     return {
       token: this.jwtService.sign(payload, {
@@ -79,6 +169,12 @@ export class AuthService {
         expiresIn,
       }),
     };
+  }
+
+  async switchOrganization(userId: string, organizationId: string) {
+    const user = await this.userService.findOneForAuthById(userId);
+    const context = this.resolveAuthenticationContext(user, organizationId);
+    return this.login({ user: context });
   }
 
   /**

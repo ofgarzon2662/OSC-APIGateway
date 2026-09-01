@@ -12,6 +12,7 @@ import { OrganizationEntity } from '../organization/organization.entity';
 import { CreateArtifactDto } from './dto/create-artifact.dto';
 import { RabbitMQService } from '../messaging/rabbitmq.service';
 import { GhwService } from './ghw.service';
+import { RecordVisibility } from '../shared/enums/record-visibility.enum';
 
 describe('ArtifactService', () => {
   let service: ArtifactService;
@@ -121,6 +122,7 @@ describe('ArtifactService', () => {
         submitterEmail: testSubmitter.email,
         submitterUsername: testSubmitter.username,
         submissionState: SubmissionState.PENDING,
+        visibility: RecordVisibility.PUBLIC,
       });
 
       const savedArtifact = await artifactRepository.save(artifact);
@@ -159,12 +161,29 @@ describe('ArtifactService', () => {
         .spyOn(artifactRepository, 'find')
         .mockResolvedValueOnce([]);
       await service.findAll();
-      expect(spy).toHaveBeenCalledWith();
+      expect(spy).toHaveBeenCalledWith({
+        where: expect.objectContaining({
+          visibility: RecordVisibility.PUBLIC,
+          archivedAt: expect.anything(),
+        }),
+      });
     });
 
     it('should return an empty public list when no organization exists', async () => {
       await organizationRepository.clear();
       await expect(service.findAll()).resolves.toEqual([]);
+    });
+
+    it('shows private artifacts only to their owning organization', async () => {
+      await artifactRepository.update(artifactList[0].id, {
+        visibility: RecordVisibility.PRIVATE,
+      });
+      const anonymous = await service.findAll();
+      const owner = await service.findAll(organization.id);
+      expect(anonymous.map((artifact) => artifact.id)).not.toContain(
+        artifactList[0].id,
+      );
+      expect(owner.map((artifact) => artifact.id)).toContain(artifactList[0].id);
     });
   });
 
@@ -188,6 +207,21 @@ describe('ArtifactService', () => {
       expect(artifact.submitterEmail).toEqual(testSubmitter.email);
       expect(artifact.submitterUsername).toEqual(testSubmitter.username);
       expect(artifact.organization.name).toEqual(organization.name);
+    });
+
+    it('rejects a private artifact read from another organization', async () => {
+      await artifactRepository.update(artifactList[0].id, {
+        visibility: RecordVisibility.PRIVATE,
+      });
+      await expect(
+        service.findOne(artifactList[0].id, faker.string.uuid()),
+      ).rejects.toHaveProperty(
+        'message',
+        'The artifact is private to another organization',
+      );
+      await expect(
+        service.findOne(artifactList[0].id, organization.id),
+      ).resolves.toHaveProperty('id', artifactList[0].id);
     });
 
     it('should throw an exception for an invalid artifact ID', async () => {
@@ -235,6 +269,7 @@ describe('ArtifactService', () => {
         verified: false,
         updatedAt: null,
         footprint: artifactDto.footprint,
+        visibility: RecordVisibility.PRIVATE,
       });
 
       // Verify it's saved in the database
@@ -246,6 +281,7 @@ describe('ArtifactService', () => {
       expect(savedArtifact.submitterEmail).toBe(testSubmitter.email);
       expect(savedArtifact.submitterUsername).toBe(testSubmitter.username);
       expect(savedArtifact.organization.id).toBe(organization.id);
+      expect(savedArtifact.visibility).toBe(RecordVisibility.PRIVATE);
     });
 
     it('should throw an exception for invalid email', async () => {
@@ -566,15 +602,16 @@ describe('ArtifactService', () => {
 
   // DELETE TESTS
   describe('delete', () => {
-    it('should delete an artifact', async () => {
+    it('should archive an artifact without deleting provenance metadata', async () => {
       const storedArtifact = artifactList[0];
       await service.delete(storedArtifact.id);
 
-      // Verify it's gone from the database
-      const deletedArtifact = await artifactRepository.findOne({
+      const archivedArtifact = await artifactRepository.findOne({
         where: { id: storedArtifact.id },
       });
-      expect(deletedArtifact).toBeNull();
+      expect(archivedArtifact).not.toBeNull();
+      expect(archivedArtifact.archivedAt).toBeInstanceOf(Date);
+      expect(archivedArtifact.visibility).toBe(RecordVisibility.PRIVATE);
     });
 
     it('should throw an exception for an invalid artifact ID', async () => {
