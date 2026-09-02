@@ -1,5 +1,5 @@
-# Multi-stage build for production efficiency
-FROM node:20-alpine@sha256:fb4cd12c85ee03686f6af5362a0b0d56d50c58a04632e6c0fb8363f609372293 AS build
+# Node 24 is the active LTS line. The digest pins the multi-platform image index.
+FROM node:24.20.0-alpine3.24@sha256:e67514e5d0f6c46656005e1b693b2ec9d52e80b641307de684d4a015ba7a4eaf AS build
 WORKDIR /app
 # Build tools needed for native addons (e.g. bcrypt)
 RUN apk add --no-cache python3 make g++
@@ -14,19 +14,15 @@ RUN python3 scripts/security/check_npm_supply_chain.py --repo . --offline-review
 COPY . .
 RUN npm run build && npm prune --omit=dev --ignore-scripts
 
-FROM node:20-alpine@sha256:fb4cd12c85ee03686f6af5362a0b0d56d50c58a04632e6c0fb8363f609372293 AS production
+FROM node:24.20.0-alpine3.24@sha256:e67514e5d0f6c46656005e1b693b2ec9d52e80b641307de684d4a015ba7a4eaf AS production
 WORKDIR /app
 
-# Add root CAs so TLS works (RDS, etc.)
-RUN apk --no-cache add ca-certificates curl && update-ca-certificates \
-  && curl -fsSL https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem -o /tmp/rds-global.pem \
-  && curl -fsSL https://truststore.pki.rds.amazonaws.com/us-west-2/us-west-2-bundle.pem -o /tmp/rds-us-west-2.pem \
-  && cat /tmp/rds-global.pem /tmp/rds-us-west-2.pem > /usr/local/share/ca-certificates/aws-rds-combined.crt \
-  && rm -f /tmp/rds-global.pem /tmp/rds-us-west-2.pem \
-  && update-ca-certificates
-
-# Ensure Node picks up the additional CA bundle
-ENV NODE_EXTRA_CA_CERTS=/usr/local/share/ca-certificates/aws-rds-combined.crt
+# Pin the current Alpine OpenSSL security update. npm is a build tool, not a
+# runtime dependency, so remove it and its transitive packages as well.
+RUN apk add --no-cache libcrypto3=3.5.8-r0 libssl3=3.5.8-r0 \
+  && rm -rf /usr/local/lib/node_modules/npm \
+  /usr/local/bin/npm \
+  /usr/local/bin/npx
 
 # Create non-root user for security
 RUN addgroup -g 1001 -S nodejs
