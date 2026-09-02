@@ -20,7 +20,6 @@ export const TypeOrmTestingConfig = () => [
       WorkflowEntity,
     ],
     synchronize: true,
-    keepConnectionAlive: true,
   }),
   TypeOrmModule.forFeature([
     OrganizationEntity,
