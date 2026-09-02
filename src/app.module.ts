@@ -21,6 +21,7 @@ import { OrganizationMembershipEntity } from './organization/organization-member
 import { CreateOrganizationMemberships1720000002000 } from './migrations/1720000002000-create-organization-memberships';
 import { AddRecordVisibility1720000003000 } from './migrations/1720000003000-add-record-visibility';
 import { AddArtifactArchival1720000004000 } from './migrations/1720000004000-add-artifact-archival';
+import { CreateBaselineSchema1719999999000 } from './migrations/1719999999000-create-baseline-schema';
 
 @Module({
   imports: [
@@ -80,6 +81,7 @@ import { AddArtifactArchival1720000004000 } from './migrations/1720000004000-add
             OrganizationMembershipEntity,
           ],
           migrations: [
+            CreateBaselineSchema1719999999000,
             AddOrganizationLedgerRouting1720000000000,
             CreateMessageOutbox1720000001000,
             CreateOrganizationMemberships1720000002000,
