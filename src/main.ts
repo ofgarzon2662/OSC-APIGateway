@@ -47,7 +47,13 @@ async function bootstrap() {
     prefix: 'api/v',
     defaultVersion: '1',
   });
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
   await app.listen(process.env.PORT || 3000);
 }
 bootstrap();
