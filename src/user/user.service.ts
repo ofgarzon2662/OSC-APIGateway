@@ -126,6 +126,13 @@ The application requires at least one admin user to function properly.
     roles: string[],
     email: string = `${username}@example.com`,
   ): Promise<void> {
+    const existingUser = await this.userRepository.findOne({
+      where: { username },
+    });
+    if (existingUser) {
+      return;
+    }
+
     const hashedPassword = await this.passwordService.hashPassword(password);
     const user = this.userRepository.create({
       username,

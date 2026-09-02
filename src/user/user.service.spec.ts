@@ -133,6 +133,26 @@ describe('UserService', () => {
       expect(superadminUser.roles).toEqual([Role.ADMIN, Role.PI]);
     });
 
+    it('should keep bootstrap users stable across application restarts', async () => {
+      await repository.delete({ username: 'admin' });
+      await repository.delete({ username: 'superadmin' });
+
+      await service.loadUsersFromEnv();
+      const originalAdmin = await repository.findOne({
+        where: { username: 'admin' },
+      });
+
+      await service.loadUsersFromEnv();
+      const admins = await repository.find({
+        where: [{ username: 'admin' }, { username: 'superadmin' }],
+      });
+      const restartedAdmin = admins.find((user) => user.username === 'admin');
+
+      expect(admins).toHaveLength(2);
+      expect(restartedAdmin.id).toBe(originalAdmin.id);
+      expect(restartedAdmin.password).toBe(originalAdmin.password);
+    });
+
     it('should throw an error when no users are found in environment variables', async () => {
       // Mock the ConfigService to return undefined values
       jest.spyOn(configService, 'get').mockReturnValue(undefined);
