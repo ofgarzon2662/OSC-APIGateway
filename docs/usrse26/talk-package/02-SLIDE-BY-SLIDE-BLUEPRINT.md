@@ -146,8 +146,8 @@ that includes the provenance-history screenshot. Mark demonstration records as
 synthetic/representative.
 
 **Evidence:** C11 and the WebApp UX revision. The interface state is fixture-
-based visual evidence; AWS API/backend evidence independently demonstrates real
-ledger revisions and transaction IDs.
+based visual evidence; separately validated AWS API/backend evidence records
+ledger revisions and transaction identifiers.
 
 **Key sentence:** "The blockchain is deliberately not the first thing a user
 sees. The user sees a scientific record, while the product exposes Fabric where
@@ -170,7 +170,8 @@ Kubernetes as the goal.
 - EKS application workloads and organization Ledger Gateways.
 - Private Amazon MQ RabbitMQ service and PostgreSQL.
 - ECR images by immutable digest; Argo CD reconciles declared state.
-- Narrow AWS identity through OIDC and workload roles.
+- Workflow configuration requests narrow AWS identity through GitHub OIDC and
+  workload roles.
 
 **Visual:** One current-state architecture diagram. Place the Git repository and
 Argo CD above the runtime, not as another application microservice. Put Gateway
@@ -208,9 +209,9 @@ records from two bounded inferences with a small legend.
 
 **Evidence:** C03, C09, C17, and C18.
 
-**Key sentence:** "We do not call this full browser-to-ledger E2E. The browser
-edge and the API-to-ledger path were validated independently, and the local
-trace made the asynchronous boundaries inspectable."
+**Key sentence:** "We do not call this full browser-to-ledger E2E. We ran live
+browser edge smoke plus a separately validated API-to-ledger integration path;
+the local trace made the asynchronous boundaries inspectable."
 
 **Transition:** "Once the evidence layers were explicit, failures stopped being
 surprises and became experiments."
@@ -260,20 +261,25 @@ interface, and the cost of experimentation."
 **On-slide content:**
 
 - 9/9 retained Cypress/axe journeys; manual checks target WCAG 2.2 AA.
-- Six reviewed images: non-root, SBOMed, scanned for High/Critical findings,
-  and deployed by digest.
-- First AWS run: 2.25 hours, conservative estimated upper bound $1.41.
+- Six deployed image roles: non-root, SBOMed, and deployed by digest; eight
+  retained scan records, including two replacements, report zero High/Critical
+  image-scan findings.
+- First AWS run: about 2.25 hours; nearest-cent estimate $1.41 from exact
+  timestamps, or $1.42 as a conservative cent-level ceiling.
 - Authoritative post-teardown inventory: no live experiment resources.
 
 **Visual:** Provenance-history screenshot on one side; four short evidence facts
 on the other. A small footer should carry the limits: no certification,
-comprehensive security assessment, or provider invoice claim.
+comprehensive security assessment, or provider invoice claim. If current
+readiness is mentioned, disclose the WebApp dependency hold rather than
+generalizing image scans to the product.
 
 **Evidence:** C08, C10-C13.
 
-**Key sentence:** "Trust is not only a ledger property. It includes whether a
-researcher can inspect history, whether a reviewer can identify the deployed
-image, and whether an experiment leaves untracked infrastructure behind."
+**Key sentence:** "Trust is not only a ledger property. It includes whether the
+interface makes history states inspectable, whether a reviewer can identify the
+deployed image, and whether an experiment leaves untracked infrastructure
+behind."
 
 **Transition:** "So what did the discipline actually change, and what remains
 unproven?"

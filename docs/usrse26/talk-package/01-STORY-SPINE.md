@@ -76,17 +76,19 @@ product:
 
 The talk earns its claims with bounded experiments:
 
-- Two independent AWS runs repeated controlled recovery timings.
+- Two separate disposable AWS runs repeated controlled recovery timings.
 - Argo CD detected drift and completed measured rollout and rollback.
 - Tested cross-organization operations were denied at the Gateway and Fabric
   boundaries.
 - A local Kind run correlated one API submission through the asynchronous path,
   using five direct records and two bounded inferences, to one Fabric revision.
-- Reviewed images were non-root, SBOMed, scanned for High/Critical findings, and
-  deployed by digest.
-- The first AWS experiment had a conservative estimated upper bound of $1.41,
+- Six deployed image roles were non-root, SBOMed, and deployed by digest. Eight
+  retained scan records, including two replacements, reported zero High/Critical
+  findings; this is not a whole-product dependency assessment.
+- The first AWS experiment's exact timestamps yield a nearest-cent $1.41
+  estimate at the planned rate (or a $1.42 conservative cent-level ceiling),
   and authoritative inventories found no live experiment resources after
-  teardown.
+  teardown. Neither figure is an invoice.
 
 The point is not that EKS is impressive. The point is that the architecture
 became falsifiable: drift, failure, identity errors, and deployment state could

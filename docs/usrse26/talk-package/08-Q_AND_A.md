@@ -133,8 +133,8 @@ failure, production SLOs, or disaster recovery.
 
 ### Was this a full browser-to-blockchain E2E test?
 
-No. We ran live browser edge smoke and independently validated API-to-ledger
-integration. A local Kind run then correlated one authenticated API request
+No. We ran live browser edge smoke plus a separately validated API-to-ledger
+integration path. A local Kind run then correlated one authenticated API request
 through the asynchronous backend to a Fabric revision and final API state. A
 future browser-to-ledger claim would require one disposable authenticated
 browser mutation correlated through every boundary and rendered back in the UI.
@@ -187,17 +187,21 @@ evidence rather than asking one screenshot to prove both.
 ### Is OSC-IS secure?
 
 We do not make a comprehensive security claim. The experiment tested scoped
-organization identity and denials, short-lived AWS identity, exact secret
-access, immutable image digests, SBOM generation, non-root images, and zero
-retained High/Critical scan findings. A full threat model, penetration test,
-all-severity remediation policy, and remote governance verification remain.
+organization identity and denials, workflow configuration requesting short-lived
+AWS credentials, exact secret access, immutable image digests, SBOM generation,
+non-root images, and zero retained High/Critical image-scan findings. That image
+result covers six deployed roles and eight scan records including two
+replacements; current WebApp governance still has 15 High production dependency
+findings. A full threat model, penetration test, all-severity remediation policy,
+and remote governance verification remain.
 
 ### Were static AWS keys stored in GitHub?
 
-No static AWS credential was introduced by the experiment. GitHub Actions used
-OIDC to assume a scoped AWS role, and workload access used scoped AWS identity.
-The remote environment approvals and trust policy remain controls that must be
-verified by repository/account administrators.
+No static AWS credential was introduced by the experiment. Workflow definitions
+request GitHub OIDC credentials for a scoped AWS role, and workload access is
+configured with scoped AWS identity. The retained campaigns do not prove a
+remote Actions run; remote environment approvals and trust policy remain controls
+that must be verified by repository/account administrators.
 
 ### Is the portal WCAG compliant?
 
@@ -220,10 +224,12 @@ that all future malicious packages are blocked.
 
 ### Did the AWS run cost $1.41?
 
-The first run lasted 2.25 hours and had a conservative estimated upper bound of
-$1.41. Real-time provider billing was unavailable at teardown, so that is not
-an invoice or realized cost. The independent campaign stayed below its $15
-target and $20 hard stop.
+The first run lasted about 2.25 hours. Exact timestamps and the planned rate
+yield a nearest-cent estimate of $1.41; a conservative cent-level ceiling is
+$1.42. Real-time provider billing was unavailable at teardown, so neither is an
+invoice or realized cost. The separate campaign stayed below its $15 target and
+$20 hard stop; those Run 2 cost-control values are report-level rather than a
+retained provider invoice.
 
 ### How do you know teardown was complete?
 

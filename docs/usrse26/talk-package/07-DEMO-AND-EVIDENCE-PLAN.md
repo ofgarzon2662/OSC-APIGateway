@@ -47,8 +47,11 @@ The audience should be able to see four things:
 
 ### Delivery and operations
 
-- Six non-root, SBOMed, High/Critical-scanned images deployed by digest.
-- First run duration and conservative estimate: 2.25 hours, $1.41 upper bound.
+- Six deployed image roles: non-root, SBOMed, and deployed by digest; eight
+  retained scan records, including two replacements, report zero High/Critical
+  image-scan findings.
+- First run duration and estimate: about 2.25 hours; nearest-cent $1.41 from
+  exact timestamps, or $1.42 as a conservative cent-level ceiling.
 - Final authoritative inventory: no live experiment resources.
 
 Do not display raw private endpoints, account identity output, certificates,
@@ -77,7 +80,7 @@ a video or represented by three click-through slides.
 - Open accepted history.
 - Point to version, accepted event, transaction ID, and artifact fingerprint.
 - Say: "The UI state is a repeatable fixture; the AWS backend evidence
-  independently demonstrated ledger revisions and transaction IDs."
+  separately demonstrated ledger revisions and transaction identifiers."
 
 ### 60-75 seconds - Workflow context
 
@@ -90,7 +93,8 @@ a video or represented by three click-through slides.
 The most reliable conference sequence is a reveal across Slides 7-9:
 
 1. Reveal the three evidence layers.
-2. Highlight that browser and API-to-ledger validation are independent.
+2. Highlight that browser edge smoke and API-to-ledger validation are separate
+   evidence layers.
 3. Reveal the two-run recovery measurements.
 4. Reveal GitOps drift/rollout/rollback measurements.
 5. End with accessibility, image provenance, estimated cost, and teardown.
@@ -158,7 +162,8 @@ No new AWS run is required for the current talk claims. Run AWS again only if:
 If a new run is authorized, it should be a short, disposable confirmation
 campaign with:
 
-- exact account `269624229733` and region verification before apply;
+- approved account and region verification before apply (keep the exact account
+  identifier in restricted operator material, never in this shareable package);
 - an explicit cost target and hard stop;
 - immutable source revisions and image digests;
 - a unique run ID on every resource;

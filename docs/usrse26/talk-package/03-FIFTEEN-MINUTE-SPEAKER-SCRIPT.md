@@ -109,7 +109,7 @@ events, file fingerprints, version history, and transaction identifiers.
 The screenshots here use deterministic demonstration records. They are useful
 visual and accessibility evidence, but they are not screenshots of a live
 researcher deployment or proof of a live ledger transaction. The ledger
-revisions and transaction IDs were demonstrated independently through the
+revisions and transaction identifiers were demonstrated separately through the
 deployed API and backend tests.
 
 This distinction matters. Good evidence says both what an artifact shows and
@@ -129,8 +129,10 @@ service through Amazon MQ, PostgreSQL, ECR, and a two-organization Fabric
 network representing NSG and Citizen Science.
 
 Argo CD reconciled declared Git state. Images were deployed by immutable
-digest. GitHub Actions used short-lived AWS identity rather than static cloud
-keys, and workload roles were scoped to the secrets each component required.
+digest. Workflow definitions request short-lived AWS credentials through GitHub
+OIDC rather than static cloud keys, and workload roles were scoped to the
+secrets each component required. The retained campaigns do not prove a remote
+Actions run or branch-protection configuration.
 
 EKS is not the thesis, and it is not the only acceptable future deployment.
 It was a useful experiment because it let us ask falsifiable questions: Can we
@@ -162,9 +164,9 @@ and listener consumption, are bounded inferences from matched completion and
 final-state evidence.
 
 We therefore do not call this full browser-to-ledger end-to-end testing. The
-conference-safe statement is: live browser edge smoke plus independently
-validated API-to-ledger integration. That language is less dramatic and more
-useful because another engineer can understand exactly what was tested.
+conference-safe statement is: live browser edge smoke plus a separately
+validated API-to-ledger integration path. That language is less dramatic and
+more useful because another engineer can understand exactly what was tested.
 
 ## Slide 8 - Failure Became a Test Case
 
@@ -172,7 +174,7 @@ useful because another engineer can understand exactly what was tested.
 
 Once the boundaries were observable, failures became test cases.
 
-We ran two independent disposable AWS campaigns. When we interrupted the Ledger
+We ran two separate disposable AWS campaigns. When we interrupted the Ledger
 Gateway path, the submission recovered in 46 seconds in both runs. When we
 interrupted RabbitMQ and the worker, recovery took 223 and 226 seconds. When a
 peer was interrupted, the alternate peer was accepted in 6 seconds in both
@@ -204,20 +206,23 @@ The retained package includes 18 focused unit tests and 9 of 9 Cypress and axe
 journeys, plus keyboard, focus, heading, label, error, retry, responsive, and
 contrast review. This is regression evidence, not accessibility certification.
 
-On the delivery side, the experiment used six reviewed images that ran as
-non-root, carried SBOMs, were scanned with zero retained High or Critical
-findings, and were deployed by digest. That is a set of tested controls, not a
-claim that the product is comprehensively secure.
+On the delivery side, the experiment used six deployed image roles that ran as
+non-root, carried SBOMs, and were deployed by digest. Eight retained scan
+records, including two replacements, reported zero High or Critical findings.
+That is a set of tested image-scan controls, not a claim that the product is
+comprehensively secure or dependency-clean.
 
-On the operational side, the first AWS experiment ran for 2.25 hours with a
-conservative estimated upper bound of one dollar and forty-one cents. That is
-an estimate, not an invoice. After teardown, authoritative service inventories
-found no live experiment resources. A separate tag index lagged temporarily,
-so we reconciled it against the service APIs instead of trusting one source.
+On the operational side, the first AWS experiment ran for about 2.25 hours.
+Its exact timestamps and planned rate yield a nearest-cent estimate of one
+dollar and forty-one cents; a conservative cent-level ceiling is one dollar and
+forty-two cents. Neither is an invoice. After teardown, authoritative service
+inventories found no live experiment resources. A separate tag index lagged
+temporarily, so we reconciled it against the service APIs instead of trusting
+one source.
 
-For me, this is what treating OSC-IS as a product means: a researcher can
-inspect history, an engineer can identify the deployed revision, and the team
-can account for the experiment after it ends.
+For me, this is what treating OSC-IS as a product means: the interface makes
+history states inspectable, an engineer can identify the deployed revision, and
+the team can account for the experiment after it ends.
 
 ## Slide 10 - Discipline Made the Prototype Falsifiable
 

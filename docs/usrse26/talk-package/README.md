@@ -47,6 +47,8 @@ account of an experimental product becoming more disciplined.
     evidence-driven story answers the accepted submission and reviews.
 12. [Asset inventory](assets/README.md) - reviewed assets and their source
     provenance. Binary assets are intentionally not committed in this branch.
+13. [Public sharing boundary](12-PUBLIC-SHARING-BOUNDARY.md) - what may be
+    shared from the package and what must remain private/audit-only.
 
 ## Authoritative Inputs
 
@@ -69,7 +71,7 @@ all historical artifacts are appropriate to duplicate in this repository.
 ## Non-Negotiable Claim Boundaries
 
 - Say **experimental product prototype**, not production-ready.
-- Say **live browser edge smoke plus independently validated API-to-ledger
+- Say **live browser edge smoke plus a separately validated API-to-ledger
   integration**, not full browser-to-ledger E2E.
 - Say **controlled recovery experiments**, not high availability or disaster
   recovery.
@@ -77,11 +79,17 @@ all historical artifacts are appropriate to duplicate in this repository.
   cryptographic signatures.
 - Say **automated and manual regression checks target WCAG 2.2 AA**, not WCAG
   certified or legally compliant.
-- Say **estimated upper bound**, not AWS invoice or realized cost.
+- Say **estimated cost from exact timestamps (nearest-cent $1.41)**, or use a
+  **$1.42 conservative cent-level ceiling**; neither is an AWS invoice or
+  realized cost.
 - Say **no duplicate ledger revision was observed in the controlled cases**,
   not exactly-once delivery is guaranteed.
 - State plainly that OSC-IS has not yet been launched to production researchers
   and has no adoption or measured impact data.
+- If current release readiness is discussed, say that WebApp is **NOT READY**
+  because governance found 15 High production dependency findings; the other
+  four primary repositories are ready only with manual gates, and the combined
+  five-repository release is not approved.
 
 ## Recommended Working Order
 

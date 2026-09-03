@@ -175,7 +175,7 @@ not only by test size.
 holds three GitOps measurements. Use paired dots or thin timelines, not bars
 that imply a performance target. Keep the two runs visually adjacent.
 
-**Footer:** `Two independent disposable AWS runs. Controlled observations, not
+**Footer:** `Two separate disposable AWS runs. Controlled observations, not
 SLOs.`
 
 **Avoid:** green-only success coding and false precision beyond whole seconds.
@@ -185,11 +185,12 @@ SLOs.`
 **Template layout:** Image Left + Copy.
 
 **Composition:** Crop the provenance-history screenshot on the left. On the
-right, use four evidence statements with large numerals: `9/9`, `6 images`,
-`$1.41 estimate`, `0 live experiment resources`.
+right, use four evidence statements with large numerals: `9/9 journeys`,
+`6 roles / 8 scans`, `$1.41 estimate`, `0 live experiment resources`.
 
-Each number needs a noun and limitation. For example, never display `$1.41`
-without `conservative estimated upper bound`.
+Each number needs a noun and limitation. For example, label `$1.41` as a
+nearest-cent estimate from exact timestamps, or show `$1.42` if using a
+conservative cent-level ceiling. Neither is provider billing.
 
 ### Slide 10 - Discipline Made the Prototype Falsifiable
 

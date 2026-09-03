@@ -152,18 +152,20 @@ reviewed campaign.
 - `OSC-IS-Infra@25aefb8:docs/usrse26/e2e-evidence/2026-09-02-e2e20260902/webapp-artifact-manifest.json`
 - `OSC-IS-Infra@25aefb8:docs/usrse26/e2e-evidence/2026-09-02-e2e20260902/platform-evidence/validation-summary.json`
 
-**Metric:** Six images; zero retained High/Critical scan findings.
+**Metric:** Six deployed image roles; eight retained scan records, including two
+replacements; zero retained High/Critical image-scan findings.
 
 **Required qualifier:** Disposable experiment. Medium/Low vulnerability counts,
 remote protection settings, and a comprehensive security assessment are not
-part of this claim.
+part of this claim. Current WebApp governance has 15 High production dependency
+findings; do not generalize the image-scan result to the dependency estate.
 
 **Do not say:** secure supply chain, vulnerability-free, production topology.
 
 ## Slide 7 - Evidence, Not Architecture Theater
 
-**Claim C09:** "We ran live browser edge smoke plus independently validated
-API-to-ledger integration."
+**Claim C09:** "We ran live browser edge smoke plus a separately validated
+API-to-ledger integration path."
 
 **Browser evidence:**
 
@@ -171,8 +173,9 @@ API-to-ledger integration."
 - `OSC-IS-Infra@25aefb8:docs/usrse26/e2e-evidence/2026-09-02-e2e20260902/live-browser-results.txt`
 - `OSC-IS-Infra@25aefb8:docs/usrse26/e2e-evidence/E2E-VALIDATION-REPORT.md`
 
-**Metric:** Final live Chrome smoke: 3 passed, 0 failed, 0 console
-warnings/errors.
+**Metric:** The retained final live Chrome summary reports 3 passed, 0 failed,
+and 0 console warnings/errors. The test source defines those three public/
+unauthenticated smoke cases; a raw runner transcript is not retained.
 
 **Claim C17:** "A disposable local two-organization Fabric deployment
 correlated one authenticated API submission across the transactional outbox,
@@ -199,7 +202,7 @@ directly observed.
 ## Slide 8 - Failure Became a Test Case
 
 **Claims C04-C06:** Controlled dependency interruptions recovered in two
-independent AWS runs.
+separate disposable AWS runs.
 
 | Observation | Run 1 | Run 2 | Evidence |
 |---|---:|---:|---|
@@ -244,12 +247,14 @@ is not certification or a legal compliance opinion."
 - `OSC-WebApp@16b18d3:docs/ACCESSIBILITY-MANUAL-EVIDENCE-20260902.md`
 - `OSC-WebApp@16b18d3:docs/evidence/accessibility-manual-20260902/SHA256SUMS.txt`
 
-**Metric:** Manifest-backed 18 focused unit tests and 9/9 Cypress/axe journeys.
-The report-level 222/222 full suite is execution history; its raw transcript is
-not retained in the hashed set.
+**Metric:** Retained logs record 18 focused unit tests and 9/9 Cypress/axe
+journeys. Six of eight accessibility-manifest entries match committed bytes;
+two log hashes are line-ending dependent. The report-level 222/222 full suite
+is execution history; its raw transcript is not retained in the hashed set.
 
-**Claim C12:** "The first AWS experiment ran for 2.25 hours with a conservative
-estimated upper bound of $1.41; the independent campaign stayed below its $15
+**Claim C12:** "The first AWS experiment ran for about 2.25 hours; exact
+timestamps yield a nearest-cent $1.41 estimate at the planned rate, or a $1.42
+conservative cent-level ceiling. The separate campaign stayed below its $15
 target and $20 hard stop."
 
 **Cost evidence:**
@@ -270,7 +275,9 @@ experiment resources; tag-index lag was separately reconciled."
 
 **Required qualifiers:** Accessibility regression, not certification. Zero
 retained High/Critical image findings, not zero vulnerabilities. Cost estimate,
-not invoice. No live **experiment** resources, not an empty AWS account.
+not invoice. No live **experiment** resources, not an empty AWS account. The
+Run 2 cost-control values and detailed destruction counts are report-level; its
+final parity/zero-additions result is directly retained.
 
 ## Slide 10 - Discipline Made the Prototype Falsifiable
 
@@ -290,6 +297,9 @@ AWS E2E report; UX evidence README.
 - No load, soak, capacity, SLO, backup/restore, regional failure, or DR test.
 - No individual cryptographic authorship.
 - No accessibility certification.
+- Current five-repository release is not approved: WebApp is held by 15 High
+  production dependency findings, and the other four primary repositories are
+  ready only with manual gates.
 
 **Do not weaken this slide to make the result sound larger.** Its restraint is
 part of the engineering contribution.
@@ -303,6 +313,10 @@ locally after the historical AWS campaigns. Use only if asked about
 reproducibility or branch integration.
 
 - Infra: `4d735abc3665dc1fb8e03f2b8f5aab7d54ce4574`.
+- Later manifest-integrity repair: `f2f534e55ade55a896c431b79e2c54d9dc6d00e8`
+  verifies 9/9 remediation evidence files against committed bytes. It changes
+  only the manifest; `4d735ab` remains the remediation execution/evidence
+  revision and must not be described as independently 9/9 verified.
 - Artifact Submission merge: `9f167efdc95767f2fa16673923b28980a63adc43`.
 - Evidence: `docs/usrse26/remediation/INFRA-INTEGRATION-REPRODUCIBILITY-REPORT.md`.
 - Scope: clean Windows/WSL checkout and focused local checks; not AWS or remote
