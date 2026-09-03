@@ -1,7 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { RabbitMQService } from './rabbitmq.service';
-import { ArtifactUpdatedEvent, ArtifactUpdateCommand, ArtifactSubmitCommand } from './rabbitmq.service';
+import {
+  ArtifactUpdatedEvent,
+  ArtifactUpdateCommand,
+} from './rabbitmq.service';
 import * as amqplib from 'amqplib';
 import { LoggerService } from '@nestjs/common';
 
@@ -10,16 +13,15 @@ jest.mock('amqplib');
 const mockedAmqplib = amqplib as jest.Mocked<typeof amqplib>;
 
 class SilentLogger implements LoggerService {
-  log(message: any, ...optionalParams: any[]) {}
-  error(message: any, ...optionalParams: any[]) {}
-  warn(message: any, ...optionalParams: any[]) {}
-  debug?(message: any, ...optionalParams: any[]) {}
-  verbose?(message: any, ...optionalParams: any[]) {}
+  log() {}
+  error() {}
+  warn() {}
+  debug?() {}
+  verbose?() {}
 }
 
 describe('RabbitMQService', () => {
   let service: RabbitMQService;
-  let configService: ConfigService;
   let config: Record<string, unknown>;
 
   const mockChannel = {
@@ -45,7 +47,9 @@ describe('RabbitMQService', () => {
     mockChannel.once.mockImplementation(
       (_event: string, callback: () => void) => callback(),
     );
-    (mockedAmqplib.connect as jest.Mock).mockResolvedValue(mockConnection as any);
+    (mockedAmqplib.connect as jest.Mock).mockResolvedValue(
+      mockConnection as any,
+    );
     config = {
       RABBITMQ_HOST: 'localhost',
       RABBITMQ_PORT: 5672,
@@ -67,15 +71,13 @@ describe('RabbitMQService', () => {
         },
       ],
     })
-    .setLogger(new SilentLogger()) // Disable logging for tests
-    .compile();
+      .setLogger(new SilentLogger()) // Disable logging for tests
+      .compile();
 
     service = module.get<RabbitMQService>(RabbitMQService);
-    configService = module.get<ConfigService>(ConfigService);
-    
     // Fake timers are now enabled only in the specific tests that need them.
   });
-  
+
   // No longer using fake timers globally
   // afterEach(() => {
   //   jest.useRealTimers();
@@ -93,7 +95,7 @@ describe('RabbitMQService', () => {
       connectSpy.mockRestore();
     });
   });
-  
+
   describe('onModuleDestroy', () => {
     it('should call disconnect on module destroy', async () => {
       await (service as any).connect(); // connect first
@@ -118,7 +120,11 @@ describe('RabbitMQService', () => {
         {},
       );
       expect(mockConnection.createConfirmChannel).toHaveBeenCalled();
-      expect(mockChannel.assertExchange).toHaveBeenCalledWith('artifact.exchange', 'topic', { durable: true });
+      expect(mockChannel.assertExchange).toHaveBeenCalledWith(
+        'artifact.exchange',
+        'topic',
+        { durable: true },
+      );
       expect(service.isConnected()).toBe(true);
     });
 
@@ -127,17 +133,19 @@ describe('RabbitMQService', () => {
       await (service as any).connect();
       expect(mockedAmqplib.connect).not.toHaveBeenCalled();
     });
-    
-    it('should handle connection failure and trigger reconnection', async () => {
-        const error = new Error('Connection failed');
-        (mockedAmqplib.connect as jest.Mock).mockRejectedValueOnce(error);
-        const handleConnectionLossSpy = jest.spyOn(service as any, 'handleConnectionLoss').mockImplementation(() => {});
 
-        await (service as any).connect();
-        
-        expect(handleConnectionLossSpy).toHaveBeenCalled();
-        expect(service.isConnected()).toBe(false);
-        handleConnectionLossSpy.mockRestore();
+    it('should handle connection failure and trigger reconnection', async () => {
+      const error = new Error('Connection failed');
+      (mockedAmqplib.connect as jest.Mock).mockRejectedValueOnce(error);
+      const handleConnectionLossSpy = jest
+        .spyOn(service as any, 'handleConnectionLoss')
+        .mockImplementation(() => {});
+
+      await (service as any).connect();
+
+      expect(handleConnectionLossSpy).toHaveBeenCalled();
+      expect(service.isConnected()).toBe(false);
+      handleConnectionLossSpy.mockRestore();
     });
 
     it('should configure certificate validation for AMQPS', async () => {
@@ -169,7 +177,7 @@ describe('RabbitMQService', () => {
       expect(handleConnectionLossSpy).toHaveBeenCalled();
     });
   });
-  
+
   describe('handleConnectionLoss', () => {
     beforeEach(() => {
       jest.useFakeTimers();
@@ -180,50 +188,52 @@ describe('RabbitMQService', () => {
     });
 
     it('should attempt to reconnect if max attempts not reached', () => {
-        const connectSpy = jest.spyOn(service as any, 'connect').mockResolvedValue(undefined);
-        (service as any).reconnectAttempts = 0;
-        
-        (service as any).handleConnectionLoss();
-        
-        expect((service as any).connection).toBeNull();
-        expect((service as any).channel).toBeNull();
-        expect((service as any).isConnecting).toBe(false);
-        expect((service as any).reconnectAttempts).toBe(1);
-        
-        jest.advanceTimersByTime(5000);
-        
-        expect(connectSpy).toHaveBeenCalled();
-        connectSpy.mockRestore();
+      const connectSpy = jest
+        .spyOn(service as any, 'connect')
+        .mockResolvedValue(undefined);
+      (service as any).reconnectAttempts = 0;
+
+      (service as any).handleConnectionLoss();
+
+      expect((service as any).connection).toBeNull();
+      expect((service as any).channel).toBeNull();
+      expect((service as any).isConnecting).toBe(false);
+      expect((service as any).reconnectAttempts).toBe(1);
+
+      jest.advanceTimersByTime(5000);
+
+      expect(connectSpy).toHaveBeenCalled();
+      connectSpy.mockRestore();
     });
 
     it('should not attempt to reconnect if max attempts reached', () => {
-        const connectSpy = jest.spyOn(service as any, 'connect');
-        (service as any).reconnectAttempts = 10;
-        
-        (service as any).handleConnectionLoss();
-        
-        expect((service as any).reconnectAttempts).toBe(10); // Should not increment
-        
-        jest.advanceTimersByTime(5000);
-        
-        expect(connectSpy).not.toHaveBeenCalled();
-        connectSpy.mockRestore();
+      const connectSpy = jest.spyOn(service as any, 'connect');
+      (service as any).reconnectAttempts = 10;
+
+      (service as any).handleConnectionLoss();
+
+      expect((service as any).reconnectAttempts).toBe(10); // Should not increment
+
+      jest.advanceTimersByTime(5000);
+
+      expect(connectSpy).not.toHaveBeenCalled();
+      connectSpy.mockRestore();
     });
   });
 
   describe('disconnect', () => {
     it('should close the channel and connection', async () => {
-        await (service as any).connect(); // First connect to have something to close
-        await (service as any).disconnect();
-        expect(mockChannel.close).toHaveBeenCalled();
-        expect(mockConnection.close).toHaveBeenCalled();
-        expect(service.isConnected()).toBe(false);
+      await (service as any).connect(); // First connect to have something to close
+      await (service as any).disconnect();
+      expect(mockChannel.close).toHaveBeenCalled();
+      expect(mockConnection.close).toHaveBeenCalled();
+      expect(service.isConnected()).toBe(false);
     });
-    
+
     it('should handle errors during disconnection gracefully', async () => {
       await (service as any).connect();
       mockChannel.close.mockRejectedValueOnce(new Error('Channel close error'));
-      
+
       // We expect no exception to be thrown
       await expect((service as any).disconnect()).resolves.not.toThrow();
       // The connection should NOT be closed if the channel fails to close,
@@ -231,12 +241,13 @@ describe('RabbitMQService', () => {
       expect(mockConnection.close).not.toHaveBeenCalled();
     });
   });
-  
+
   describe('publishArtifactUpdated', () => {
     const updatedEvent: ArtifactUpdatedEvent = {
       artifactId: '123',
       keywords: ['upd'],
-      footprint: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+      footprint:
+        'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
       links: [],
       dois: [],
       fundingAgencies: [],
@@ -275,8 +286,12 @@ describe('RabbitMQService', () => {
 
     it('should throw error after retries on updated event', async () => {
       await (service as any).connect();
-      mockChannel.publish.mockImplementation(() => { throw new Error('fail'); });
-      await expect(service.publishArtifactUpdated(updatedEvent)).rejects.toThrow('fail');
+      mockChannel.publish.mockImplementation(() => {
+        throw new Error('fail');
+      });
+      await expect(
+        service.publishArtifactUpdated(updatedEvent),
+      ).rejects.toThrow('fail');
     }, 10000);
   });
 
@@ -285,7 +300,8 @@ describe('RabbitMQService', () => {
       artifactId: 'abc-123',
       patch: {
         keywords: ['a'],
-        footprint: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+        footprint:
+          'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
       },
       request: {
         authenticatedUserId: 'user-1',
@@ -312,97 +328,115 @@ describe('RabbitMQService', () => {
 
     it('should throw error after retries on update command', async () => {
       await (service as any).connect();
-      (mockChannel.publish as jest.Mock).mockImplementation(() => { throw new Error('fail'); });
+      (mockChannel.publish as jest.Mock).mockImplementation(() => {
+        throw new Error('fail');
+      });
       await expect(service.publishArtifactUpdate(cmd)).rejects.toThrow('fail');
       // Reset publish for other tests
       (mockChannel.publish as jest.Mock).mockReset();
       (mockChannel.publish as jest.Mock).mockReturnValue(true);
     }, 10000);
   });
-  
+
   describe('isConnected', () => {
     it('should return true when connected', async () => {
-        await (service as any).connect();
-        expect(service.isConnected()).toBe(true);
+      await (service as any).connect();
+      expect(service.isConnected()).toBe(true);
     });
 
     it('should return false when not connected', () => {
-        expect(service.isConnected()).toBe(false);
+      expect(service.isConnected()).toBe(false);
     });
 
     it('should return false when connecting', async () => {
-        (service as any).isConnecting = true;
-        // The real connect() method returns early if isConnecting is true.
-        await (service as any).connect();
-        expect(service.isConnected()).toBe(false);
+      (service as any).isConnecting = true;
+      // The real connect() method returns early if isConnecting is true.
+      await (service as any).connect();
+      expect(service.isConnected()).toBe(false);
     });
   });
 
   describe('getConnectionStatus', () => {
     it('should return the current connection status', () => {
-        const status = service.getConnectionStatus();
-        expect(status).toEqual({
-            connected: false,
-            reconnectAttempts: 0,
-            isConnecting: false,
-        });
+      const status = service.getConnectionStatus();
+      expect(status).toEqual({
+        connected: false,
+        reconnectAttempts: 0,
+        isConnecting: false,
+      });
     });
   });
-  
+
   describe('ensureConnection', () => {
     it('should call connect if not connected', async () => {
-        const connectSpy = jest.spyOn(service as any, 'connect').mockResolvedValue(undefined);
-        (service as any).connection = null;
-        
-        // This will call connect, but since connect is mocked to resolve immediately
-        // and isConnected will still be false, it will wait.
-        // We need to make isConnected return true after connect is called.
-        connectSpy.mockImplementation(async () => {
-          (service as any).connection = mockConnection;
-          (service as any).channel = mockChannel;
-        });
+      const connectSpy = jest
+        .spyOn(service as any, 'connect')
+        .mockResolvedValue(undefined);
+      (service as any).connection = null;
 
-        await (service as any).ensureConnection();
-        
-        expect(connectSpy).toHaveBeenCalled();
-        connectSpy.mockRestore();
+      // This will call connect, but since connect is mocked to resolve immediately
+      // and isConnected will still be false, it will wait.
+      // We need to make isConnected return true after connect is called.
+      connectSpy.mockImplementation(async () => {
+        (service as any).connection = mockConnection;
+        (service as any).channel = mockChannel;
+      });
+
+      await (service as any).ensureConnection();
+
+      expect(connectSpy).toHaveBeenCalled();
+      connectSpy.mockRestore();
     });
-
-  
   });
 
   describe('Connection and Channel event handlers', () => {
     it('should handle connection "error" event', async () => {
-      const handleSpy = jest.spyOn(service as any, 'handleConnectionLoss').mockImplementation(() => {});
+      const handleSpy = jest
+        .spyOn(service as any, 'handleConnectionLoss')
+        .mockImplementation(() => {});
       await (service as any).connect();
-      const errorCallback = mockConnection.on.mock.calls.find(call => call[0] === 'error')[1];
+      const errorCallback = mockConnection.on.mock.calls.find(
+        (call) => call[0] === 'error',
+      )[1];
       errorCallback(new Error('Connection error'));
       expect(handleSpy).toHaveBeenCalled();
       handleSpy.mockRestore();
     });
 
     it('should handle connection "close" event', async () => {
-      const handleSpy = jest.spyOn(service as any, 'handleConnectionLoss').mockImplementation(() => {});
+      const handleSpy = jest
+        .spyOn(service as any, 'handleConnectionLoss')
+        .mockImplementation(() => {});
       await (service as any).connect();
-      const closeCallback = mockConnection.on.mock.calls.find(call => call[0] === 'close')[1];
+      const closeCallback = mockConnection.on.mock.calls.find(
+        (call) => call[0] === 'close',
+      )[1];
       closeCallback();
       expect(handleSpy).toHaveBeenCalled();
       handleSpy.mockRestore();
     });
 
     it('should handle channel "error" event', async () => {
-      const handleSpy = jest.spyOn(service as any, 'handleConnectionLoss').mockImplementation(() => {});
+      const handleSpy = jest
+        .spyOn(service as any, 'handleConnectionLoss')
+        .mockImplementation(() => {});
       await (service as any).connect();
-      const errorCallback = mockChannel.on.mock.calls.find(call => call[0] === 'error')[1];
+      const errorCallback = mockChannel.on.mock.calls.find(
+        (call) => call[0] === 'error',
+      )[1];
       errorCallback(new Error('Channel error'));
       expect(handleSpy).toHaveBeenCalled();
       handleSpy.mockRestore();
     });
 
     it('should handle channel "close" event', async () => {
-      const handleSpy = jest.spyOn(service as any, 'handleConnectionLoss').mockImplementation(() => {});
+      const handleSpy = jest
+        .spyOn(service as any, 'handleConnectionLoss')
+        .mockImplementation(() => {});
       await (service as any).connect();
-      const closeCallback = mockChannel.on.mock.calls.find(call => call[0] === 'close')[1];
+      const closeCallback = mockChannel.on.mock.calls.find(
+        (call) => call[0] === 'close',
+      )[1];
       closeCallback();
       expect(handleSpy).toHaveBeenCalled();
       handleSpy.mockRestore();

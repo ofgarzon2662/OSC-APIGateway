@@ -184,7 +184,9 @@ describe('ArtifactService', () => {
       expect(anonymous.map((artifact) => artifact.id)).not.toContain(
         artifactList[0].id,
       );
-      expect(owner.map((artifact) => artifact.id)).toContain(artifactList[0].id);
+      expect(owner.map((artifact) => artifact.id)).toContain(
+        artifactList[0].id,
+      );
     });
   });
 

@@ -8,7 +8,7 @@ import {
   IsBoolean,
   IsEnum,
   ValidateNested,
-  Matches
+  Matches,
 } from 'class-validator';
 import { SubmissionState } from '../enums/submission-state.enum';
 import { ManifestItem } from '../artifact.entity';
@@ -73,15 +73,15 @@ export class CreateArtifactDto {
   @IsDate()
   @IsOptional()
   submittedAt?: Date;
-  
+
   @IsBoolean()
   @IsOptional()
   verified?: boolean;
-  
+
   @IsDate()
   @IsOptional()
   lastTimeVerified?: Date;
-  
+
   @IsEnum(SubmissionState)
   @IsOptional()
   submissionState?: SubmissionState;

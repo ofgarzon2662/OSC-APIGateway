@@ -1,4 +1,11 @@
-import { IsString, IsUUID, IsDate, IsOptional, IsArray, IsEnum } from 'class-validator';
+import {
+  IsString,
+  IsUUID,
+  IsDate,
+  IsOptional,
+  IsArray,
+  IsEnum,
+} from 'class-validator';
 import { SubmissionState } from '../../artifact/enums/submission-state.enum';
 import { RecordVisibility } from '../../shared/enums/record-visibility.enum';
 

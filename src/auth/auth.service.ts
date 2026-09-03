@@ -94,8 +94,7 @@ export class AuthService {
 
     let membership = requestedOrganizationId
       ? activeMemberships.find(
-          (candidate) =>
-            candidate.organization?.id === requestedOrganizationId,
+          (candidate) => candidate.organization?.id === requestedOrganizationId,
         )
       : activeMemberships.length === 1
         ? activeMemberships[0]

@@ -62,11 +62,10 @@ export class UserEntity {
   memberships: OrganizationMembershipEntity[];
 
   // Retained temporarily so existing users can be migrated to memberships.
-  @ManyToOne(
-    () => OrganizationEntity,
-    (org) => org.users,
-    { nullable: true, onDelete: 'SET NULL' },
-  )
+  @ManyToOne(() => OrganizationEntity, (org) => org.users, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
   @JoinColumn()
   organization: OrganizationEntity | null;
 }

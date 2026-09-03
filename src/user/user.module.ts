@@ -16,10 +16,10 @@ import { OrganizationMembershipEntity } from '../organization/organization-membe
       OrganizationMembershipEntity,
     ]),
     AuthModule,
-    OrganizationModule
+    OrganizationModule,
   ],
   controllers: [UserController],
   providers: [UserService],
-  exports: [UserService]
+  exports: [UserService],
 })
 export class UserModule {}

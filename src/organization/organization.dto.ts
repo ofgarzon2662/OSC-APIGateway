@@ -1,8 +1,5 @@
 import { IsString, IsNotEmpty, IsOptional, Matches } from 'class-validator';
-import {
-  MembershipStatus,
-  OrganizationStatus,
-} from './membership-status.enum';
+import { MembershipStatus, OrganizationStatus } from './membership-status.enum';
 
 export class OrganizationDto {
   @IsString()

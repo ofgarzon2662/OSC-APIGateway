@@ -1,9 +1,4 @@
-import {
-  Column,
-  Entity,
-  ManyToOne,
-  PrimaryGeneratedColumn
-} from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import {
   IsNotEmpty,
   IsString,
@@ -21,6 +16,7 @@ import {
 import { SubmissionState } from './enums/submission-state.enum';
 import { Type } from 'class-transformer';
 import { RecordVisibility } from '../shared/enums/record-visibility.enum';
+import { OrganizationEntity } from '../organization/organization.entity';
 
 export class ManifestItem {
   @IsString()
@@ -99,7 +95,10 @@ export class ArtifactEntity {
   @Length(0, 3000)
   acknowledgements: string;
 
-  @Column({ type: process.env.NODE_ENV === 'test' ? 'simple-json' : 'jsonb', default: '[]' })
+  @Column({
+    type: process.env.NODE_ENV === 'test' ? 'simple-json' : 'jsonb',
+    default: '[]',
+  })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => ManifestItem)
@@ -184,11 +183,10 @@ export class ArtifactEntity {
 
   /* --------------- Relationship --------------- */
 
-  @ManyToOne(
-    () => require('../organization/organization.entity').OrganizationEntity,
-    (org: any) => org.artifacts,
-    { onDelete: 'CASCADE', nullable: false },
-  )
+  @ManyToOne(() => OrganizationEntity, (org: any) => org.artifacts, {
+    onDelete: 'CASCADE',
+    nullable: false,
+  })
   @IsNotEmpty()
   organization: any;
 }

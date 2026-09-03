@@ -193,7 +193,9 @@ describe('WorkflowService', () => {
       expect(anonymous.map((workflow) => workflow.id)).not.toContain(
         workflowList[0].id,
       );
-      expect(owner.map((workflow) => workflow.id)).toContain(workflowList[0].id);
+      expect(owner.map((workflow) => workflow.id)).toContain(
+        workflowList[0].id,
+      );
     });
   });
 

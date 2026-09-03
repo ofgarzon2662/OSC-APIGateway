@@ -46,22 +46,22 @@ export class UserController {
   async checkAdminUsers() {
     try {
       const users = await this.userService.findAll();
-      const adminUsers = users.filter(user => 
-        user.roles && user.roles.includes('admin')
+      const adminUsers = users.filter(
+        (user) => user.roles && user.roles.includes('admin'),
       );
       return {
         message: 'Admin users found',
         count: adminUsers.length,
-        users: adminUsers.map(user => ({
+        users: adminUsers.map((user) => ({
           id: user.id,
           username: user.username,
-          roles: user.roles
-        }))
+          roles: user.roles,
+        })),
       };
     } catch (error) {
       return {
         message: 'Error checking admin users',
-        error: error.message
+        error: error.message,
       };
     }
   }
@@ -94,7 +94,7 @@ export class UserController {
   @Roles(Role.ADMIN, Role.PI)
   async create(
     @Body() createUserDto: UserCreateDto,
-    @User() creator: UserEntity
+    @User() creator: UserEntity,
   ) {
     return this.userService.create(createUserDto, creator);
   }
@@ -126,32 +126,32 @@ export class UserController {
   async update(
     @Param('id') id: string,
     @Body() updateUserDto: UserUpdateDto,
-    @User() currentUser: UserEntity
+    @User() currentUser: UserEntity,
   ) {
-    const result = await this.userService.update(id, updateUserDto, currentUser);
-    
+    const result = await this.userService.update(
+      id,
+      updateUserDto,
+      currentUser,
+    );
+
     // If password was changed, return a message indicating re-login is required
     if ((result as any).requiresRelogin) {
       return {
         ...result,
-        message: 'Password updated successfully. Please log in again with your new credentials.'
+        message:
+          'Password updated successfully. Please log in again with your new credentials.',
       };
     }
-    
+
     return result;
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Delete(':id')
   @Roles(Role.ADMIN, Role.PI)
-  async remove(
-    @Param('id') id: string,
-    @User() currentUser: UserEntity
-  ) {
+  async remove(@Param('id') id: string, @User() currentUser: UserEntity) {
     return this.userService.remove(id, currentUser);
   }
 
   // Random test
-
-
 }

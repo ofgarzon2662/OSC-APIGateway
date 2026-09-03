@@ -92,10 +92,7 @@ export class ArtifactController {
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
-  async delete(
-    @Param('id') id: string,
-    @Req() req: any = {},
-  ): Promise<void> {
+  async delete(@Param('id') id: string, @Req() req: any = {}): Promise<void> {
     return await this.artifactService.delete(id, req.user?.organizationId);
   }
 

@@ -53,7 +53,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     if (!payload.membershipId) {
       if (!user.platformAdmin || payload.platformAdmin !== true) {
-        throw new UnauthorizedException('Active organization membership required');
+        throw new UnauthorizedException(
+          'Active organization membership required',
+        );
       }
       return {
         id: user.id,

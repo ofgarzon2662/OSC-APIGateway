@@ -6,12 +6,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { readFileSync } from 'fs';
-import {
-  connect,
-  ChannelModel,
-  ConfirmChannel,
-  Options,
-} from 'amqplib';
+import { connect, ChannelModel, ConfirmChannel, Options } from 'amqplib';
 import { ManifestItem } from 'src/artifact/artifact.entity';
 import { GitHubRepositoryItem } from 'src/workflow/workflow.entity';
 

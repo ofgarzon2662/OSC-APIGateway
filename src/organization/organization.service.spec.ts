@@ -133,7 +133,9 @@ describe('OrganizationService', () => {
 
     // Attempt to delete the organization again
 
-    await expect(service.delete(organizationsList[0].id)).resolves.toBeUndefined();
+    await expect(
+      service.delete(organizationsList[0].id),
+    ).resolves.toBeUndefined();
 
     // Create a new organization
     const organization: Partial<OrganizationEntity> = {

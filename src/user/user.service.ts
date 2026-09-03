@@ -366,7 +366,10 @@ The application requires at least one admin user to function properly.
       const organization = await this.organizationRepository.findOne({
         where: { id: requestedOrganizationId },
       });
-      if (!organization || organization.status === OrganizationStatus.ARCHIVED) {
+      if (
+        !organization ||
+        organization.status === OrganizationStatus.ARCHIVED
+      ) {
         throw new BadRequestException(
           'The selected organization does not exist or is archived',
         );
