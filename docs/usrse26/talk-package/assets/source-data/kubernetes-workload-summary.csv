@@ -1,0 +1,6 @@
+category,count,status
+EKS nodes,3,Ready
+Platform pods,34,Running
+Application pods,6,Running
+Fabric pods,14,Running
+Total pods,54,Running

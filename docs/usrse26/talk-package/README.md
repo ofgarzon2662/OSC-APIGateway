@@ -45,8 +45,8 @@ account of an experimental product becoming more disciplined.
     slot.
 11. [Title and abstract alignment](11-TITLE-ABSTRACT-ALIGNMENT.md) - how the
     evidence-driven story answers the accepted submission and reviews.
-12. [Asset inventory](assets/README.md) - reviewed assets and their source
-    provenance. Binary assets are intentionally not committed in this branch.
+12. [Asset library](assets/README.md) - reviewed images, generated diagrams and
+    plots, editable PowerPoint source, validation evidence, and provenance.
 13. [Public sharing boundary](12-PUBLIC-SHARING-BOUNDARY.md) - what may be
     shared from the package and what must remain private/audit-only.
 
@@ -100,6 +100,6 @@ all historical artifacts are appropriate to duplicate in this repository.
 5. Use the Q&A bank for adversarial rehearsal.
 6. Apply the cut list if the timed run exceeds 14 minutes.
 
-The Markdown files render cleanly on GitHub and in VS Code Markdown Preview.
-The OneDrive mirror contains the same Markdown plus the reviewed image assets
-for easy local slide production.
+The Markdown files and PNG previews render cleanly on GitHub and in VS Code
+Markdown Preview. The OneDrive mirror also contains the original source images,
+editable historical diagrams, and deck-production files.
