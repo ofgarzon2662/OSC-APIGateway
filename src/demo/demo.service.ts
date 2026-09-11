@@ -1016,12 +1016,6 @@ export class DemoService {
   }
 
   async recordBrowserEvent(principal: DemoPrincipal, dto: CreateDemoEventDto) {
-    const isHistory = dto.eventName === DemoEventName.HISTORY_VIEWED;
-    if (isHistory !== Boolean(dto.resourceType && dto.resourceId)) {
-      throw new BadRequestException(
-        'Resource type and id are required only for history views',
-      );
-    }
     const count = await this.events.countBy({
       sessionHash: principal.sessionHash,
     });
@@ -1031,12 +1025,7 @@ export class DemoService {
         HttpStatus.TOO_MANY_REQUESTS,
       );
     }
-    await this.recordInternalEvent(
-      principal,
-      dto.eventName,
-      dto.resourceType || null,
-      dto.resourceId || null,
-    );
+    await this.recordInternalEvent(principal, dto.eventName);
     return { accepted: true };
   }
 

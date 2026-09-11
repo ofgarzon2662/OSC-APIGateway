@@ -485,6 +485,17 @@ describe('US-RSE 2026 demonstration contract', () => {
       .set('Origin', ORIGIN)
       .set('Cookie', guest.cookie)
       .set('X-Demo-CSRF', guest.csrfToken)
+      .send({
+        eventName: 'HISTORY_VIEWED',
+        resourceType: 'workflow',
+        resourceId: workflow.body.id,
+      })
+      .expect(400);
+    await request(app.getHttpServer())
+      .post('/api/v1/demo/events')
+      .set('Origin', ORIGIN)
+      .set('Cookie', guest.cookie)
+      .set('X-Demo-CSRF', guest.csrfToken)
       .send({ eventName: 'ARTIFACT_ACCEPTED' })
       .expect(400);
     await request(app.getHttpServer())
@@ -527,6 +538,7 @@ describe('US-RSE 2026 demonstration contract', () => {
       anonymousBrowserSessions: 2,
       acceptedArtifacts: 3,
       acceptedWorkflows: 1,
+      provenanceHistoryViews: 1,
     });
 
     await request(app.getHttpServer())
