@@ -400,6 +400,14 @@ describe('US-RSE 2026 demonstration contract', () => {
     expect(stored?.visibility).toBe(RecordVisibility.PUBLIC);
 
     const otherGuest = await createGuest(DemoOrganizationSlug.CITIZEN_SCIENCE);
+    await request(app.getHttpServer())
+      .get(`/api/v1/demo/artifacts/${first.body.id}`)
+      .set('Cookie', otherGuest.cookie)
+      .expect(403);
+    await request(app.getHttpServer())
+      .get(`/api/v1/demo/artifacts/${first.body.id}/history`)
+      .set('Cookie', otherGuest.cookie)
+      .expect(403);
     await mutate(otherGuest)
       .workflow({
         requestId: randomUUID(),
@@ -415,6 +423,14 @@ describe('US-RSE 2026 demonstration contract', () => {
       })
       .expect(201);
     expect(workflow.body.organization).toBe('Neuroscience Gateway');
+    await request(app.getHttpServer())
+      .get(`/api/v1/demo/workflows/${workflow.body.id}`)
+      .set('Cookie', otherGuest.cookie)
+      .expect(403);
+    await request(app.getHttpServer())
+      .get(`/api/v1/demo/workflows/${workflow.body.id}/history`)
+      .set('Cookie', otherGuest.cookie)
+      .expect(403);
 
     const publicArtifacts = await request(app.getHttpServer())
       .get('/api/v1/demo/artifacts?organization=neuroscience-gateway')

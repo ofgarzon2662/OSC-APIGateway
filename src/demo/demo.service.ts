@@ -891,6 +891,11 @@ export class DemoService {
   }
 
   async artifactResponse(recordId: string, principal: DemoPrincipal) {
+    await this.assertDemoRecordOrganization(
+      DemoContributionType.ARTIFACT,
+      recordId,
+      principal.organizationId,
+    );
     const artifact = await this.artifactService.findOne(
       recordId,
       principal.organizationId,
@@ -911,6 +916,11 @@ export class DemoService {
   }
 
   async workflowResponse(recordId: string, principal: DemoPrincipal) {
+    await this.assertDemoRecordOrganization(
+      DemoContributionType.WORKFLOW,
+      recordId,
+      principal.organizationId,
+    );
     const workflow = await this.workflowService.findOne(
       recordId,
       principal.organizationId,
@@ -933,6 +943,11 @@ export class DemoService {
     recordId: string,
     correlationId?: string,
   ) {
+    await this.assertDemoRecordOrganization(
+      DemoContributionType.ARTIFACT,
+      recordId,
+      principal.organizationId,
+    );
     const result = await this.artifactService.getHistory(
       recordId,
       { limit: '100', order: 'desc', includeValue: 'true' },
@@ -953,6 +968,11 @@ export class DemoService {
     recordId: string,
     correlationId?: string,
   ) {
+    await this.assertDemoRecordOrganization(
+      DemoContributionType.WORKFLOW,
+      recordId,
+      principal.organizationId,
+    );
     await this.workflowService.findOne(recordId, principal.organizationId);
     const result = await this.ghwService.fetchHistory(
       {
@@ -976,6 +996,22 @@ export class DemoService {
       ...result,
       nextOffset: result?.hasMore ? 100 : undefined,
     };
+  }
+
+  private async assertDemoRecordOrganization(
+    recordType: DemoContributionType,
+    recordId: string,
+    organizationId: string,
+  ): Promise<void> {
+    const contribution = await this.contributions.findOneBy({
+      recordType,
+      recordId,
+    });
+    if (!contribution || contribution.organizationId !== organizationId) {
+      throw new ForbiddenException(
+        'The demonstration record is not available to this organization',
+      );
+    }
   }
 
   async recordBrowserEvent(principal: DemoPrincipal, dto: CreateDemoEventDto) {
