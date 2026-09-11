@@ -1,981 +1,981 @@
 {
-	"info": {
-		"_postman_id": "a69de8df-b8da-462f-8a48-7d7a31d43aa2",
-		"name": "OSC-APIGW FrontE Testing",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "29465325"
-	},
-	"item": [
-		{
-			"name": "FrontEnd Init",
-			"item": [
-				{
-					"name": "Log in as Admin 1",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.environment.set(\"token_ADMIN1\", pm.response.json().token);\r",
-									"\r",
-									"pm.test(\"El código de estado es 201\", function() {\r",
-									"    pm.response.to.have.status(201)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Información presente\", function() {\r",
-									"    pm.expect(pm.response.json().token).to.be.a('string').and.to.not.be.empty;\r",
-									"});\r",
-									"var template = `\r",
-									"<style type=\"text/css\">\r",
-									"    .tftable {font-size:14px;color:#333333;width:100%;border-width: 1px;border-color: #87ceeb;border-collapse: collapse;}\r",
-									"    .tftable th {font-size:18px;background-color:#87ceeb;border-width: 1px;padding: 8px;border-style: solid;border-color: #87ceeb;text-align:left;}\r",
-									"    .tftable tr {background-color:#ffffff;}\r",
-									"    .tftable td {font-size:14px;border-width: 1px;padding: 8px;border-style: solid;border-color: #87ceeb;}\r",
-									"    .tftable tr:hover {background-color:#e0ffff;}\r",
-									"</style>\r",
-									"\r",
-									"<table class=\"tftable\" border=\"1\">\r",
-									"    <tr>\r",
-									"        <th>Message</th>\r",
-									"        <th>StatusCode</th>\r",
-									"    </tr>\r",
-									"    <tr>\r",
-									"        <td>{{response.message}}</td>\r",
-									"        <td>{{response.statusCode}}</td>\r",
-									"    </tr>\r",
-									"</table>\r",
-									"`;\r",
-									"\r",
-									"function constructVisualizerPayload() {\r",
-									"    return {response: pm.response.json()}\r",
-									"}\r",
-									"\r",
-									"pm.visualizer.set(template, constructVisualizerPayload());"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n   \"username\": \"{{ADMIN1_USERNAME}}\",\r\n   \"password\": \"{{ADMIN1_PASSWORD}}\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/users/login",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"users",
-								"login"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete All",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token_ADMIN1}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "DELETE",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/organizations",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Admin 1 Creates an org",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.environment.set(\"orgId\", pm.response.json().id);\r",
-									"\r",
-									"pm.test(\"El código de estado es 201\", function() {\r",
-									"    pm.response.to.have.status(201)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Información presente\", function() {\r",
-									"    pm.expect(pm.response.json().name).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().description).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token_ADMIN1}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"{{$randomCompanyName}}\",\r\n    \"description\": \"This organization focuses on {{$randomLoremWords}} and its main mission in life is {{$randomLoremWords}}\"\r\n}\r\n",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/organizations",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Log in as Admin 2",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.environment.set(\"token_ADMIN2\", pm.response.json().token);\r",
-									"\r",
-									"pm.test(\"El código de estado es 201\", function() {\r",
-									"    pm.response.to.have.status(201)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Información presente\", function() {\r",
-									"    pm.expect(pm.response.json().token).to.be.a('string').and.to.not.be.empty;\r",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n   \"username\": \"{{ADMIN2_USERNAME}}\",\r\n   \"password\": \"{{ADMIN2_PASSWORD}}\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/users/login",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"users",
-								"login"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "ADMIN 1 Creates a PI",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"const res   = pm.response.json();",
-									"const env   = pm.environment;          // shorthand",
-									"const roleS = res.roles || res.role;   // array or string, depending on your API",
-									"",
-									"/* ── 1. Status code ── */",
-									"pm.test(\"Status code is 201 Created\", () => {",
-									"  pm.response.to.have.status(201);",
-									"});",
-									"",
-									"/* ── 2. Mandatory fields present ── */",
-									"pm.test(\"Response contains mandatory user fields\", () => {",
-									"  pm.expect(res).to.have.property(\"id\").that.is.not.empty;",
-									"  pm.expect(res).to.have.property(\"username\").that.is.a(\"string\").and.not.empty;",
-									"  pm.expect(res).to.have.property(\"name\").that.is.a(\"string\").and.not.empty;",
-									"});",
-									"",
-									"/* ── 3. Response matches request data ── */",
-									"pm.test(\"Response matches request data\", () => {",
-									"  pm.expect(res.username).to.eql(\"juanpablo\", \"Username mismatch\");",
-									"  pm.expect(res.name)     .to.eql(\"Juan Pablo\",            \"Name mismatch\");",
-									"  // If your API echoes the email, add:",
-									"  // pm.expect(res.email).to.eql(env.get(\"PI1_EMAIL\"),  \"Email mismatch\");",
-									"});",
-									"",
-									"/* ── 4. Correct role ── */",
-									"pm.test(\"User has correct PI role\", () => {",
-									"  pm.expect(roleS).to.include(\"pi\");",
-									"});",
-									"",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token_ADMIN1}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Juan Pablo\",\r\n  \"email\": \"{{pi_email_e2e_test}}\",\r\n  \"username\": \"{{pi_username_e2e_test}}\",\r\n  \"password\": \"{{pi_password_e2e_test}}\",\r\n  \"role\": \"pi\"\r\n}\r\n",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/users/register",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"users",
-								"register"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Admin 2 Creates a Collaborator",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// === Collaborator creation – Post-request tests (deterministic) ===",
-									"",
-									"// Short aliases",
-									"const res   = pm.response.json();",
-									"const env   = pm.environment;",
-									"const roleS = res.roles || res.role;   // supports `roles` (array) OR `role` (string)",
-									"",
-									"/* 1️⃣  Status code -------------------------------------------------- */",
-									"pm.test(\"Status code is 201 Created\", () => {",
-									"  pm.response.to.have.status(201);",
-									"});",
-									"",
-									"/* 2️⃣  Mandatory fields present ------------------------------------ */",
-									"pm.test(\"Response contains mandatory user fields\", () => {",
-									"  pm.expect(res).to.have.property(\"id\").that.is.not.empty;",
-									"  pm.expect(res).to.have.property(\"username\").that.is.a(\"string\").and.not.empty;",
-									"  pm.expect(res).to.have.property(\"name\").that.is.a(\"string\").and.not.empty;",
-									"});",
-									"",
-									"/* 3️⃣  Response matches request data ------------------------------- */",
-									"pm.test(\"Response matches request data\", () => {",
-									"  pm.expect(res.username, \"Username mismatch\")",
-									"    .to.eql(env.get(\"COLLABORATOR1_USERNAME\"));",
-									"",
-									"  pm.expect(res.name, \"Name mismatch\")",
-									"    .to.eql(\"Fernando Garzon de Arango\");           // Use the exact name sent in the body",
-									"",
-									"  // If your API echoes the email, uncomment:",
-									"  // pm.expect(res.email, \"Email mismatch\")",
-									"  //   .to.eql(env.get(\"COLLABORATOR_EMAIL\"));",
-									"});",
-									"",
-									"/* 4️⃣  Correct collaborator role ----------------------------------- */",
-									"pm.test(\"User has correct collaborator role\", () => {",
-									"  pm.expect(roleS).to.include(\"collaborator\");",
-									"});",
-									"",
-									"/* 5️⃣  Persist data for later requests ----------------------------- */",
-									"env.set(\"collaboratorId\",         res.id);",
-									"env.set(\"collaborator1Username\",  res.username);",
-									"env.set(\"collaborator1_password\", env.get(\"COLLABORATOR_PASSWORD\"));",
-									"",
-									"pm.collectionVariables.set(\"collaborator_user_id\", res.id);",
-									"pm.collectionVariables.set(\"collaborator_username\", res.username);",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token_ADMIN2}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n  \"name\": \"Fernando Garzon de Arango\",\r\n  \"email\": \"{{COLLABORATOR_EMAIL}}\",\r\n  \"username\": \"{{COLLABORATOR1_USERNAME}}\",\r\n  \"password\": \"{{COLLABORATOR_PASSWORD}}\",\r\n  \"role\": \"collaborator\"\r\n}\r\n",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/users/register",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"users",
-								"register"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Log in as PI",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.environment.set(\"pi_token_e2e_testing\", pm.response.json().token);\r",
-									"\r",
-									"pm.test(\"El código de estado es 201\", function() {\r",
-									"    pm.response.to.have.status(201)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Información presente\", function() {\r",
-									"    pm.expect(pm.response.json().token).to.be.a('string').and.to.not.be.empty;\r",
-									"});\r",
-									"var template = `\r",
-									"<style type=\"text/css\">\r",
-									"    .tftable {font-size:14px;color:#333333;width:100%;border-width: 1px;border-color: #87ceeb;border-collapse: collapse;}\r",
-									"    .tftable th {font-size:18px;background-color:#87ceeb;border-width: 1px;padding: 8px;border-style: solid;border-color: #87ceeb;text-align:left;}\r",
-									"    .tftable tr {background-color:#ffffff;}\r",
-									"    .tftable td {font-size:14px;border-width: 1px;padding: 8px;border-style: solid;border-color: #87ceeb;}\r",
-									"    .tftable tr:hover {background-color:#e0ffff;}\r",
-									"</style>\r",
-									"\r",
-									"<table class=\"tftable\" border=\"1\">\r",
-									"    <tr>\r",
-									"        <th>Message</th>\r",
-									"        <th>StatusCode</th>\r",
-									"    </tr>\r",
-									"    <tr>\r",
-									"        <td>{{response.message}}</td>\r",
-									"        <td>{{response.statusCode}}</td>\r",
-									"    </tr>\r",
-									"</table>\r",
-									"`;\r",
-									"\r",
-									"function constructVisualizerPayload() {\r",
-									"    return {response: pm.response.json()}\r",
-									"}\r",
-									"\r",
-									"pm.visualizer.set(template, constructVisualizerPayload());"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n   \"username\": \"{{pi_username_e2e_test}}\",\r\n   \"password\": \"{{pi_password_e2e_test}}\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/users/login",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"users",
-								"login"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Admin Get All Orgs",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Code is 200\", function() {\r",
-									"    pm.response.to.have.status(200);\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Non Empty list\", function() {\r",
-									"    pm.expect(pm.response.json()).to.be.an('array').that.is.not.empty;\r",
-									"    pm.expect(pm.response.json()).to.have.lengthOf(1);\r",
-									"    pm.expect(pm.response.json()[0].id).to.equal(pm.environment.get(\"orgId\"));\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token_ADMIN1}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/organizations",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Admin Get One Org",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Code is 200\", function() {\r",
-									"    pm.response.to.have.status(200)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Non empty response\", function() {\r",
-									"    const responseData = pm.response.json();\r",
-									"    pm.expect(responseData.name).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.description).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
-									"    pm.expect(responseData.id).to.equal(pm.environment.get(\"orgId\"));\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token_ADMIN1}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}/organizations/{{orgId}}",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations",
-								"{{orgId}}"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Artifacts Creation",
-			"item": [
-				{
-					"name": "PI Creates 100 Artifacts",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Test HTTP Status Code\r",
-									"pm.test(\"Status code is 201\", function () {\r",
-									"    pm.response.to.have.status(201);\r",
-									"});\r",
-									"\r",
-									"\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"// ---------- helpers ----------",
-									"function randomInt(min, max) {",
-									"  return Math.floor(Math.random() * (max - min + 1)) + min;",
-									"}",
-									"function generateRandomHexHash(len = 64) {",
-									"  const chars = 'abcdef0123456789';",
-									"  let out = '';",
-									"  for (let i = 0; i < len; i++) out += chars[randomInt(0, chars.length - 1)];",
-									"  return out;",
-									"}",
-									"",
-									"// ---------- artifact ids / hashes ----------",
-									"const artifactId = (crypto.randomUUID && crypto.randomUUID())",
-									"  || (Math.random().toString(36).slice(2) + Date.now().toString(36));",
-									"pm.environment.set('artifactId', artifactId);",
-									"pm.environment.set('footprint', generateRandomHexHash());",
-									"",
-									"// ---------- keywords ----------",
-									"(function generateKeywords() {",
-									"  const pool = [",
-									"    'science','tech','art','research','data','dev','api','storage','home','gadget',",
-									"    'software','hardware','testing','automation','backend','frontend','mobile',",
-									"    'cloud','security','education','health','finance','business','crypto','web3'",
-									"  ];",
-									"  const maxTotal = 1000, maxSingle = 50, desiredCount = randomInt(2, 8);",
-									"  const out = []; let totalChars = 0;",
-									"  while (out.length < desiredCount) {",
-									"    let kw = pool[randomInt(0, pool.length - 1)];",
-									"    if (Math.random() > 0.6) kw += `-${pool[randomInt(0, pool.length - 1)]}`;",
-									"    if (kw.length > maxSingle) continue;",
-									"    if (totalChars + kw.length > maxTotal) break;",
-									"    out.push(kw); totalChars += kw.length;",
-									"  }",
-									"  pm.environment.set('randomKeywords', JSON.stringify(out));",
-									"})();",
-									"",
-									"// ---------- links ----------",
-									"(function generateLinks() {",
-									"  const domainPool = [",
-									"    'https://example.com','https://osc.dev','https://github.com/osc-nsg',",
-									"    'https://medium.com','https://docs.osc.ai','https://npmjs.com','https://research.org'",
-									"  ];",
-									"  const count = randomInt(0, 6), links = [];",
-									"  for (let i = 0; i < count; i++) {",
-									"    const base = domainPool[randomInt(0, domainPool.length - 1)];",
-									"    const path = Math.random() > 0.5 ? `/product/${generateRandomHexHash(4)}` : '';",
-									"    links.push(`${base}${path}`);",
-									"  }",
-									"  pm.environment.set('randomLinks', JSON.stringify(links));",
-									"})();",
-									"",
-									"// ---------- acknowledgements ----------",
-									"(function generateAcknowledgement() {",
-									"  const phrases = [",
-									"    'Thanks to all contributors',",
-									"    'Made possible by our amazing community',",
-									"    'Special appreciation to the OSC team',",
-									"    'Huge shout-out to our testers and reviewers',",
-									"    'Grateful for the continuous support from partners',",
-									"    'Inspired by open-source enthusiasts worldwide'",
-									"  ];",
-									"  const howMany = randomInt(2, 4), parts = [];",
-									"  for (let i = 0; i < howMany; i++) parts.push(phrases[randomInt(0, phrases.length - 1)]);",
-									"  pm.environment.set('acknowledgementText', parts.join('. ') + '.');",
-									"})();",
-									"",
-									"// ---------- manifest (1 – 50 items) ----------",
-									"(function generateManifest() {",
-									"  const adjectives = ['quick','smart','cool','sample','test','data','report'];",
-									"  const nouns = ['file','dataset','results','analysis','diagram'];",
-									"  const exts = ['txt','csv','json','bin','png','jpg','pdf'];",
-									"  const rand = (arr) => arr[Math.floor(Math.random() * arr.length)];",
-									"  const randFileName = () => `${rand(adjectives)}_${rand(nouns)}.${rand(exts)}`;",
-									"  const howMany  = randomInt(1, 50);   // ensure at least 1",
-									"  const manifest = [];",
-									"  for (let i = 0; i < howMany; i++) {",
-									"    manifest.push({ hash: generateRandomHexHash(64), filename: randFileName(), algorithm: 'sha256' });",
-									"  }",
-									"  pm.environment.set('randomManifest', JSON.stringify(manifest));",
-									"})();",
-									"",
-									"// ---------- DOIs ----------",
-									"(function generateDois() {",
-									"  function randomDoi() {",
-									"    const prefix = `10.${randomInt(10000, 99999)}`;",
-									"    const suffix = generateRandomHexHash(8);",
-									"    return `${prefix}/${suffix}`;",
-									"  }",
-									"  const howMany = randomInt(1, 4);",
-									"  pm.environment.set('randomDois', JSON.stringify(Array.from({ length: howMany }, randomDoi)));",
-									"})();",
-									"",
-									"// ---------- Funding agencies ----------",
-									"(function generateAgencies() {",
-									"  const pool = ['NASA','NSF','NIH','DOE','NOAA','DARPA','ESA','EU','WHO','CDC','UN','CNES'];",
-									"  const howMany = randomInt(1, 5); const out = [];",
-									"  while (out.length < howMany) { const pick = pool[randomInt(0, pool.length - 1)]; if (!out.includes(pick)) out.push(pick); }",
-									"  pm.environment.set('randomAgencies', JSON.stringify(out));",
-									"})();",
-									"",
-									"// ---------- build artifact.created payload ----------",
-									"const title = pm.variables.replaceIn(\"{{$randomProductName}} {{$randomPhrase}} {{$randomAlphaNumeric}}\");",
-									"const description = pm.variables.replaceIn(\"{{$randomPhrase}} {{$randomPhrase}} {{$randomPhrase}} {{$randomPhrase}} {{$randomPhrase}} {{$randomAlphaNumeric}} This needs to be bigger than 50 characters This needs to be bigger than 50 characters This needs to be bigger than 50 characters\");",
-									"",
-									"const payloadObj = {",
-									"  artifactId: pm.environment.get('artifactId'),",
-									"  manifest: JSON.parse(pm.environment.get('randomManifest') || '[]'),",
-									"  title,",
-									"  description,",
-									"  keywords: JSON.parse(pm.environment.get('randomKeywords') || '[]'),",
-									"  links: JSON.parse(pm.environment.get('randomLinks') || '[]'),",
-									"  dois: JSON.parse(pm.environment.get('randomDois') || '[]'),",
-									"  fundingAgencies: JSON.parse(pm.environment.get('randomAgencies') || '[]'),",
-									"  acknowledgements: pm.environment.get('acknowledgementText') || '',",
-									"  footprint: pm.environment.get('footprint')",
-									"};",
-									"",
-									"// Base64-encode payload for Rabbit API",
-									"const s = JSON.stringify(payloadObj);",
-									"const b64 = CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(s));",
-									"pm.variables.set('payload_b64', b64);"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{pi_token_e2e_testing}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"title\": \"{{$randomProductName}} {{$randomPhrase}} {{$randomAlphaNumeric}}\",\r\n    \"description\": \"{{$randomPhrase}} {{$randomPhrase}} {{$randomPhrase}} {{$randomPhrase}} {{$randomPhrase}} {{$randomAlphaNumeric}} This needs to be bigger than 50 characters This needs to be bigger than 50 characters This needs to be bigger than 50 characters\",\r\n    \"manifest\": {{randomManifest}},\r\n    \"keywords\": {{randomKeywords}},\r\n    \"links\": {{randomLinks}},\r\n    \"dois\": {{randomDois}},\r\n    \"fundingAgencies\": {{randomAgencies}},\r\n    \"acknowledgements\": \"{{acknowledgementText}}\",\r\n    \"footprint\": \"{{footprint}}\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/artifacts",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"artifacts"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "FrontEnd Init TearDown",
-			"item": [
-				{
-					"name": "Log in as Admin 1",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.environment.set(\"token_ADMIN1\", pm.response.json().token);\r",
-									"\r",
-									"pm.test(\"El código de estado es 201\", function() {\r",
-									"    pm.response.to.have.status(201)\r",
-									"});\r",
-									"\r",
-									"pm.test(\"Información presente\", function() {\r",
-									"    pm.expect(pm.response.json().token).to.be.a('string').and.to.not.be.empty;\r",
-									"});\r",
-									"var template = `\r",
-									"<style type=\"text/css\">\r",
-									"    .tftable {font-size:14px;color:#333333;width:100%;border-width: 1px;border-color: #87ceeb;border-collapse: collapse;}\r",
-									"    .tftable th {font-size:18px;background-color:#87ceeb;border-width: 1px;padding: 8px;border-style: solid;border-color: #87ceeb;text-align:left;}\r",
-									"    .tftable tr {background-color:#ffffff;}\r",
-									"    .tftable td {font-size:14px;border-width: 1px;padding: 8px;border-style: solid;border-color: #87ceeb;}\r",
-									"    .tftable tr:hover {background-color:#e0ffff;}\r",
-									"</style>\r",
-									"\r",
-									"<table class=\"tftable\" border=\"1\">\r",
-									"    <tr>\r",
-									"        <th>Message</th>\r",
-									"        <th>StatusCode</th>\r",
-									"    </tr>\r",
-									"    <tr>\r",
-									"        <td>{{response.message}}</td>\r",
-									"        <td>{{response.statusCode}}</td>\r",
-									"    </tr>\r",
-									"</table>\r",
-									"`;\r",
-									"\r",
-									"function constructVisualizerPayload() {\r",
-									"    return {response: pm.response.json()}\r",
-									"}\r",
-									"\r",
-									"pm.visualizer.set(template, constructVisualizerPayload());"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n   \"username\": \"{{ADMIN1_USERNAME}}\",\r\n   \"password\": \"{{ADMIN1_PASSWORD}}\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/users/login",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"users",
-								"login"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete All",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token_ADMIN1}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "DELETE",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{baseUrl}}/organizations",
-							"host": [
-								"{{baseUrl}}"
-							],
-							"path": [
-								"organizations"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		}
-	],
-	"variable": [
-		{
-			"key": "pi_user_id",
-			"value": ""
-		},
-		{
-			"key": "pi_username",
-			"value": ""
-		},
-		{
-			"key": "pi_email",
-			"value": ""
-		},
-		{
-			"key": "contributor_user_id",
-			"value": ""
-		},
-		{
-			"key": "contributor_username",
-			"value": ""
-		},
-		{
-			"key": "contributor_email",
-			"value": ""
-		},
-		{
-			"key": "contributor2_user_id",
-			"value": ""
-		},
-		{
-			"key": "contributor2_username",
-			"value": ""
-		},
-		{
-			"key": "contributor2_email",
-			"value": ""
-		},
-		{
-			"key": "collaborator_user_id",
-			"value": ""
-		},
-		{
-			"key": "collaborator_username",
-			"value": ""
-		},
-		{
-			"key": "collaborator_email",
-			"value": ""
-		},
-		{
-			"key": "collaborator2_user_id",
-			"value": ""
-		},
-		{
-			"key": "collaborator2_username",
-			"value": ""
-		},
-		{
-			"key": "collaborator2_email",
-			"value": ""
-		}
-	]
+  "info": {
+    "_postman_id": "a69de8df-b8da-462f-8a48-7d7a31d43aa2",
+    "name": "OSC-APIGW FrontE Testing",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "29465325"
+  },
+  "item": [
+    {
+      "name": "FrontEnd Init",
+      "item": [
+        {
+          "name": "Log in as Admin 1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.environment.set(\"token_ADMIN1\", pm.response.json().token);\r",
+                  "\r",
+                  "pm.test(\"El código de estado es 201\", function() {\r",
+                  "    pm.response.to.have.status(201)\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Información presente\", function() {\r",
+                  "    pm.expect(pm.response.json().token).to.be.a('string').and.to.not.be.empty;\r",
+                  "});\r",
+                  "var template = `\r",
+                  "<style type=\"text/css\">\r",
+                  "    .tftable {font-size:14px;color:#333333;width:100%;border-width: 1px;border-color: #87ceeb;border-collapse: collapse;}\r",
+                  "    .tftable th {font-size:18px;background-color:#87ceeb;border-width: 1px;padding: 8px;border-style: solid;border-color: #87ceeb;text-align:left;}\r",
+                  "    .tftable tr {background-color:#ffffff;}\r",
+                  "    .tftable td {font-size:14px;border-width: 1px;padding: 8px;border-style: solid;border-color: #87ceeb;}\r",
+                  "    .tftable tr:hover {background-color:#e0ffff;}\r",
+                  "</style>\r",
+                  "\r",
+                  "<table class=\"tftable\" border=\"1\">\r",
+                  "    <tr>\r",
+                  "        <th>Message</th>\r",
+                  "        <th>StatusCode</th>\r",
+                  "    </tr>\r",
+                  "    <tr>\r",
+                  "        <td>{{response.message}}</td>\r",
+                  "        <td>{{response.statusCode}}</td>\r",
+                  "    </tr>\r",
+                  "</table>\r",
+                  "`;\r",
+                  "\r",
+                  "function constructVisualizerPayload() {\r",
+                  "    return {response: pm.response.json()}\r",
+                  "}\r",
+                  "\r",
+                  "pm.visualizer.set(template, constructVisualizerPayload());"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n   \"username\": \"{{ADMIN1_USERNAME}}\",\r\n   \"password\": \"{{ADMIN1_PASSWORD}}\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete All",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_ADMIN1}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/organizations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "organizations"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Admin 1 Creates an org",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.environment.set(\"orgId\", pm.response.json().id);\r",
+                  "\r",
+                  "pm.test(\"El código de estado es 201\", function() {\r",
+                  "    pm.response.to.have.status(201)\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Información presente\", function() {\r",
+                  "    pm.expect(pm.response.json().name).to.be.a('string').and.to.not.be.empty;\r",
+                  "    pm.expect(pm.response.json().description).to.be.a('string').and.to.not.be.empty;\r",
+                  "    pm.expect(pm.response.json().id).to.be.a('string').and.to.not.be.empty;\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_ADMIN1}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"name\": \"{{$randomCompanyName}}\",\r\n    \"description\": \"This organization focuses on {{$randomLoremWords}} and its main mission in life is {{$randomLoremWords}}\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/organizations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "organizations"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Log in as Admin 2",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.environment.set(\"token_ADMIN2\", pm.response.json().token);\r",
+                  "\r",
+                  "pm.test(\"El código de estado es 201\", function() {\r",
+                  "    pm.response.to.have.status(201)\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Información presente\", function() {\r",
+                  "    pm.expect(pm.response.json().token).to.be.a('string').and.to.not.be.empty;\r",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n   \"username\": \"{{ADMIN2_USERNAME}}\",\r\n   \"password\": \"{{ADMIN2_PASSWORD}}\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "ADMIN 1 Creates a PI",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res   = pm.response.json();",
+                  "const env   = pm.environment;          // shorthand",
+                  "const roleS = res.roles || res.role;   // array or string, depending on your API",
+                  "",
+                  "/* ── 1. Status code ── */",
+                  "pm.test(\"Status code is 201 Created\", () => {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "/* ── 2. Mandatory fields present ── */",
+                  "pm.test(\"Response contains mandatory user fields\", () => {",
+                  "  pm.expect(res).to.have.property(\"id\").that.is.not.empty;",
+                  "  pm.expect(res).to.have.property(\"username\").that.is.a(\"string\").and.not.empty;",
+                  "  pm.expect(res).to.have.property(\"name\").that.is.a(\"string\").and.not.empty;",
+                  "});",
+                  "",
+                  "/* ── 3. Response matches request data ── */",
+                  "pm.test(\"Response matches request data\", () => {",
+                  "  pm.expect(res.username).to.eql(\"juanpablo\", \"Username mismatch\");",
+                  "  pm.expect(res.name)     .to.eql(\"Juan Pablo\",            \"Name mismatch\");",
+                  "  // If your API echoes the email, add:",
+                  "  // pm.expect(res.email).to.eql(env.get(\"PI1_EMAIL\"),  \"Email mismatch\");",
+                  "});",
+                  "",
+                  "/* ── 4. Correct role ── */",
+                  "pm.test(\"User has correct PI role\", () => {",
+                  "  pm.expect(roleS).to.include(\"pi\");",
+                  "});",
+                  "",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_ADMIN1}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"name\": \"Juan Pablo\",\r\n  \"email\": \"{{pi_email_e2e_test}}\",\r\n  \"username\": \"{{pi_username_e2e_test}}\",\r\n  \"password\": \"{{pi_password_e2e_test}}\",\r\n  \"role\": \"pi\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Admin 2 Creates a Collaborator",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// === Collaborator creation – Post-request tests (deterministic) ===",
+                  "",
+                  "// Short aliases",
+                  "const res   = pm.response.json();",
+                  "const env   = pm.environment;",
+                  "const roleS = res.roles || res.role;   // supports `roles` (array) OR `role` (string)",
+                  "",
+                  "/* 1️⃣  Status code -------------------------------------------------- */",
+                  "pm.test(\"Status code is 201 Created\", () => {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "/* 2️⃣  Mandatory fields present ------------------------------------ */",
+                  "pm.test(\"Response contains mandatory user fields\", () => {",
+                  "  pm.expect(res).to.have.property(\"id\").that.is.not.empty;",
+                  "  pm.expect(res).to.have.property(\"username\").that.is.a(\"string\").and.not.empty;",
+                  "  pm.expect(res).to.have.property(\"name\").that.is.a(\"string\").and.not.empty;",
+                  "});",
+                  "",
+                  "/* 3️⃣  Response matches request data ------------------------------- */",
+                  "pm.test(\"Response matches request data\", () => {",
+                  "  pm.expect(res.username, \"Username mismatch\")",
+                  "    .to.eql(env.get(\"COLLABORATOR1_USERNAME\"));",
+                  "",
+                  "  pm.expect(res.name, \"Name mismatch\")",
+                  "    .to.eql(\"Fernando Garzon de Arango\");           // Use the exact name sent in the body",
+                  "",
+                  "  // If your API echoes the email, uncomment:",
+                  "  // pm.expect(res.email, \"Email mismatch\")",
+                  "  //   .to.eql(env.get(\"COLLABORATOR_EMAIL\"));",
+                  "});",
+                  "",
+                  "/* 4️⃣  Correct collaborator role ----------------------------------- */",
+                  "pm.test(\"User has correct collaborator role\", () => {",
+                  "  pm.expect(roleS).to.include(\"collaborator\");",
+                  "});",
+                  "",
+                  "/* 5️⃣  Persist data for later requests ----------------------------- */",
+                  "env.set(\"collaboratorId\",         res.id);",
+                  "env.set(\"collaborator1Username\",  res.username);",
+                  "env.set(\"collaborator1_password\", env.get(\"COLLABORATOR_PASSWORD\"));",
+                  "",
+                  "pm.collectionVariables.set(\"collaborator_user_id\", res.id);",
+                  "pm.collectionVariables.set(\"collaborator_username\", res.username);",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_ADMIN2}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"name\": \"Fernando Garzon de Arango\",\r\n  \"email\": \"{{COLLABORATOR_EMAIL}}\",\r\n  \"username\": \"{{COLLABORATOR1_USERNAME}}\",\r\n  \"password\": \"{{COLLABORATOR_PASSWORD}}\",\r\n  \"role\": \"collaborator\"\r\n}\r\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Log in as PI",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.environment.set(\"pi_token_e2e_testing\", pm.response.json().token);\r",
+                  "\r",
+                  "pm.test(\"El código de estado es 201\", function() {\r",
+                  "    pm.response.to.have.status(201)\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Información presente\", function() {\r",
+                  "    pm.expect(pm.response.json().token).to.be.a('string').and.to.not.be.empty;\r",
+                  "});\r",
+                  "var template = `\r",
+                  "<style type=\"text/css\">\r",
+                  "    .tftable {font-size:14px;color:#333333;width:100%;border-width: 1px;border-color: #87ceeb;border-collapse: collapse;}\r",
+                  "    .tftable th {font-size:18px;background-color:#87ceeb;border-width: 1px;padding: 8px;border-style: solid;border-color: #87ceeb;text-align:left;}\r",
+                  "    .tftable tr {background-color:#ffffff;}\r",
+                  "    .tftable td {font-size:14px;border-width: 1px;padding: 8px;border-style: solid;border-color: #87ceeb;}\r",
+                  "    .tftable tr:hover {background-color:#e0ffff;}\r",
+                  "</style>\r",
+                  "\r",
+                  "<table class=\"tftable\" border=\"1\">\r",
+                  "    <tr>\r",
+                  "        <th>Message</th>\r",
+                  "        <th>StatusCode</th>\r",
+                  "    </tr>\r",
+                  "    <tr>\r",
+                  "        <td>{{response.message}}</td>\r",
+                  "        <td>{{response.statusCode}}</td>\r",
+                  "    </tr>\r",
+                  "</table>\r",
+                  "`;\r",
+                  "\r",
+                  "function constructVisualizerPayload() {\r",
+                  "    return {response: pm.response.json()}\r",
+                  "}\r",
+                  "\r",
+                  "pm.visualizer.set(template, constructVisualizerPayload());"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n   \"username\": \"{{pi_username_e2e_test}}\",\r\n   \"password\": \"{{pi_password_e2e_test}}\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Admin Get All Orgs",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Code is 200\", function() {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Non Empty list\", function() {\r",
+                  "    pm.expect(pm.response.json()).to.be.an('array').that.is.not.empty;\r",
+                  "    pm.expect(pm.response.json()).to.have.lengthOf(1);\r",
+                  "    pm.expect(pm.response.json()[0].id).to.equal(pm.environment.get(\"orgId\"));\r",
+                  "});\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_ADMIN1}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/organizations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "organizations"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Admin Get One Org",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Code is 200\", function() {\r",
+                  "    pm.response.to.have.status(200)\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Non empty response\", function() {\r",
+                  "    const responseData = pm.response.json();\r",
+                  "    pm.expect(responseData.name).to.be.a('string').and.to.not.be.empty;\r",
+                  "    pm.expect(responseData.description).to.be.a('string').and.to.not.be.empty;\r",
+                  "    pm.expect(responseData.id).to.be.a('string').and.to.not.be.empty;\r",
+                  "    pm.expect(responseData.id).to.equal(pm.environment.get(\"orgId\"));\r",
+                  "});\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_ADMIN1}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/organizations/{{orgId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "organizations",
+                "{{orgId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Artifacts Creation",
+      "item": [
+        {
+          "name": "PI Creates 100 Artifacts",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Test HTTP Status Code\r",
+                  "pm.test(\"Status code is 201\", function () {\r",
+                  "    pm.response.to.have.status(201);\r",
+                  "});\r",
+                  "\r",
+                  "\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// ---------- helpers ----------",
+                  "function randomInt(min, max) {",
+                  "  return Math.floor(Math.random() * (max - min + 1)) + min;",
+                  "}",
+                  "function generateRandomHexHash(len = 64) {",
+                  "  const chars = 'abcdef0123456789';",
+                  "  let out = '';",
+                  "  for (let i = 0; i < len; i++) out += chars[randomInt(0, chars.length - 1)];",
+                  "  return out;",
+                  "}",
+                  "",
+                  "// ---------- artifact ids / hashes ----------",
+                  "const artifactId = (crypto.randomUUID && crypto.randomUUID())",
+                  "  || (Math.random().toString(36).slice(2) + Date.now().toString(36));",
+                  "pm.environment.set('artifactId', artifactId);",
+                  "pm.environment.set('footprint', generateRandomHexHash());",
+                  "",
+                  "// ---------- keywords ----------",
+                  "(function generateKeywords() {",
+                  "  const pool = [",
+                  "    'science','tech','art','research','data','dev','api','storage','home','gadget',",
+                  "    'software','hardware','testing','automation','backend','frontend','mobile',",
+                  "    'cloud','security','education','health','finance','business','crypto','web3'",
+                  "  ];",
+                  "  const maxTotal = 1000, maxSingle = 50, desiredCount = randomInt(2, 8);",
+                  "  const out = []; let totalChars = 0;",
+                  "  while (out.length < desiredCount) {",
+                  "    let kw = pool[randomInt(0, pool.length - 1)];",
+                  "    if (Math.random() > 0.6) kw += `-${pool[randomInt(0, pool.length - 1)]}`;",
+                  "    if (kw.length > maxSingle) continue;",
+                  "    if (totalChars + kw.length > maxTotal) break;",
+                  "    out.push(kw); totalChars += kw.length;",
+                  "  }",
+                  "  pm.environment.set('randomKeywords', JSON.stringify(out));",
+                  "})();",
+                  "",
+                  "// ---------- links ----------",
+                  "(function generateLinks() {",
+                  "  const domainPool = [",
+                  "    'https://example.com','https://osc.dev','https://github.com/osc-nsg',",
+                  "    'https://medium.com','https://docs.osc.ai','https://npmjs.com','https://research.org'",
+                  "  ];",
+                  "  const count = randomInt(0, 6), links = [];",
+                  "  for (let i = 0; i < count; i++) {",
+                  "    const base = domainPool[randomInt(0, domainPool.length - 1)];",
+                  "    const path = Math.random() > 0.5 ? `/product/${generateRandomHexHash(4)}` : '';",
+                  "    links.push(`${base}${path}`);",
+                  "  }",
+                  "  pm.environment.set('randomLinks', JSON.stringify(links));",
+                  "})();",
+                  "",
+                  "// ---------- acknowledgements ----------",
+                  "(function generateAcknowledgement() {",
+                  "  const phrases = [",
+                  "    'Thanks to all contributors',",
+                  "    'Made possible by our amazing community',",
+                  "    'Special appreciation to the OSC team',",
+                  "    'Huge shout-out to our testers and reviewers',",
+                  "    'Grateful for the continuous support from partners',",
+                  "    'Inspired by open-source enthusiasts worldwide'",
+                  "  ];",
+                  "  const howMany = randomInt(2, 4), parts = [];",
+                  "  for (let i = 0; i < howMany; i++) parts.push(phrases[randomInt(0, phrases.length - 1)]);",
+                  "  pm.environment.set('acknowledgementText', parts.join('. ') + '.');",
+                  "})();",
+                  "",
+                  "// ---------- manifest (1 – 50 items) ----------",
+                  "(function generateManifest() {",
+                  "  const adjectives = ['quick','smart','cool','sample','test','data','report'];",
+                  "  const nouns = ['file','dataset','results','analysis','diagram'];",
+                  "  const exts = ['txt','csv','json','bin','png','jpg','pdf'];",
+                  "  const rand = (arr) => arr[Math.floor(Math.random() * arr.length)];",
+                  "  const randFileName = () => `${rand(adjectives)}_${rand(nouns)}.${rand(exts)}`;",
+                  "  const howMany  = randomInt(1, 50);   // ensure at least 1",
+                  "  const manifest = [];",
+                  "  for (let i = 0; i < howMany; i++) {",
+                  "    manifest.push({ hash: generateRandomHexHash(64), filename: randFileName(), algorithm: 'sha256' });",
+                  "  }",
+                  "  pm.environment.set('randomManifest', JSON.stringify(manifest));",
+                  "})();",
+                  "",
+                  "// ---------- DOIs ----------",
+                  "(function generateDois() {",
+                  "  function randomDoi() {",
+                  "    const prefix = `10.${randomInt(10000, 99999)}`;",
+                  "    const suffix = generateRandomHexHash(8);",
+                  "    return `${prefix}/${suffix}`;",
+                  "  }",
+                  "  const howMany = randomInt(1, 4);",
+                  "  pm.environment.set('randomDois', JSON.stringify(Array.from({ length: howMany }, randomDoi)));",
+                  "})();",
+                  "",
+                  "// ---------- Funding agencies ----------",
+                  "(function generateAgencies() {",
+                  "  const pool = ['NASA','NSF','NIH','DOE','NOAA','DARPA','ESA','EU','WHO','CDC','UN','CNES'];",
+                  "  const howMany = randomInt(1, 5); const out = [];",
+                  "  while (out.length < howMany) { const pick = pool[randomInt(0, pool.length - 1)]; if (!out.includes(pick)) out.push(pick); }",
+                  "  pm.environment.set('randomAgencies', JSON.stringify(out));",
+                  "})();",
+                  "",
+                  "// ---------- build artifact.created payload ----------",
+                  "const title = pm.variables.replaceIn(\"{{$randomProductName}} {{$randomPhrase}} {{$randomAlphaNumeric}}\");",
+                  "const description = pm.variables.replaceIn(\"{{$randomPhrase}} {{$randomPhrase}} {{$randomPhrase}} {{$randomPhrase}} {{$randomPhrase}} {{$randomAlphaNumeric}} This needs to be bigger than 50 characters This needs to be bigger than 50 characters This needs to be bigger than 50 characters\");",
+                  "",
+                  "const payloadObj = {",
+                  "  artifactId: pm.environment.get('artifactId'),",
+                  "  manifest: JSON.parse(pm.environment.get('randomManifest') || '[]'),",
+                  "  title,",
+                  "  description,",
+                  "  keywords: JSON.parse(pm.environment.get('randomKeywords') || '[]'),",
+                  "  links: JSON.parse(pm.environment.get('randomLinks') || '[]'),",
+                  "  dois: JSON.parse(pm.environment.get('randomDois') || '[]'),",
+                  "  fundingAgencies: JSON.parse(pm.environment.get('randomAgencies') || '[]'),",
+                  "  acknowledgements: pm.environment.get('acknowledgementText') || '',",
+                  "  footprint: pm.environment.get('footprint')",
+                  "};",
+                  "",
+                  "// Base64-encode payload for Rabbit API",
+                  "const s = JSON.stringify(payloadObj);",
+                  "const b64 = CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(s));",
+                  "pm.variables.set('payload_b64', b64);"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{pi_token_e2e_testing}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"title\": \"{{$randomProductName}} {{$randomPhrase}} {{$randomAlphaNumeric}}\",\r\n    \"description\": \"{{$randomPhrase}} {{$randomPhrase}} {{$randomPhrase}} {{$randomPhrase}} {{$randomPhrase}} {{$randomAlphaNumeric}} This needs to be bigger than 50 characters This needs to be bigger than 50 characters This needs to be bigger than 50 characters\",\r\n    \"manifest\": {{randomManifest}},\r\n    \"keywords\": {{randomKeywords}},\r\n    \"links\": {{randomLinks}},\r\n    \"dois\": {{randomDois}},\r\n    \"fundingAgencies\": {{randomAgencies}},\r\n    \"acknowledgements\": \"{{acknowledgementText}}\",\r\n    \"submission_comment\": \"This is a mandatory submission comment that meets the minimum length requirement.\",\n    \"footprint\": \"{{footprint}}\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/artifacts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "artifacts"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "FrontEnd Init TearDown",
+      "item": [
+        {
+          "name": "Log in as Admin 1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.environment.set(\"token_ADMIN1\", pm.response.json().token);\r",
+                  "\r",
+                  "pm.test(\"El código de estado es 201\", function() {\r",
+                  "    pm.response.to.have.status(201)\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Información presente\", function() {\r",
+                  "    pm.expect(pm.response.json().token).to.be.a('string').and.to.not.be.empty;\r",
+                  "});\r",
+                  "var template = `\r",
+                  "<style type=\"text/css\">\r",
+                  "    .tftable {font-size:14px;color:#333333;width:100%;border-width: 1px;border-color: #87ceeb;border-collapse: collapse;}\r",
+                  "    .tftable th {font-size:18px;background-color:#87ceeb;border-width: 1px;padding: 8px;border-style: solid;border-color: #87ceeb;text-align:left;}\r",
+                  "    .tftable tr {background-color:#ffffff;}\r",
+                  "    .tftable td {font-size:14px;border-width: 1px;padding: 8px;border-style: solid;border-color: #87ceeb;}\r",
+                  "    .tftable tr:hover {background-color:#e0ffff;}\r",
+                  "</style>\r",
+                  "\r",
+                  "<table class=\"tftable\" border=\"1\">\r",
+                  "    <tr>\r",
+                  "        <th>Message</th>\r",
+                  "        <th>StatusCode</th>\r",
+                  "    </tr>\r",
+                  "    <tr>\r",
+                  "        <td>{{response.message}}</td>\r",
+                  "        <td>{{response.statusCode}}</td>\r",
+                  "    </tr>\r",
+                  "</table>\r",
+                  "`;\r",
+                  "\r",
+                  "function constructVisualizerPayload() {\r",
+                  "    return {response: pm.response.json()}\r",
+                  "}\r",
+                  "\r",
+                  "pm.visualizer.set(template, constructVisualizerPayload());"
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n   \"username\": \"{{ADMIN1_USERNAME}}\",\r\n   \"password\": \"{{ADMIN1_PASSWORD}}\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete All",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_ADMIN1}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/organizations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "organizations"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "pi_user_id",
+      "value": ""
+    },
+    {
+      "key": "pi_username",
+      "value": ""
+    },
+    {
+      "key": "pi_email",
+      "value": ""
+    },
+    {
+      "key": "contributor_user_id",
+      "value": ""
+    },
+    {
+      "key": "contributor_username",
+      "value": ""
+    },
+    {
+      "key": "contributor_email",
+      "value": ""
+    },
+    {
+      "key": "contributor2_user_id",
+      "value": ""
+    },
+    {
+      "key": "contributor2_username",
+      "value": ""
+    },
+    {
+      "key": "contributor2_email",
+      "value": ""
+    },
+    {
+      "key": "collaborator_user_id",
+      "value": ""
+    },
+    {
+      "key": "collaborator_username",
+      "value": ""
+    },
+    {
+      "key": "collaborator_email",
+      "value": ""
+    },
+    {
+      "key": "collaborator2_user_id",
+      "value": ""
+    },
+    {
+      "key": "collaborator2_username",
+      "value": ""
+    },
+    {
+      "key": "collaborator2_email",
+      "value": ""
+    }
+  ]
 }

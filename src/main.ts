@@ -1,12 +1,27 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
-import * as express from 'express';
+
+// Normalize origins to avoid subtle mismatches (trailing slashes, invisible chars, case)
+function normalizeOrigin(origin?: string): string {
+  if (!origin) return '';
+  const cleaned = origin
+    // remove zero-width and BOM characters that can sneak in from copy/paste
+    .replace(/[\u200B-\u200D\uFEFF]/g, '')
+    .trim()
+    .toLowerCase();
+  return cleaned.endsWith('/') ? cleaned.slice(0, -1) : cleaned;
+}
 
 const ALLOWED_ORIGINS = (process.env.CORS_ORIGINS || '')
   .split(',')
-  .map(s => s.trim())
+  .map(normalizeOrigin)
   .filter(Boolean);
+
+const DEMO_ALLOWED_ORIGIN = normalizeOrigin(process.env.DEMO_ALLOWED_ORIGIN);
+if (DEMO_ALLOWED_ORIGIN && !ALLOWED_ORIGINS.includes(DEMO_ALLOWED_ORIGIN)) {
+  ALLOWED_ORIGINS.push(DEMO_ALLOWED_ORIGIN);
+}
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
@@ -20,11 +35,14 @@ async function bootstrap() {
   // Configure CORS using env-driven allowlist
   app.enableCors({
     origin: (origin, cb) => {
-      if (!origin || ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
+      const normalized = normalizeOrigin(origin);
+      if (!origin || ALLOWED_ORIGINS.includes(normalized))
+        return cb(null, true);
       return cb(new Error(`Origin ${origin} not allowed by CORS`), false);
     },
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    allowedHeaders: 'Content-Type, Authorization, X-Requested-With, Accept',
+    allowedHeaders:
+      'Content-Type, Authorization, X-Requested-With, Accept, X-Demo-CSRF, X-Correlation-ID',
     credentials: true,
     optionsSuccessStatus: 204,
     exposedHeaders: 'Content-Disposition',
@@ -35,7 +53,13 @@ async function bootstrap() {
     prefix: 'api/v',
     defaultVersion: '1',
   });
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
   await app.listen(process.env.PORT || 3000);
 }
 bootstrap();

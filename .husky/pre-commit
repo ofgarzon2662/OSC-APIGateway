@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+npx lint-staged
+
+# Security: scan staged files for secrets
+if command -v trufflehog &> /dev/null; then
+  echo "Running trufflehog secret scan..."
+  trufflehog git file://. --since-commit HEAD --only-verified --fail
+fi
