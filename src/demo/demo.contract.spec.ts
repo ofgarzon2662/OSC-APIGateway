@@ -403,6 +403,34 @@ describe('US-RSE 2026 demonstration contract', () => {
       .expect(201);
     expect(workflow.body.organization).toBe('Neuroscience Gateway');
 
+    const publicArtifacts = await request(app.getHttpServer())
+      .get('/api/v1/demo/artifacts?organization=neuroscience-gateway')
+      .expect(200);
+    expect(publicArtifacts.body).toHaveLength(1);
+    expect(publicArtifacts.body[0]).toMatchObject({
+      id: first.body.id,
+      organization: 'Neuroscience Gateway',
+      organizationSlug: DemoOrganizationSlug.NEUROSCIENCE_GATEWAY,
+      contributorAlias: guest.alias,
+      researchContext: 'research_dataset',
+    });
+    expect(publicArtifacts.body[0].submitterEmail).toBeUndefined();
+    expect(publicArtifacts.body[0].manifest).toBeUndefined();
+
+    const publicWorkflows = await request(app.getHttpServer())
+      .get('/api/v1/demo/workflows')
+      .expect(200);
+    expect(publicWorkflows.body).toHaveLength(1);
+    expect(publicWorkflows.body[0]).toMatchObject({
+      id: workflow.body.id,
+      organizationSlug: DemoOrganizationSlug.NEUROSCIENCE_GATEWAY,
+      artifactIds: [first.body.id],
+    });
+    expect(publicWorkflows.body[0].submitterEmail).toBeUndefined();
+    await request(app.getHttpServer())
+      .get('/api/v1/demo/artifacts?organization=untrusted')
+      .expect(400);
+
     await mutate(guest).artifact(artifactBody()).expect(201);
     await mutate(guest).artifact(artifactBody()).expect(201);
     await mutate(guest).artifact(artifactBody()).expect(429);

@@ -19,7 +19,7 @@ import {
   randomUUID,
   timingSafeEqual,
 } from 'crypto';
-import { DataSource, In, LessThan, Repository } from 'typeorm';
+import { DataSource, In, IsNull, LessThan, Repository } from 'typeorm';
 import { ArtifactEntity } from '../artifact/artifact.entity';
 import { ArtifactService } from '../artifact/artifact.service';
 import { SubmissionState } from '../artifact/enums/submission-state.enum';
@@ -202,6 +202,77 @@ export class DemoService {
       closesAt: runtime.closesAt,
       interactionsAllowed: state === DemoLifecycleState.OPEN,
     };
+  }
+
+  private publicOrganizationSlugs(requested?: string): DemoOrganizationSlug[] {
+    if (!requested) return Object.values(DemoOrganizationSlug);
+    if (
+      !Object.values(DemoOrganizationSlug).includes(
+        requested as DemoOrganizationSlug,
+      )
+    ) {
+      throw new BadRequestException(
+        'The requested demonstration organization is not allowed',
+      );
+    }
+    return [requested as DemoOrganizationSlug];
+  }
+
+  async listPublicArtifacts(requestedOrganization?: string) {
+    const organizationSlugs = this.publicOrganizationSlugs(
+      requestedOrganization,
+    );
+    const artifacts = await this.artifacts.find({
+      relations: { organization: true },
+      where: {
+        visibility: RecordVisibility.PUBLIC,
+        archivedAt: IsNull(),
+        organization: { slug: In(organizationSlugs) },
+      },
+      order: { submittedAt: 'DESC' },
+      take: DEMO_EVENT_ARTIFACT_LIMIT,
+    });
+    return artifacts.map((artifact) => ({
+      id: artifact.id,
+      title: artifact.title,
+      description: artifact.description,
+      organization: artifact.organization.name,
+      organizationSlug: artifact.organization.slug,
+      contributorAlias: artifact.submitterUsername,
+      researchContext:
+        artifact.keywords.find((keyword) => keyword !== 'usrse26-demo') || null,
+      verified: artifact.verified,
+      submissionState: artifact.submissionState,
+      submittedAt: artifact.submittedAt,
+    }));
+  }
+
+  async listPublicWorkflows(requestedOrganization?: string) {
+    const organizationSlugs = this.publicOrganizationSlugs(
+      requestedOrganization,
+    );
+    const workflows = await this.workflows.find({
+      relations: { organization: true, artifacts: true },
+      where: {
+        visibility: RecordVisibility.PUBLIC,
+        organization: { slug: In(organizationSlugs) },
+      },
+      order: { submittedAt: 'DESC' },
+      take: DEMO_EVENT_WORKFLOW_LIMIT,
+    });
+    return workflows.map((workflow) => ({
+      id: workflow.id,
+      title: workflow.title,
+      description: workflow.description,
+      organization: workflow.organization.name,
+      organizationSlug: workflow.organization.slug,
+      contributorAlias: workflow.submitterUsername,
+      researchContext:
+        workflow.keywords.find((keyword) => keyword !== 'usrse26-demo') || null,
+      artifactIds: workflow.artifacts.map((artifact) => artifact.id),
+      submissionState: workflow.submissionState,
+      submittedAt: workflow.submittedAt,
+    }));
   }
 
   async assertOpen(): Promise<DemoRuntimeEntity> {

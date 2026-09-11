@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   Req,
   Res,
   UseGuards,
@@ -55,6 +56,16 @@ export class DemoController {
   @Get('counters')
   getCounters() {
     return this.demoService.getCounters();
+  }
+
+  @Get('artifacts')
+  listArtifacts(@Query('organization') organization?: string) {
+    return this.demoService.listPublicArtifacts(organization);
+  }
+
+  @Get('workflows')
+  listWorkflows(@Query('organization') organization?: string) {
+    return this.demoService.listPublicWorkflows(organization);
   }
 
   @Post('session')
