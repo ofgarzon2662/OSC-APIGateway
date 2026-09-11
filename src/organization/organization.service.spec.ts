@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { TypeOrmTestingConfig } from '../shared/testing-utils/typeorm-testing-config';
 import { OrganizationService } from './organization.service';
 import { OrganizationEntity } from './organization.entity';
-import { faker } from '@faker-js/faker';
+import { faker } from '../shared/testing-utils/faker';
 import { OrganizationResponseDto } from './organization.dto';
 
 describe('OrganizationService', () => {

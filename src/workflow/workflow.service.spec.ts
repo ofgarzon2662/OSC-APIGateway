@@ -6,7 +6,7 @@ import { WorkflowService } from './workflow.service';
 import { WorkflowEntity } from './workflow.entity';
 import { ArtifactEntity } from '../artifact/artifact.entity';
 import { OrganizationEntity } from '../organization/organization.entity';
-import { faker } from '@faker-js/faker';
+import { faker } from '../shared/testing-utils/faker';
 import { SubmissionState } from '../artifact/enums/submission-state.enum';
 import { CreateWorkflowDto } from './dto/create-workflow.dto';
 import { RabbitMQService } from '../messaging/rabbitmq.service';

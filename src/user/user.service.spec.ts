@@ -4,7 +4,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserEntity } from './user.entity';
 import { TypeOrmTestingConfig } from '../shared/testing-utils/typeorm-testing-config';
-import { faker } from '@faker-js/faker';
+import { faker } from '../shared/testing-utils/faker';
 import { UserCreateDto } from './dto/userCreate.dto';
 import { ConfigService } from '@nestjs/config';
 import { PasswordService } from '../auth/password.service';

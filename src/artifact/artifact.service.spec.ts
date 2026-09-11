@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { TypeOrmTestingConfig } from '../shared/testing-utils/typeorm-testing-config';
 import { ArtifactService } from './artifact.service';
 import { ArtifactEntity } from './artifact.entity';
-import { faker } from '@faker-js/faker';
+import { faker } from '../shared/testing-utils/faker';
 import { BusinessError } from '../shared/errors/business-errors';
 import { SubmissionState } from './enums/submission-state.enum';
 import { UpdateArtifactWorkerDto as UpdateArtifactDto } from './dto/update-artifact-worker.dto';

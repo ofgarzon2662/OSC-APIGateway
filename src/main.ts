@@ -1,7 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
-import * as express from 'express';
 
 // Normalize origins to avoid subtle mismatches (trailing slashes, invisible chars, case)
 function normalizeOrigin(origin?: string): string {
@@ -19,6 +18,11 @@ const ALLOWED_ORIGINS = (process.env.CORS_ORIGINS || '')
   .map(normalizeOrigin)
   .filter(Boolean);
 
+const DEMO_ALLOWED_ORIGIN = normalizeOrigin(process.env.DEMO_ALLOWED_ORIGIN);
+if (DEMO_ALLOWED_ORIGIN && !ALLOWED_ORIGINS.includes(DEMO_ALLOWED_ORIGIN)) {
+  ALLOWED_ORIGINS.push(DEMO_ALLOWED_ORIGIN);
+}
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
 
@@ -32,11 +36,13 @@ async function bootstrap() {
   app.enableCors({
     origin: (origin, cb) => {
       const normalized = normalizeOrigin(origin);
-      if (!origin || ALLOWED_ORIGINS.includes(normalized)) return cb(null, true);
+      if (!origin || ALLOWED_ORIGINS.includes(normalized))
+        return cb(null, true);
       return cb(new Error(`Origin ${origin} not allowed by CORS`), false);
     },
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    allowedHeaders: 'Content-Type, Authorization, X-Requested-With, Accept',
+    allowedHeaders:
+      'Content-Type, Authorization, X-Requested-With, Accept, X-Demo-CSRF, X-Correlation-ID',
     credentials: true,
     optionsSuccessStatus: 204,
     exposedHeaders: 'Content-Disposition',

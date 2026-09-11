@@ -7,7 +7,7 @@ import { Repository } from 'typeorm';
 import { UserEntity } from '../user/user.entity';
 import { PasswordService } from './password.service';
 import { TypeOrmTestingConfig } from '../shared/testing-utils/typeorm-testing-config';
-import { faker } from '@faker-js/faker';
+import { faker } from '../shared/testing-utils/faker';
 import { UserService } from '../user/user.service';
 import { TokenBlacklistService } from './token-blacklist.service';
 import { Role } from '../shared/enums/role.enums';

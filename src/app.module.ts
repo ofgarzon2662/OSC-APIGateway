@@ -22,6 +22,13 @@ import { CreateOrganizationMemberships1720000002000 } from './migrations/1720000
 import { AddRecordVisibility1720000003000 } from './migrations/1720000003000-add-record-visibility';
 import { AddArtifactArchival1720000004000 } from './migrations/1720000004000-add-artifact-archival';
 import { CreateBaselineSchema1719999999000 } from './migrations/1719999999000-create-baseline-schema';
+import { DemoModule } from './demo/demo.module';
+import { DemoSessionEntity } from './demo/entities/demo-session.entity';
+import { DemoRuntimeEntity } from './demo/entities/demo-runtime.entity';
+import { DemoEventEntity } from './demo/entities/demo-event.entity';
+import { DemoFeedbackEntity } from './demo/entities/demo-feedback.entity';
+import { DemoContributionEntity } from './demo/entities/demo-contribution.entity';
+import { CreateUsrse26Demo1720000005000 } from './migrations/1720000005000-create-usrse26-demo';
 
 @Module({
   imports: [
@@ -79,6 +86,11 @@ import { CreateBaselineSchema1719999999000 } from './migrations/1719999999000-cr
             WorkflowEntity,
             OutboxEntity,
             OrganizationMembershipEntity,
+            DemoSessionEntity,
+            DemoRuntimeEntity,
+            DemoEventEntity,
+            DemoFeedbackEntity,
+            DemoContributionEntity,
           ],
           migrations: [
             CreateBaselineSchema1719999999000,
@@ -87,6 +99,7 @@ import { CreateBaselineSchema1719999999000 } from './migrations/1719999999000-cr
             CreateOrganizationMemberships1720000002000,
             AddRecordVisibility1720000003000,
             AddArtifactArchival1720000004000,
+            CreateUsrse26Demo1720000005000,
           ],
           migrationsRun:
             configService.get<string>(
@@ -105,6 +118,7 @@ import { CreateBaselineSchema1719999999000 } from './migrations/1719999999000-cr
       inject: [ConfigService],
     }),
     AuthModule,
+    DemoModule,
   ],
   controllers: [AppController, HealthController],
   providers: [AppService],

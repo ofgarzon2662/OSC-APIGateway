@@ -631,6 +631,7 @@ export class ArtifactService {
     createArtifactDto: CreateArtifactDto,
     submitterInfo: SubmitterInfo,
     correlationId?: string,
+    recordId?: string,
   ): Promise<ListArtifactDto> {
     // Validate the creator's information
     if (!submitterInfo.email || !validator.isEmail(submitterInfo.email)) {
@@ -667,6 +668,7 @@ export class ArtifactService {
 
     // Create new artifact
     const newArtifact = this.artifactRepository.create({
+      ...(recordId ? { id: recordId } : {}),
       ...createArtifactDto,
       visibility: createArtifactDto.visibility ?? RecordVisibility.PRIVATE,
       organization: organization,

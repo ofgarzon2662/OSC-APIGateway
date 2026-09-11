@@ -247,6 +247,7 @@ export class WorkflowService {
     dto: CreateWorkflowDto,
     submitterInfo: SubmitterInfo,
     correlationId?: string,
+    recordId?: string,
   ): Promise<ListWorkflowDto> {
     if (!submitterInfo.email || !validator.isEmail(submitterInfo.email)) {
       throw new BusinessLogicException(
@@ -280,6 +281,7 @@ export class WorkflowService {
     );
 
     const newWorkflow = this.workflowRepository.create({
+      ...(recordId ? { id: recordId } : {}),
       title: dto.title,
       description: dto.description,
       visibility: dto.visibility ?? RecordVisibility.PRIVATE,
