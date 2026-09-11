@@ -690,6 +690,8 @@ describe('ArtifactService', () => {
       expect(spy).toHaveBeenCalledWith(
         {
           artifactId: storedArtifact.id.toLowerCase(),
+          assetType: 'artifact',
+          organizationId: storedArtifact.organization.id,
           offset: 0,
           limit: 2,
           order: 'desc',

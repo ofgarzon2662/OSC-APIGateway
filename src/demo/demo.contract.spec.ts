@@ -14,6 +14,7 @@ import { DataSource, In, Repository } from 'typeorm';
 import { ArtifactEntity } from '../artifact/artifact.entity';
 import { SubmissionState } from '../artifact/enums/submission-state.enum';
 import { ArtifactService } from '../artifact/artifact.service';
+import { GhwService } from '../artifact/ghw.service';
 import { OutboxEntity } from '../messaging/outbox.entity';
 import { OrganizationMembershipEntity } from '../organization/organization-membership.entity';
 import { OrganizationStatus } from '../organization/membership-status.enum';
@@ -200,6 +201,18 @@ describe('US-RSE 2026 demonstration contract', () => {
               return workflow;
             },
           }),
+        },
+        {
+          provide: GhwService,
+          useValue: {
+            fetchHistory: jest.fn(async (query: any) => ({
+              assetType: query.assetType,
+              artifactId: query.artifactId,
+              items: [{ txId: 'workflow-history-transaction' }],
+              total: 1,
+              hasMore: false,
+            })),
+          },
         },
       ],
     }).compile();
@@ -427,6 +440,15 @@ describe('US-RSE 2026 demonstration contract', () => {
       artifactIds: [first.body.id],
     });
     expect(publicWorkflows.body[0].submitterEmail).toBeUndefined();
+    const workflowHistory = await request(app.getHttpServer())
+      .get(`/api/v1/demo/workflows/${workflow.body.id}/history`)
+      .set('Cookie', guest.cookie)
+      .expect(200);
+    expect(workflowHistory.body).toMatchObject({
+      assetType: 'workflow',
+      artifactId: workflow.body.id,
+      total: 1,
+    });
     await request(app.getHttpServer())
       .get('/api/v1/demo/artifacts?organization=untrusted')
       .expect(400);

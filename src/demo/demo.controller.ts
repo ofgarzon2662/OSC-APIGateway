@@ -134,6 +134,16 @@ export class DemoController {
     return this.demoService.workflowResponse(id, request.user);
   }
 
+  @Get('workflows/:id/history')
+  @UseGuards(DemoAuthGuard)
+  workflowHistory(
+    @Req() request: DemoRequest,
+    @Param('id') id: string,
+    @Headers('x-correlation-id') correlationId?: string,
+  ) {
+    return this.demoService.getWorkflowHistory(request.user, id, correlationId);
+  }
+
   @Post('events')
   @UseGuards(DemoOriginGuard, DemoAuthGuard, DemoMutationGuard)
   event(@Req() request: DemoRequest, @Body() dto: CreateDemoEventDto) {

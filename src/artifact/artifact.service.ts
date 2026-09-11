@@ -566,7 +566,15 @@ export class ArtifactService {
 
     try {
       const resp = await this.ghwService.fetchHistory(
-        { artifactId, offset, limit, order, includeValue },
+        {
+          artifactId,
+          assetType: 'artifact',
+          organizationId: artifact.organization?.id || organizationId,
+          offset,
+          limit,
+          order,
+          includeValue,
+        },
         corr,
       );
       return {
@@ -604,7 +612,11 @@ export class ArtifactService {
     const artifactId = id.toLowerCase();
     const corr = correlationId || randomUUID();
     try {
-      return await this.ghwService.refresh(artifactId, corr);
+      return await this.ghwService.refresh(
+        artifactId,
+        corr,
+        artifact.organization?.id || organizationId,
+      );
     } catch (err: any) {
       if (
         err?.message === 'CONNECT_TIMEOUT' ||

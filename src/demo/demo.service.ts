@@ -23,6 +23,7 @@ import { DataSource, In, IsNull, LessThan, Repository } from 'typeorm';
 import { ArtifactEntity } from '../artifact/artifact.entity';
 import { ArtifactService } from '../artifact/artifact.service';
 import { SubmissionState } from '../artifact/enums/submission-state.enum';
+import { GhwService } from '../artifact/ghw.service';
 import { OrganizationEntity } from '../organization/organization.entity';
 import { RecordVisibility } from '../shared/enums/record-visibility.enum';
 import { Role } from '../shared/enums/role.enums';
@@ -77,6 +78,7 @@ export class DemoService {
     private readonly dataSource: DataSource,
     private readonly artifactService: ArtifactService,
     private readonly workflowService: WorkflowService,
+    private readonly ghwService: GhwService,
     @InjectRepository(DemoSessionEntity)
     private readonly sessions: Repository<DemoSessionEntity>,
     @InjectRepository(DemoRuntimeEntity)
@@ -944,6 +946,36 @@ export class DemoService {
       recordId,
     );
     return result;
+  }
+
+  async getWorkflowHistory(
+    principal: DemoPrincipal,
+    recordId: string,
+    correlationId?: string,
+  ) {
+    await this.workflowService.findOne(recordId, principal.organizationId);
+    const result = await this.ghwService.fetchHistory(
+      {
+        artifactId: recordId.toLowerCase(),
+        assetType: 'workflow',
+        organizationId: principal.organizationId,
+        offset: 0,
+        limit: 100,
+        order: 'desc',
+        includeValue: true,
+      },
+      correlationId || randomUUID(),
+    );
+    await this.recordInternalEvent(
+      principal,
+      DemoEventName.HISTORY_VIEWED,
+      'workflow',
+      recordId,
+    );
+    return {
+      ...result,
+      nextOffset: result?.hasMore ? 100 : undefined,
+    };
   }
 
   async recordBrowserEvent(principal: DemoPrincipal, dto: CreateDemoEventDto) {
