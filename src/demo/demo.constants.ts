@@ -10,7 +10,9 @@ export const DEMO_FEEDBACK_COMMENT_LIMIT = 300;
 export const DEMO_MAX_FILE_BYTES = 10 * 1024 * 1024;
 export const DEMO_RETENTION_DAYS = 30;
 export const DEMO_SESSION_EVENT_LIMIT = 100;
-export const DEMO_EVENT_SESSION_LIMIT = 300;
+// Must permit the 1,000-artifact event ceiling to be reachable when each
+// anonymous browser session is limited to three artifacts.
+export const DEMO_EVENT_SESSION_LIMIT = 1_000;
 export const DEMO_RUNTIME_ID = 'usrse26';
 export const DEMO_DEFAULT_OPENS_AT = '2026-10-20T15:00:00.000Z';
 export const DEMO_DEFAULT_CLOSES_AT = '2026-10-23T15:00:00.000Z';
