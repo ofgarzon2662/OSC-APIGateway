@@ -560,6 +560,44 @@ describe('US-RSE 2026 demonstration contract', () => {
       },
       queue: { pending: 0, failed: 0, oldestPendingAgeSeconds: 0 },
     });
+
+    await request(app.getHttpServer())
+      .get('/api/v1/demo/internal/export')
+      .expect(401);
+    const sanitizedExport = await request(app.getHttpServer())
+      .get('/api/v1/demo/internal/export')
+      .set('X-Demo-Control-Key', CONTROL_KEY)
+      .expect(200);
+    expect(Object.keys(sanitizedExport.body).sort()).toEqual(
+      [
+        'schemaVersion',
+        'exportedAt',
+        'status',
+        'counters',
+        'survey',
+        'caveat',
+      ].sort(),
+    );
+    expect(Object.keys(sanitizedExport.body.status).sort()).toEqual(
+      ['state', 'opensAt', 'closesAt'].sort(),
+    );
+    expect(sanitizedExport.body.survey).toEqual({
+      sampleSize: 1,
+      ratings: {
+        ease: { '1': 0, '2': 0, '3': 0, '4': 0, '5': 1 },
+        provenance: { '1': 0, '2': 0, '3': 0, '4': 1, '5': 0 },
+        usefulness: { '1': 0, '2': 0, '3': 0, '4': 0, '5': 1 },
+      },
+    });
+    const serializedExport = JSON.stringify(sanitizedExport.body);
+    for (const forbidden of [
+      'organizationId',
+      'submittedAt',
+      'privateComment',
+      'sessionHash',
+    ]) {
+      expect(serializedExport).not.toContain(forbidden);
+    }
   });
 
   it('fails closed to READ_ONLY at the global limit while preserving reads and privacy-safe events', async () => {

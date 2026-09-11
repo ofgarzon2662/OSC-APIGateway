@@ -97,8 +97,9 @@ history-refresh, or internal-operation interfaces.
 
 ## Telemetry, survey, and retention
 
-`POST /api/v1/demo/events` accepts only `STATUS_VIEWED`, `HISTORY_VIEWED`, and
-`SURVEY_SHOWN`. Accepted artifact/workflow events are recorded server-side.
+`POST /api/v1/demo/events` accepts only `STATUS_VIEWED` and `SURVEY_SHOWN`.
+Accepted artifact/workflow events and authorized history views are recorded
+server-side.
 Raw session identifiers are never stored in analytics tables; a dedicated
 secret produces an HMAC-SHA-256 pseudonym. Event rows contain no IP address or
 browser fingerprint.
@@ -109,13 +110,18 @@ before storage, never put on the ledger, never returned by a public endpoint,
 and excluded from the sanitized export. Feedback can be submitted once per
 session.
 
-| Data               | Fields                                                         | Retention       | Public?           |
-| ------------------ | -------------------------------------------------------------- | --------------- | ----------------- |
-| Guest session      | HMAC pseudonym, organization, alias, quotas, expiry            | 30 days         | No                |
-| Contribution index | HMAC pseudonym, request/record IDs, controlled metadata        | 30 days         | No                |
-| Event              | HMAC pseudonym, organization, allowlisted event/resource       | 30 days         | Aggregate only    |
-| Feedback           | HMAC pseudonym, organization, ratings, escaped private comment | 30 days         | No                |
-| Sanitized export   | aggregate counters and ratings; no comments or pseudonyms      | at most 30 days | Operator evidence |
+| Data               | Fields                                                                                                                 | Retention       | Public?           |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------- | --------------- | ----------------- |
+| Guest session      | HMAC pseudonym, organization, alias, quotas, expiry                                                                    | 30 days         | No                |
+| Contribution index | HMAC pseudonym, request/record IDs, controlled metadata                                                                | 30 days         | No                |
+| Event              | HMAC pseudonym, organization, allowlisted event/resource                                                               | 30 days         | Aggregate only    |
+| Feedback           | HMAC pseudonym, organization, ratings, escaped private comment                                                         | 30 days         | No                |
+| Sanitized export   | event-wide counters and 1-5 rating distributions; no rows, comments, organization breakdown, timestamps, or pseudonyms | at most 30 days | Operator evidence |
+
+The sanitized export has a fixed versioned schema. Its survey section contains
+only an event-wide `sampleSize` and five-bin distributions for ease,
+provenance, and usefulness. Per-submission timestamps and organization-level
+survey cells are never exported.
 
 The purge endpoint deletes rows whose explicit `retentionExpiresAt` has passed.
 Infrastructure separately expires operational security logs after seven days

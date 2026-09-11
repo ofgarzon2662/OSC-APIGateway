@@ -1277,25 +1277,53 @@ export class DemoService {
     }
   }
 
+  private ratingDistribution(values: number[]) {
+    const distribution = { '1': 0, '2': 0, '3': 0, '4': 0, '5': 0 };
+    for (const value of values) {
+      const key = String(value) as keyof typeof distribution;
+      if (!Number.isInteger(value) || !(key in distribution)) {
+        throw new ServiceUnavailableException(
+          'Survey aggregate source contains an invalid rating',
+        );
+      }
+      distribution[key] += 1;
+    }
+    return distribution;
+  }
+
   async exportSanitized() {
     const [counters, ratings, status] = await Promise.all([
       this.getCounters(),
       this.feedback.find({
         select: {
-          organizationId: true,
           easeRating: true,
           provenanceRating: true,
           usefulnessRating: true,
-          submittedAt: true,
         },
       }),
       this.getStatus(),
     ]);
     return {
+      schemaVersion: 1,
       exportedAt: new Date(),
-      status,
+      status: {
+        state: status.state,
+        opensAt: status.opensAt,
+        closesAt: status.closesAt,
+      },
       counters,
-      survey: ratings,
+      survey: {
+        sampleSize: ratings.length,
+        ratings: {
+          ease: this.ratingDistribution(ratings.map((item) => item.easeRating)),
+          provenance: this.ratingDistribution(
+            ratings.map((item) => item.provenanceRating),
+          ),
+          usefulness: this.ratingDistribution(
+            ratings.map((item) => item.usefulnessRating),
+          ),
+        },
+      },
       caveat:
         'Self-selected convenience sample from a conference demonstration; not a measure of community acceptance.',
     };
