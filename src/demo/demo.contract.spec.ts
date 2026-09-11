@@ -528,6 +528,26 @@ describe('US-RSE 2026 demonstration contract', () => {
       acceptedArtifacts: 3,
       acceptedWorkflows: 1,
     });
+
+    await request(app.getHttpServer())
+      .get('/api/v1/demo/internal/metrics')
+      .expect(401);
+    const metrics = await request(app.getHttpServer())
+      .get('/api/v1/demo/internal/metrics')
+      .set('X-Demo-Control-Key', CONTROL_KEY)
+      .expect(200);
+    expect(metrics.body).toMatchObject({
+      counters: {
+        anonymousBrowserSessions: 2,
+        acceptedArtifacts: 3,
+        acceptedWorkflows: 1,
+      },
+      confirmationLatencyMs: {
+        artifact: { sampleSize: 0, p50: null, p95: null },
+        workflow: { sampleSize: 0, p50: null, p95: null },
+      },
+      queue: { pending: 0, failed: 0, oldestPendingAgeSeconds: 0 },
+    });
   });
 
   it('fails closed to READ_ONLY at the global limit while preserving reads and privacy-safe events', async () => {

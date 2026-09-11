@@ -168,6 +168,12 @@ export class DemoController {
     return this.demoService.exportSanitized();
   }
 
+  @Get('internal/metrics')
+  @UseGuards(DemoControlGuard)
+  operationalMetrics() {
+    return this.demoService.getOperationalMetrics();
+  }
+
   @Post('internal/purge')
   @UseGuards(DemoControlGuard)
   purge() {

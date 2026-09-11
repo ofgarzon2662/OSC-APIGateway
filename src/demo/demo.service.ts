@@ -24,6 +24,7 @@ import { ArtifactEntity } from '../artifact/artifact.entity';
 import { ArtifactService } from '../artifact/artifact.service';
 import { SubmissionState } from '../artifact/enums/submission-state.enum';
 import { GhwService } from '../artifact/ghw.service';
+import { OutboxEntity, OutboxStatus } from '../messaging/outbox.entity';
 import { OrganizationEntity } from '../organization/organization.entity';
 import { RecordVisibility } from '../shared/enums/record-visibility.enum';
 import { Role } from '../shared/enums/role.enums';
@@ -1148,6 +1149,111 @@ export class DemoService {
       acceptedWorkflows: workflowContributions.length,
       confirmedWorkflows,
       provenanceHistoryViews: historyViews,
+    };
+  }
+
+  private latencySummary(values: number[]) {
+    const sorted = values
+      .filter((value) => Number.isFinite(value) && value >= 0)
+      .sort((left, right) => left - right);
+    const percentile = (fraction: number) =>
+      sorted.length
+        ? sorted[Math.max(0, Math.ceil(sorted.length * fraction) - 1)]
+        : null;
+    return {
+      sampleSize: sorted.length,
+      p50: percentile(0.5),
+      p95: percentile(0.95),
+    };
+  }
+
+  async getOperationalMetrics() {
+    const [counters, artifactContributions, workflowContributions, outbox] =
+      await Promise.all([
+        this.getCounters(),
+        this.contributions.findBy({
+          recordType: DemoContributionType.ARTIFACT,
+        }),
+        this.contributions.findBy({
+          recordType: DemoContributionType.WORKFLOW,
+        }),
+        this.dataSource.getRepository(OutboxEntity).find({
+          select: { status: true, createdAt: true },
+          where: [
+            { status: OutboxStatus.PENDING },
+            { status: OutboxStatus.FAILED },
+          ],
+        }),
+      ]);
+    const artifactAcceptedAt = new Map(
+      artifactContributions.map((item) => [
+        item.recordId,
+        item.acceptedAt.getTime(),
+      ]),
+    );
+    const workflowAcceptedAt = new Map(
+      workflowContributions.map((item) => [
+        item.recordId,
+        item.acceptedAt.getTime(),
+      ]),
+    );
+    const [artifacts, workflows] = await Promise.all([
+      artifactAcceptedAt.size
+        ? this.artifacts.find({
+            select: { id: true, submissionState: true, updatedAt: true },
+            where: {
+              id: In([...artifactAcceptedAt.keys()]),
+              submissionState: SubmissionState.SUCCESS,
+            },
+          })
+        : [],
+      workflowAcceptedAt.size
+        ? this.workflows.find({
+            select: { id: true, submissionState: true, updatedAt: true },
+            where: {
+              id: In([...workflowAcceptedAt.keys()]),
+              submissionState: SubmissionState.SUCCESS,
+            },
+          })
+        : [],
+    ]);
+    const artifactLatency = artifacts.flatMap((item) => {
+      const acceptedAt = artifactAcceptedAt.get(item.id);
+      return acceptedAt !== undefined && item.updatedAt
+        ? [item.updatedAt.getTime() - acceptedAt]
+        : [];
+    });
+    const workflowLatency = workflows.flatMap((item) => {
+      const acceptedAt = workflowAcceptedAt.get(item.id);
+      return acceptedAt !== undefined && item.updatedAt
+        ? [item.updatedAt.getTime() - acceptedAt]
+        : [];
+    });
+    const pending = outbox.filter(
+      (item) => item.status === OutboxStatus.PENDING,
+    );
+    const oldestPending = pending.reduce<Date | null>(
+      (oldest, item) =>
+        !oldest || item.createdAt < oldest ? item.createdAt : oldest,
+      null,
+    );
+    return {
+      observedAt: new Date(),
+      counters,
+      confirmationLatencyMs: {
+        artifact: this.latencySummary(artifactLatency),
+        workflow: this.latencySummary(workflowLatency),
+      },
+      queue: {
+        pending: pending.length,
+        failed: outbox.length - pending.length,
+        oldestPendingAgeSeconds: oldestPending
+          ? Math.max(
+              0,
+              Math.round((Date.now() - oldestPending.getTime()) / 1000),
+            )
+          : 0,
+      },
     };
   }
 
